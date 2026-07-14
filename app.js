@@ -142,7 +142,11 @@
       rows += `
       <div class="topic-row">
         <div class="t-title">
-          <a href="#/notes/${certId}/${sec.id}">${esc(sec.title)}</a>${sec.docs && sec.docs.length ? ` <a class="doc-link" href="${sec.docs[0].url}" target="_blank" rel="noopener" title="Official docs: ${esc(sec.docs[0].label)}">📖</a>` : ""}
+          <a href="#/notes/${certId}/${sec.id}">${esc(sec.title)}</a>${(() => {
+            const d = sec.docs && sec.docs.length ? sec.docs[0].url
+              : sec.topicDocs ? Object.values(sec.topicDocs)[0] : null;
+            return d ? ` <a class="doc-link" href="${d}" target="_blank" rel="noopener" title="Official documentation">📖</a>` : "";
+          })()}
           <div class="t-meta">${sec.weight ? sec.weight + "% of exam · " : ""}${p.total} questions${cs.read[sec.id] ? " · ✅ notes read" : ""}</div>
         </div>
         <div class="t-stats">
