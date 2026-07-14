@@ -1,0 +1,1129 @@
+{
+ "id": "mcd2",
+ "name": "MuleSoft Certified Developer – Level 2",
+ "short": "MCD Level 2",
+ "exam": {
+  "questions": 60,
+  "minutes": 120,
+  "passPct": 70
+ },
+ "questions": [
+  {
+   "id": "m2-001",
+   "section": "d1",
+   "q": "A Mule app processes unpredictable file sizes, sometimes several GB, and multiple components need to read the payload. Which streaming strategy is most appropriate?",
+   "options": [
+    "Non-repeatable stream",
+    "Repeatable in-memory stream with a large max buffer",
+    "Repeatable file-stored stream",
+    "Disable streaming entirely"
+   ],
+   "answer": 2,
+   "explanation": "File-stored repeatable streams buffer to disk past a threshold, so arbitrarily large payloads can be read multiple times without exhausting memory. In-memory buffers risk STREAM_MAXIMUM_SIZE_EXCEEDED; non-repeatable streams can be read only once."
+  },
+  {
+   "id": "m2-002",
+   "section": "d1",
+   "q": "A flow using a non-repeatable stream fails when a Logger placed before a Transform Message logs #[payload]. Why?",
+   "options": [
+    "Loggers cannot serialize JSON",
+    "The Logger consumed the stream, so the transformer receives an already-read (empty) stream",
+    "Non-repeatable streams require file storage",
+    "The payload was null"
+   ],
+   "answer": 1,
+   "explanation": "Non-repeatable streams can be read exactly once. The Logger's payload access consumes it, leaving nothing for the next component. Use a repeatable strategy or avoid reading the stream twice."
+  },
+  {
+   "id": "m2-003",
+   "section": "d1",
+   "q": "What does an Until Successful scope do when its processors keep failing after the configured max retries?",
+   "options": [
+    "Silently continues the flow",
+    "Throws a MULE:RETRY_EXHAUSTED error",
+    "Restarts the flow from the event source",
+    "Reduces the retry interval and keeps trying forever"
+   ],
+   "answer": 1,
+   "explanation": "Until Successful retries with the configured wait time up to maxRetries; when exhausted, it raises RETRY_EXHAUSTED, which should be handled (e.g. route the message to a DLQ)."
+  },
+  {
+   "id": "m2-004",
+   "section": "d1",
+   "q": "What is the purpose of a redelivery policy configured on a listener (e.g. JMS or VM On New Message)?",
+   "options": [
+    "It retries the outbound connection",
+    "It limits how many times the same message can be reprocessed after failures, raising REDELIVERY_EXHAUSTED when exceeded",
+    "It guarantees exactly-once delivery",
+    "It compresses redelivered messages"
+   ],
+   "answer": 1,
+   "explanation": "Redelivery policies protect against 'poison messages' that keep failing: after maxRedeliveryCount attempts, a REDELIVERY_EXHAUSTED error lets you divert the message (e.g. to a dead-letter queue) instead of looping forever."
+  },
+  {
+   "id": "m2-005",
+   "section": "d1",
+   "q": "An API must acknowledge received orders immediately and never lose one, even if the app crashes before processing completes. Which design implements the reliable acquisition pattern?",
+   "options": [
+    "Process the order synchronously, then return 202",
+    "Write the order to a persistent VM queue (or Anypoint MQ) as the first step, return the acknowledgement, and process from the queue asynchronously",
+    "Store the order in a flow variable and process it in a subflow",
+    "Use a Cache scope around the processing logic"
+   ],
+   "answer": 1,
+   "explanation": "Reliability pattern: persist the message to a reliable channel (persistent VM queue, Anypoint MQ, JMS) inside the receiving flow, acknowledge the client, and let a separate flow consume and process. A crash cannot lose acknowledged messages."
+  },
+  {
+   "id": "m2-006",
+   "section": "d1",
+   "q": "Which statement about VM queues is correct?",
+   "options": [
+    "VM queues always survive application restarts",
+    "In-memory VM queues are faster but lost on restart; persistent VM queues survive restarts at a performance cost",
+    "VM queues can connect two different Mule applications on CloudHub",
+    "VM queues require an external broker"
+   ],
+   "answer": 1,
+   "explanation": "The VM connector provides intra-app (or intra-cluster) queues in two modes: transient in-memory and persistent. Cross-application messaging on CloudHub needs Anypoint MQ or another broker."
+  },
+  {
+   "id": "m2-007",
+   "section": "d1",
+   "q": "In Anypoint MQ, what happens to a message that exceeds the maximum delivery attempts on a queue configured with a dead-letter queue (DLQ)?",
+   "options": [
+    "It is deleted permanently",
+    "It is moved to the dead-letter queue for later inspection or reprocessing",
+    "It is re-queued at the front",
+    "The queue is suspended"
+   ],
+   "answer": 1,
+   "explanation": "The DLQ captures messages that repeatedly fail delivery/acknowledgment, preventing poison messages from looping while retaining them for analysis or manual replay."
+  },
+  {
+   "id": "m2-008",
+   "section": "d1",
+   "q": "When is an XA transaction required instead of a local transaction?",
+   "options": [
+    "Whenever more than one operation runs in a flow",
+    "When a single atomic transaction must span multiple transactional resources, e.g. consume a JMS message and write to a database",
+    "When using HTTP Request operations",
+    "When the flow uses async scopes"
+   ],
+   "answer": 1,
+   "explanation": "Local transactions cover a single resource. XA uses two-phase commit to coordinate multiple resources (JMS + DB) atomically — heavier, requiring an XA transaction manager and XA-capable connectors."
+  },
+  {
+   "id": "m2-009",
+   "section": "d1",
+   "q": "A Try scope demarcates a transaction. An error inside is handled by an On Error Continue scope. What happens to the transaction?",
+   "options": [
+    "It is rolled back",
+    "It is committed, because On Error Continue treats the processing as successful",
+    "It stays open until the flow ends",
+    "XA transactions cannot be used with Try scopes"
+   ],
+   "answer": 1,
+   "explanation": "On Error Continue = handled successfully → the transaction commits. On Error Propagate → rollback. Choosing the wrong handler can accidentally commit partial work."
+  },
+  {
+   "id": "m2-010",
+   "section": "d1",
+   "q": "Which transactional action makes an operation FAIL if there is no active transaction when it executes?",
+   "options": [
+    "JOIN_IF_POSSIBLE",
+    "ALWAYS_JOIN",
+    "NOT_SUPPORTED",
+    "BEGIN_OR_JOIN"
+   ],
+   "answer": 1,
+   "explanation": "ALWAYS_JOIN demands an existing transaction and errors without one. JOIN_IF_POSSIBLE joins when present, NOT_SUPPORTED executes outside the transaction."
+  },
+  {
+   "id": "m2-011",
+   "section": "d1",
+   "q": "Which payloads are safe to serve from a Cache scope?",
+   "options": [
+    "Any payload, including streams",
+    "Responses to idempotent requests with repeatable (or consumed) payloads — not one-time non-repeatable streams",
+    "Only XML payloads",
+    "Only payloads smaller than 1 MB"
+   ],
+   "answer": 1,
+   "explanation": "Cache is for idempotent request-response interactions where the same key yields the same response. Cached entries must be re-servable; unconsumed non-repeatable streams cannot be replayed to later callers."
+  },
+  {
+   "id": "m2-012",
+   "section": "d1",
+   "q": "What does the Idempotent Message Validator do?",
+   "options": [
+    "Retries duplicate messages",
+    "Computes an ID for each message and raises MULE:DUPLICATE_MESSAGE (rejecting the event) when the ID was already seen, using an Object Store",
+    "Validates JSON schemas",
+    "Removes duplicate records inside one payload array"
+   ],
+   "answer": 1,
+   "explanation": "It enforces exactly-once semantics at the processing level: an ID expression is checked against an Object Store of seen IDs; duplicates raise an error you can handle (e.g. return 409)."
+  },
+  {
+   "id": "m2-013",
+   "section": "d1",
+   "q": "How does Mule 4 manage threads for event processing?",
+   "options": [
+    "One thread pool per connector, sized manually in every app",
+    "A single self-tuning runtime thread pool (UBER) with back-pressure; manual pool tuning is rarely needed",
+    "One thread per flow instance, fixed at deployment",
+    "Threads are managed by the JVM garbage collector"
+   ],
+   "answer": 1,
+   "explanation": "Mule 4 replaced Mule 3's manual threading model with a centralized, self-tuning pool and automatic back-pressure. Developers influence concurrency via maxConcurrency on flows, not by sizing pools per app."
+  },
+  {
+   "id": "m2-014",
+   "section": "d1",
+   "q": "A CPU-intensive Mule app on CloudHub must handle double the load. Requests are stateless. What is the most direct scaling approach?",
+   "options": [
+    "Enable persistent queues",
+    "Scale horizontally by adding workers/replicas; CloudHub load-balances across them",
+    "Increase the streaming buffer size",
+    "Move all logic into one flow"
+   ],
+   "answer": 1,
+   "explanation": "Stateless workloads scale horizontally: more workers behind CloudHub's load balancer. Vertical scaling (bigger worker) helps too but horizontal scaling adds availability."
+  },
+  {
+   "id": "m2-015",
+   "section": "d1",
+   "q": "In a customer-hosted Mule runtime cluster, which statement is true?",
+   "options": [
+    "Each node has fully independent object stores and VM queues",
+    "Persistent object stores and VM queues are shared across the cluster via a distributed memory grid, and scheduled sources run only on the primary node by default",
+    "Clustering requires CloudHub",
+    "All nodes must run different applications"
+   ],
+   "answer": 1,
+   "explanation": "A cluster acts as one logical unit: distributed shared memory backs object stores/VM queues, and polling/scheduled sources default to primary-node-only execution to avoid duplicate triggers."
+  },
+  {
+   "id": "m2-016",
+   "section": "d1",
+   "q": "What does setting maxConcurrency on a flow control?",
+   "options": [
+    "The number of applications on a worker",
+    "The maximum number of event instances the flow processes simultaneously; excess triggers back-pressure",
+    "The size of the streaming buffer",
+    "The number of retry attempts"
+   ],
+   "answer": 1,
+   "explanation": "maxConcurrency caps simultaneous executions of a flow. When exceeded, back-pressure applies to the source (e.g. HTTP returns 503, or the listener slows polling)."
+  },
+  {
+   "id": "m2-017",
+   "section": "d1",
+   "q": "Which DataWeave option streams the OUTPUT of a transformation so downstream components can start consuming before the whole result is built?",
+   "options": [
+    "output application/json indent=false",
+    "output application/json deferred=true",
+    "output application/json streaming=false",
+    "var stream = true in the header"
+   ],
+   "answer": 1,
+   "explanation": "deferred=true defers/streams DataWeave output. (The reader property streaming=true enables streaming of the INPUT for sequential-access formats.)"
+  },
+  {
+   "id": "m2-018",
+   "section": "d1",
+   "q": "A flow calls a flaky external API. The team wants each call to retry up to 3 times with 2 seconds between attempts before giving up. Which component fits directly?",
+   "options": [
+    "A Try scope with On Error Continue",
+    "An Until Successful scope with maxRetries=3 and millisBetweenRetries=2000 around the HTTP Request",
+    "A For Each scope with 3 iterations",
+    "A redelivery policy on the HTTP Listener"
+   ],
+   "answer": 1,
+   "explanation": "Until Successful retries its inner processors with the configured attempts and interval. Redelivery policies protect listeners from reprocessing the same inbound message — a different concern."
+  },
+  {
+   "id": "m2-019",
+   "section": "d1",
+   "q": "Which processing choice yields parallel record processing with results collected back into a list, WITHOUT the queueing overhead of a Batch Job?",
+   "options": [
+    "For Each",
+    "Parallel For Each",
+    "Choice router",
+    "Async scope"
+   ],
+   "answer": 1,
+   "explanation": "Parallel For Each processes elements concurrently and aggregates results into a list. For Each is sequential; Batch adds persistence/queueing designed for very large datasets."
+  },
+  {
+   "id": "m2-020",
+   "section": "d2",
+   "q": "Which Maven lifecycle phase runs MUnit tests during a standard Mule application build?",
+   "options": [
+    "compile",
+    "test",
+    "package",
+    "deploy"
+   ],
+   "answer": 1,
+   "explanation": "The munit-maven-plugin binds to the test phase, so 'mvn test' (and later phases like package/deploy that include it) executes MUnit suites."
+  },
+  {
+   "id": "m2-021",
+   "section": "d2",
+   "q": "What does the <classifier>mule-plugin</classifier> element indicate in a pom.xml dependency?",
+   "options": [
+    "The dependency is a plain Java library",
+    "The dependency is a Mule extension/connector packaged as a Mule plugin",
+    "The dependency should be excluded from the build",
+    "The dependency is only used in tests"
+   ],
+   "answer": 1,
+   "explanation": "Mule connectors/modules are Maven artifacts with the mule-plugin classifier so the runtime and packager treat them as Mule extensions rather than ordinary JARs."
+  },
+  {
+   "id": "m2-022",
+   "section": "d2",
+   "q": "A team wants every Mule project to inherit the same plugin versions, repositories, and common properties. What is the recommended mechanism?",
+   "options": [
+    "Copy-paste a template pom.xml into each project",
+    "A parent POM published to Exchange (or a repository), referenced by each project's <parent> element",
+    "Environment variables on each developer machine",
+    "A shared Studio workspace"
+   ],
+   "answer": 1,
+   "explanation": "A parent POM centralizes build configuration; children inherit and stay consistent. Publishing it to Exchange/private repo makes it resolvable everywhere including CI."
+  },
+  {
+   "id": "m2-023",
+   "section": "d2",
+   "q": "How is a Mule application deployed to CloudHub from a CI/CD pipeline using Maven?",
+   "options": [
+    "mvn clean install -Pcloud",
+    "Configure the mule-maven-plugin with a cloudHubDeployment/cloudhub2Deployment section (target, environment, connected app credentials) and run mvn deploy -DmuleDeploy",
+    "Upload the JAR with FTP",
+    "mvn cloudhub:push"
+   ],
+   "answer": 1,
+   "explanation": "The mule-maven-plugin handles packaging and deployment; 'mvn deploy -DmuleDeploy' triggers deployment using the plugin's configuration, typically with credentials injected by the pipeline."
+  },
+  {
+   "id": "m2-024",
+   "section": "d2",
+   "q": "What credentials should a CI/CD pipeline use to authenticate against Anypoint Platform for automated deployments?",
+   "options": [
+    "A developer's personal username and password",
+    "A Connected App's client ID and secret with only the required scopes",
+    "The organization admin's session cookie",
+    "No credentials are needed for deployments"
+   ],
+   "answer": 1,
+   "explanation": "Connected apps provide non-personal, scope-limited, revocable credentials — the recommended practice for automation instead of tying pipelines to human accounts."
+  },
+  {
+   "id": "m2-025",
+   "section": "d2",
+   "q": "How does a Mule project consume an asset (e.g. a custom connector) published to Anypoint Exchange via Maven?",
+   "options": [
+    "Download the JAR manually into src/main/resources",
+    "Add the Exchange Maven repository (with credentials in settings.xml) and declare the asset's GAV as a dependency",
+    "Exchange assets cannot be used in Maven builds",
+    "Reference the asset URL in mule-artifact.json"
+   ],
+   "answer": 1,
+   "explanation": "Exchange doubles as a Maven repository. With the repo URL and valid credentials/connected app token in settings.xml, assets resolve like any Maven dependency using the org ID as groupId."
+  },
+  {
+   "id": "m2-026",
+   "section": "d2",
+   "q": "According to semantic versioning, which change requires incrementing the MAJOR version of an API?",
+   "options": [
+    "Adding a new optional response field",
+    "Fixing a typo in documentation",
+    "Removing a field from the response or renaming an existing resource (a breaking change)",
+    "Improving performance without changing the contract"
+   ],
+   "answer": 2,
+   "explanation": "Breaking changes (removing/renaming fields, changing types, removing resources) break existing consumers → MAJOR bump and typically a new API instance/URL (v1 → v2). Backwards-compatible additions are MINOR; fixes are PATCH."
+  },
+  {
+   "id": "m2-027",
+   "section": "d2",
+   "q": "Which reuse mechanism allows multiple Mule apps deployed to the SAME customer-hosted runtime to share one HTTP Listener configuration and port?",
+   "options": [
+    "A parent POM",
+    "A Mule domain project",
+    "Anypoint MQ",
+    "An API fragment"
+   ],
+   "answer": 1,
+   "explanation": "Domains share connector configurations (HTTP listener, DB config...) among co-deployed apps on customer-hosted runtimes. Not available on CloudHub, where each app is isolated."
+  },
+  {
+   "id": "m2-028",
+   "section": "d2",
+   "q": "A team has common DataWeave functions and reusable flows they want to share across many applications with proper versioning. What is the recommended approach?",
+   "options": [
+    "Copy the files into each project",
+    "Package them as a custom Mule plugin / library, publish it to Exchange, and add it as a versioned dependency in each app",
+    "Email the XML to each team",
+    "Put the flows in the domain project"
+   ],
+   "answer": 1,
+   "explanation": "Publishing shared code as a versioned Exchange asset gives controlled reuse, discoverability, and upgrade management. Copy-paste drifts; domains only share configurations on the same runtime."
+  },
+  {
+   "id": "m2-029",
+   "section": "d2",
+   "q": "What is the purpose of the mule-artifact.json file in a Mule project?",
+   "options": [
+    "It stores encrypted properties",
+    "It is the application descriptor: minimum Mule runtime version, secure properties list, and packaging metadata",
+    "It defines the API specification",
+    "It configures log4j"
+   ],
+   "answer": 1,
+   "explanation": "mule-artifact.json declares app metadata such as minMuleVersion and which properties should be treated as secure (masked), used at packaging and deployment time."
+  },
+  {
+   "id": "m2-030",
+   "section": "d2",
+   "q": "Which artifacts can be published to Exchange for reuse across projects? (best answer)",
+   "options": [
+    "Only complete Mule applications",
+    "API specifications, API fragments (traits, types, examples), connectors, templates, examples, and custom policies",
+    "Only RAML files",
+    "Only Java libraries"
+   ],
+   "answer": 1,
+   "explanation": "Exchange hosts many asset types: specs (RAML/OAS), reusable fragments, REST/custom connectors, application templates and examples, custom policies, and more."
+  },
+  {
+   "id": "m2-031",
+   "section": "d2",
+   "q": "A build must produce different property values for dev and prod WITHOUT rebuilding the artifact per environment. What is the recommended pattern?",
+   "options": [
+    "One Maven profile per environment that bakes values into the JAR",
+    "One deployable artifact; environment-specific YAML files selected at deploy time via a property (e.g. -Denv=prod), with secrets injected as secure/hidden properties",
+    "Separate Git branches per environment",
+    "Hardcode both configs and toggle with a Choice router"
+   ],
+   "answer": 1,
+   "explanation": "Build once, deploy many: the same JAR is promoted through environments, with configuration externalized and selected at deployment. Baking env values into artifacts undermines promotion integrity."
+  },
+  {
+   "id": "m2-032",
+   "section": "d2",
+   "q": "What does 'mvn clean package' produce for a Mule 4 project?",
+   "options": [
+    "A site report",
+    "The deployable application JAR under target/, after compiling and running tests",
+    "A Docker image",
+    "An Exchange asset"
+   ],
+   "answer": 1,
+   "explanation": "clean removes target/, then package compiles, runs the test phase (MUnit), and assembles the deployable mule-application JAR in target/."
+  },
+  {
+   "id": "m2-033",
+   "section": "d2",
+   "q": "Which statement about API fragments is correct?",
+   "options": [
+    "Fragments must be duplicated in every API spec",
+    "Reusable RAML/OAS pieces (data types, traits, examples) can be published to Exchange once and referenced as dependencies from multiple API specifications",
+    "Fragments are only usable in OAS 3",
+    "Fragments are Mule runtime plugins"
+   ],
+   "answer": 1,
+   "explanation": "API fragments are versioned Exchange assets. Specifications import them, so common types/traits evolve in one place and stay consistent across APIs."
+  },
+  {
+   "id": "m2-034",
+   "section": "d2",
+   "q": "Where should Anypoint Exchange repository credentials for Maven builds be stored?",
+   "options": [
+    "In the project's pom.xml committed to Git",
+    "In the Maven settings.xml (or injected by the CI system as secrets), never committed to source control",
+    "In mule-artifact.json",
+    "In a YAML property file inside the app"
+   ],
+   "answer": 1,
+   "explanation": "Repository credentials belong in settings.xml / CI secret stores. Committing credentials to the POM leaks them to anyone with repo access."
+  },
+  {
+   "id": "m2-035",
+   "section": "d2",
+   "q": "The groupId used when publishing an asset to Anypoint Exchange must be...",
+   "options": [
+    "com.mulesoft",
+    "the Anypoint organization ID (business group ID)",
+    "any unique string",
+    "the developer's username"
+   ],
+   "answer": 1,
+   "explanation": "Exchange maps Maven coordinates to your org: the groupId must be the organization/business group ID so the asset lands in the right Exchange catalog."
+  },
+  {
+   "id": "m2-036",
+   "section": "d2",
+   "q": "A breaking change forces a new major API version. What should happen to the existing v1 consumers?",
+   "options": [
+    "v1 is deleted immediately",
+    "v1 keeps running as its own API instance; v2 is released separately; v1 is deprecated with a communicated sunset period before removal",
+    "v1 consumers are auto-migrated to v2",
+    "v1 traffic is redirected to v2 silently"
+   ],
+   "answer": 1,
+   "explanation": "Major versions coexist as separate instances so consumers migrate on their own schedule. Deprecation in Exchange/API Manager plus clear communication precedes eventual retirement."
+  },
+  {
+   "id": "m2-037",
+   "section": "d3",
+   "q": "To expose an HTTPS endpoint, what must the HTTP Listener's TLS context contain at minimum?",
+   "options": [
+    "A truststore with the client's certificates",
+    "A keystore containing the server's private key and certificate",
+    "Both a keystore and a truststore",
+    "An OAuth client configuration"
+   ],
+   "answer": 1,
+   "explanation": "The server proves its identity with its keystore (private key + certificate). A truststore on the listener is only needed for two-way TLS, where the server also validates client certificates."
+  },
+  {
+   "id": "m2-038",
+   "section": "d3",
+   "q": "A Mule app calls an internal HTTPS service that uses a self-signed certificate, and the HTTP Request fails the TLS handshake. What is the correct fix?",
+   "options": [
+    "Disable TLS validation in production",
+    "Add the service's certificate to a truststore configured in the HTTP Request's TLS context",
+    "Add a keystore to the HTTP Request",
+    "Change the URL to http://"
+   ],
+   "answer": 1,
+   "explanation": "The client must trust the server's certificate. Since it isn't signed by a public CA, import it (or its CA) into a truststore referenced by the requester's TLS context. Disabling validation or dropping to HTTP sacrifices security."
+  },
+  {
+   "id": "m2-039",
+   "section": "d3",
+   "q": "What distinguishes two-way (mutual) TLS from one-way TLS?",
+   "options": [
+    "Two-way TLS encrypts in both directions; one-way only encrypts responses",
+    "In two-way TLS the client ALSO presents a certificate that the server validates against its truststore",
+    "Two-way TLS requires OAuth",
+    "One-way TLS does not use certificates"
+   ],
+   "answer": 1,
+   "explanation": "Both variants encrypt the channel in both directions. The difference is authentication: mutual TLS adds client certificate authentication — server configures a truststore and requires client auth; client configures a keystore."
+  },
+  {
+   "id": "m2-040",
+   "section": "d3",
+   "q": "How is an encrypted property referenced in a Mule configuration when using the Secure Configuration Properties module?",
+   "options": [
+    "${db.password}",
+    "${secure::db.password}",
+    "#[secure(db.password)]",
+    "${encrypted:db.password}"
+   ],
+   "answer": 1,
+   "explanation": "Secure properties use the secure:: prefix. The module decrypts them at runtime with the key supplied e.g. via -Dsecure.key, which must never be committed to source control."
+  },
+  {
+   "id": "m2-041",
+   "section": "d3",
+   "q": "Where should the encryption key for secure configuration properties be provided in production?",
+   "options": [
+    "Hardcoded in the YAML file next to the encrypted values",
+    "Committed in pom.xml",
+    "Supplied at deployment time (e.g. a runtime property like secure.key set as a hidden/protected property or injected by CI/CD)",
+    "Inside the DataWeave script that reads the property"
+   ],
+   "answer": 2,
+   "explanation": "The key must stay out of source control and out of the artifact. It is injected at deploy/run time — e.g. a protected property in Runtime Manager or a pipeline secret."
+  },
+  {
+   "id": "m2-042",
+   "section": "d3",
+   "q": "Which Mule module encrypts, decrypts, or signs message payloads (data at rest / end-to-end), as opposed to transport encryption?",
+   "options": [
+    "TLS module",
+    "Cryptography module (PGP, JCE, XML strategies)",
+    "Validation module",
+    "Secure Properties module"
+   ],
+   "answer": 1,
+   "explanation": "The Cryptography module operates on payloads inside flows — PGP/JCE/XML encryption and signing. TLS protects the transport; secure properties protect configuration values."
+  },
+  {
+   "id": "m2-043",
+   "section": "d3",
+   "q": "What is the main advantage of a JWT validation policy over an OAuth token introspection call for each request?",
+   "options": [
+    "JWTs never expire",
+    "The JWT's signature and claims can be verified locally (e.g. against a JWKS), avoiding a round trip to the authorization server per request",
+    "JWT validation does not require any configuration",
+    "JWTs are encrypted by default"
+   ],
+   "answer": 1,
+   "explanation": "Signed JWTs are self-contained: the gateway verifies signature, expiry, and claims locally using the issuer's keys, reducing latency and dependency on the auth server. Introspection requires a call per token check."
+  },
+  {
+   "id": "m2-044",
+   "section": "d3",
+   "q": "An API must ensure that only registered consumer applications can call it, identified per consumer for rate limiting. Which policy combination is the baseline?",
+   "options": [
+    "CORS only",
+    "Client ID enforcement (or OAuth), optionally with SLA-based rate limiting tiers",
+    "IP allowlist only",
+    "Header injection policy"
+   ],
+   "answer": 1,
+   "explanation": "Client ID enforcement (or OAuth 2.0 token enforcement) identifies the consumer application, enabling contracts and per-tier SLA rate limits. IP lists don't identify applications reliably."
+  },
+  {
+   "id": "m2-045",
+   "section": "d3",
+   "q": "Which tool creates and manages the keystores and truststores used in Mule TLS contexts?",
+   "options": [
+    "keytool (JKS/PKCS12 keystores)",
+    "mvn tls:generate",
+    "Anypoint CLI only",
+    "OpenSSH"
+   ],
+   "answer": 0,
+   "explanation": "The JDK keytool utility generates key pairs, imports certificates, and manages JKS/PKCS12 stores referenced by Mule TLS contexts. (OpenSSL is also common for cert generation/conversion.)"
+  },
+  {
+   "id": "m2-046",
+   "section": "d3",
+   "q": "In mule-artifact.json, what is the effect of listing a property name under 'secureProperties'?",
+   "options": [
+    "The property is encrypted automatically",
+    "Its value is masked/hidden in Runtime Manager and logs instead of being displayed in plain text",
+    "The property becomes read-only",
+    "The property is removed from the artifact"
+   ],
+   "answer": 1,
+   "explanation": "secureProperties marks properties as sensitive so platform UIs and APIs never display their values. Encryption of stored values is a separate concern (Secure Configuration Properties)."
+  },
+  {
+   "id": "m2-047",
+   "section": "d3",
+   "q": "A security review requires that credentials in property files be unreadable in Git AND that TLS be used to the database's REST gateway. Which pair of measures satisfies this?",
+   "options": [
+    "Base64-encode passwords and use HTTP",
+    "Encrypt property values with the Secure Configuration Properties module and configure a TLS context (truststore) on the outbound HTTP requester",
+    "Store passwords in flow variables and enable CORS",
+    "Use a custom header to carry the password"
+   ],
+   "answer": 1,
+   "explanation": "Base64 is encoding, not encryption. Proper controls: encrypted secure properties for data at rest in config, and TLS with certificate validation for data in transit."
+  },
+  {
+   "id": "m2-048",
+   "section": "d3",
+   "q": "Which statement correctly describes keystore vs truststore usage?",
+   "options": [
+    "Keystore: certificates you trust; truststore: your private keys",
+    "Keystore: your own identity (private key + certificate); truststore: certificates of parties you trust",
+    "They are interchangeable names for the same file",
+    "Truststores are only used on servers"
+   ],
+   "answer": 1,
+   "explanation": "Keystore = prove who YOU are. Truststore = decide who you BELIEVE. A file format (JKS/PKCS12) can serve either role; the role depends on how it is referenced in the TLS context."
+  },
+  {
+   "id": "m2-049",
+   "section": "d3",
+   "q": "The same API is deployed to dev and prod. Security requires different certificates and encryption keys per environment. What is the recommended setup?",
+   "options": [
+    "One shared certificate and key for simplicity",
+    "Environment-specific keystores/truststores and secure-property keys, referenced through externalized properties selected at deploy time",
+    "Certificates stored in Exchange",
+    "TLS only in production; HTTP in dev"
+   ],
+   "answer": 1,
+   "explanation": "Externalize keystore paths, passwords, and secure keys as (secure) properties per environment. Sharing prod secrets with dev violates least privilege; skipping TLS in dev hides configuration issues until production."
+  },
+  {
+   "id": "m2-050",
+   "section": "d3",
+   "q": "An OAuth 2.0 access token enforcement policy is applied to an API. What does a request need to succeed?",
+   "options": [
+    "A client_id query parameter only",
+    "A valid access token (e.g. Authorization: Bearer <token>) issued by the configured authorization provider, with any required scopes",
+    "A username and password in the body",
+    "An encrypted payload"
+   ],
+   "answer": 1,
+   "explanation": "The policy validates the presented access token against the configured provider (and optionally required scopes); requests without a valid token get 401/403."
+  },
+  {
+   "id": "m2-051",
+   "section": "d4",
+   "q": "Where is logging configured for an individual Mule 4 application?",
+   "options": [
+    "In mule-artifact.json",
+    "In src/main/resources/log4j2.xml",
+    "In the flow's XML attributes",
+    "In Runtime Manager only"
+   ],
+   "answer": 1,
+   "explanation": "Each app carries its own Log4j 2 configuration at src/main/resources/log4j2.xml — appenders, log levels per category, and patterns. (On CloudHub, using it fully may require enabling custom log4j.)"
+  },
+  {
+   "id": "m2-052",
+   "section": "d4",
+   "q": "What is the trade-off of asynchronous logging compared to synchronous logging?",
+   "options": [
+    "Async logging is slower but ordered",
+    "Async improves application throughput (logging doesn't block processing) but risks losing buffered entries on a crash and may interleave ordering",
+    "Async logging encrypts logs",
+    "There is no difference"
+   ],
+   "answer": 1,
+   "explanation": "Async appenders/loggers decouple I/O from event processing — better performance, but buffered messages can be lost if the JVM dies, and strict ordering guarantees weaken."
+  },
+  {
+   "id": "m2-053",
+   "section": "d4",
+   "q": "Why is the correlation ID essential in a distributed application network?",
+   "options": [
+    "It encrypts the message between apps",
+    "It is generated (or propagated via headers like X-Correlation-ID) and logged by every app, letting one business transaction be traced end-to-end across applications",
+    "It identifies the CloudHub worker region",
+    "It replaces authentication tokens"
+   ],
+   "answer": 1,
+   "explanation": "Each event carries a correlationId that propagates across HTTP calls between Mule apps and appears in default log patterns — search it in centralized logs to reconstruct the full journey of one transaction."
+  },
+  {
+   "id": "m2-054",
+   "section": "d4",
+   "q": "A team must be notified when an API's average response time exceeds 2 seconds or when a policy violation occurs. Where are such alerts configured?",
+   "options": [
+    "In the application's log4j2.xml",
+    "API alerts in API Manager (and/or metric alerts in Anypoint Monitoring)",
+    "In Exchange",
+    "In the RAML specification"
+   ],
+   "answer": 1,
+   "explanation": "API Manager provides API-level alerts (response time, policy violations, request counts, error codes). Anypoint Monitoring adds metric-threshold alerts and dashboards. log4j only writes logs."
+  },
+  {
+   "id": "m2-055",
+   "section": "d4",
+   "q": "Which Runtime Manager alert conditions are typical for operational monitoring of a CloudHub application?",
+   "options": [
+    "DataWeave syntax errors",
+    "Application down / worker not responding / deployment failed",
+    "RAML validation failures",
+    "Exchange asset downloads"
+   ],
+   "answer": 1,
+   "explanation": "Runtime Manager alerts cover infrastructure/application lifecycle events: app stopped or down, worker unresponsive, deployment success/failure, and custom application notifications."
+  },
+  {
+   "id": "m2-056",
+   "section": "d4",
+   "q": "What is the purpose of the Custom Business Event component?",
+   "options": [
+    "To raise Mule errors with custom types",
+    "To publish named business milestones with metadata (e.g. 'OrderPlaced', order ID) that are visible in Anypoint Monitoring for business-level tracking",
+    "To send emails to stakeholders",
+    "To create Exchange documentation"
+   ],
+   "answer": 1,
+   "explanation": "Custom Business Events add business KPIs to monitoring — tracking meaningful milestones and key/value metadata, distinct from technical logs and metrics."
+  },
+  {
+   "id": "m2-057",
+   "section": "d4",
+   "q": "Logs from all applications must be searchable in one place, including on CloudHub. Which approaches achieve centralized logging? (best answer)",
+   "options": [
+    "Read each worker's console individually",
+    "Use Anypoint Monitoring log management, or ship logs via custom Log4j appenders to an external system (ELK, Splunk)",
+    "Store logs in flow variables",
+    "Print logs to the payload"
+   ],
+   "answer": 1,
+   "explanation": "Centralize either inside the platform (Anypoint Monitoring / Titanium log search) or externally by adding appenders (HTTP, Socket, Splunk...) to each app's log4j2.xml."
+  },
+  {
+   "id": "m2-058",
+   "section": "d4",
+   "q": "A Logger component should write order IDs at a category 'com.acme.orders' shown at DEBUG only in dev. How is this achieved?",
+   "options": [
+    "It cannot be done in Mule 4",
+    "Set the Logger's category to com.acme.orders and configure that category's level (DEBUG in dev, INFO+ in prod) in log4j2.xml per environment",
+    "Use System.out.println in DataWeave",
+    "Change the root logger to TRACE everywhere"
+   ],
+   "answer": 1,
+   "explanation": "Custom categories on Logger components plus per-category levels in log4j2.xml give fine-grained control, keeping production logs quiet without touching flow logic."
+  },
+  {
+   "id": "m2-059",
+   "section": "d4",
+   "q": "What does API Functional Monitoring provide?",
+   "options": [
+    "Unit test coverage reports",
+    "Scheduled black-box tests that call API endpoints from various locations and validate responses, alerting on failures",
+    "Java profiler dumps",
+    "Automatic API documentation"
+   ],
+   "answer": 1,
+   "explanation": "Functional monitoring (Blackbox/BAT) exercises live endpoints on a schedule, asserting on status/behavior — catching outages and regressions from the consumer's perspective."
+  },
+  {
+   "id": "m2-060",
+   "section": "d4",
+   "q": "Which practice should be AVOIDED when logging in production integrations?",
+   "options": [
+    "Logging at flow boundaries with correlation IDs",
+    "Structured JSON log messages",
+    "Logging entire sensitive payloads (PII, credentials) at INFO level",
+    "Using log categories per functional area"
+   ],
+   "answer": 2,
+   "explanation": "Full payload logging leaks sensitive data and bloats storage. Log identifiers and context, mask sensitive fields, and reserve payload dumps for guarded DEBUG scenarios."
+  },
+  {
+   "id": "m2-061",
+   "section": "d5",
+   "q": "What are the three blocks of an MUnit test?",
+   "options": [
+    "Setup, Run, Report",
+    "Behavior (arrange/mocks), Execution (act), Validation (assert)",
+    "Given, Then, Finally",
+    "Mock, Spy, Verify"
+   ],
+   "answer": 1,
+   "explanation": "An MUnit test is structured as Behavior → Execution → Validation: prepare input and mocks, invoke the flow under test, then assert on the results."
+  },
+  {
+   "id": "m2-062",
+   "section": "d5",
+   "q": "A test must run a flow WITHOUT calling the real database. Which MUnit component replaces the Database Select operation with a canned response?",
+   "options": [
+    "Spy",
+    "Mock When",
+    "Assert That",
+    "Verify Call"
+   ],
+   "answer": 1,
+   "explanation": "Mock When matches a processor (by name/attributes) and returns the configured payload/attributes/error instead of executing it. Spy observes without replacing; Verify Call counts invocations."
+  },
+  {
+   "id": "m2-063",
+   "section": "d5",
+   "q": "What does the MUnit Spy processor do?",
+   "options": [
+    "Replaces a processor with a stub",
+    "Asserts on the Mule event immediately before and/or after a specific processor executes, without replacing it",
+    "Records test execution time",
+    "Captures HTTP traffic"
+   ],
+   "answer": 1,
+   "explanation": "Spy wraps a real processor with before-call and after-call assertions — the processor still executes normally."
+  },
+  {
+   "id": "m2-064",
+   "section": "d5",
+   "q": "How can a team enforce that builds fail when MUnit test coverage drops below 80%?",
+   "options": [
+    "Manual code review only",
+    "Configure the munit-maven-plugin coverage section with requiredApplicationCoverage 80 and failBuild true",
+    "Set a property in mule-artifact.json",
+    "Coverage cannot fail a build"
+   ],
+   "answer": 1,
+   "explanation": "The munit-maven-plugin computes coverage (application/resource/flow levels) and can fail the Maven build below thresholds — a standard CI quality gate."
+  },
+  {
+   "id": "m2-065",
+   "section": "d5",
+   "q": "Which MUnit assertion checks that the payload equals a specific value using MUnit matchers?",
+   "options": [
+    "<assert-true expression=\"payload\"/>",
+    "Assert That with expression #[payload] and 'is' #[MunitTools::equalTo('expected')]",
+    "Verify Call with times 1",
+    "Spy with a Logger"
+   ],
+   "answer": 1,
+   "explanation": "Assert That evaluates an expression against a matcher from MunitTools (equalTo, notNullValue, hasSize...). Verify Call and Spy serve different purposes."
+  },
+  {
+   "id": "m2-066",
+   "section": "d5",
+   "q": "A test suite needs test data loaded once before ALL tests and cleaned afterwards. Which MUnit scopes apply?",
+   "options": [
+    "Before Test / After Test",
+    "Before Suite / After Suite",
+    "Setup / Teardown flows in the main app",
+    "On Error Continue"
+   ],
+   "answer": 1,
+   "explanation": "Before/After Suite run once per suite; Before/After Test run around every individual test. Choose suite scopes for one-time setup."
+  },
+  {
+   "id": "m2-067",
+   "section": "d5",
+   "q": "How does an MUnit test simulate an error from a mocked connector operation (e.g. HTTP:CONNECTIVITY) to test error handling?",
+   "options": [
+    "It cannot; errors require real systems",
+    "Configure the Mock When to 'Then throw' an error with the desired typeId (e.g. HTTP:CONNECTIVITY)",
+    "Stop the network adapter during the test",
+    "Use Assert That with an error matcher only"
+   ],
+   "answer": 1,
+   "explanation": "Mock When can return an error instead of a payload, letting tests drive error handlers deterministically without real failures."
+  },
+  {
+   "id": "m2-068",
+   "section": "d5",
+   "q": "Each environment (dev, staging, prod) should enforce policies independently for the same API implementation. What is required in API Manager?",
+   "options": [
+    "One API instance shared by all environments",
+    "A separate API instance per environment, each with its own API ID paired to the deployed app via autodiscovery",
+    "Policies configured in the RAML",
+    "A CloudHub VPC"
+   ],
+   "answer": 1,
+   "explanation": "API instances are environment-scoped. The app's autodiscovery api id must match the instance of ITS environment — typically externalized as a property per environment."
+  },
+  {
+   "id": "m2-069",
+   "section": "d5",
+   "q": "What is the recommended way to make an API consumable and self-service for other teams once it is production-ready?",
+   "options": [
+    "Send the WSDL by email",
+    "Publish the spec to Exchange with documentation pages and examples, enable the mocking service, and require access requests (contracts) through Exchange",
+    "Give consumers the implementation source code",
+    "Share the raw CloudHub URL in a wiki"
+   ],
+   "answer": 1,
+   "explanation": "Exchange is the discovery and self-service surface: documentation, try-it console/mocking, and managed access requests tied to API Manager contracts and SLA tiers."
+  },
+  {
+   "id": "m2-070",
+   "section": "d5",
+   "q": "A CI/CD pipeline should promote the SAME tested artifact from staging to production. Which practices support this? (best answer)",
+   "options": [
+    "Rebuild the project from source for each environment",
+    "Build once, store the versioned artifact (repository/Exchange), deploy the identical JAR per environment with externalized configuration, and gate promotion on MUnit results",
+    "Deploy from developer laptops",
+    "Skip tests in production deployments to save time"
+   ],
+   "answer": 1,
+   "explanation": "Build-once/deploy-many guarantees what was tested is what ships. Configuration differences are supplied at deploy time; quality gates (tests, coverage) run before promotion."
+  },
+  {
+   "id": "m2-071",
+   "section": "d5",
+   "q": "Which statement about MUnit test placement and execution is correct?",
+   "options": [
+    "Tests live in src/main/mule and deploy with the app",
+    "Tests live in src/test/munit, run in the Maven test phase, and are NOT packaged into the deployable application",
+    "Tests must be written in Java",
+    "Tests run inside API Manager"
+   ],
+   "answer": 1,
+   "explanation": "MUnit suites are test resources: executed at build time (Studio or mvn test) and excluded from the production JAR."
+  },
+  {
+   "id": "m2-072",
+   "section": "d5",
+   "q": "An old API version must be phased out. Which sequence follows recommended practice?",
+   "options": [
+    "Delete the API instance immediately after v2 goes live",
+    "Mark the old version deprecated in Exchange/API Manager, block new access requests, notify existing consumers with a sunset date, then retire it after the window",
+    "Redirect old traffic to v2 silently",
+    "Remove its documentation but keep it running forever"
+   ],
+   "answer": 1,
+   "explanation": "Graceful deprecation: signal it (deprecated status), stop new adoption, give consumers a migration window with clear communication, and only then decommission."
+  }
+ ],
+ "sections": [
+  {
+   "id": "d1",
+   "title": "Building Performant and Reliable Mule Applications",
+   "weight": 27,
+   "topicDocs": {
+    "Streaming in Mule 4": "https://docs.mulesoft.com/mule-runtime/latest/streaming-about",
+    "Reliability patterns": "https://docs.mulesoft.com/mule-runtime/latest/reliability-patterns",
+    "Transactions": "https://docs.mulesoft.com/mule-runtime/latest/transaction-management",
+    "Performance and scaling": "https://docs.mulesoft.com/mule-runtime/latest/execution-engine"
+   },
+   "docs": [
+    {
+     "label": "Streaming in Mule 4",
+     "url": "https://docs.mulesoft.com/mule-runtime/latest/streaming-about"
+    },
+    {
+     "label": "Reliability patterns",
+     "url": "https://docs.mulesoft.com/mule-runtime/latest/reliability-patterns"
+    },
+    {
+     "label": "Transaction management",
+     "url": "https://docs.mulesoft.com/mule-runtime/latest/transaction-management"
+    },
+    {
+     "label": "Until Successful scope",
+     "url": "https://docs.mulesoft.com/mule-runtime/latest/until-successful-scope"
+    }
+   ],
+   "objectives": [
+    "Use streaming (repeatable and non-repeatable) to process large payloads",
+    "Tune streaming strategies: in-memory vs file-stored buffers",
+    "Implement reliability patterns: Until Successful, redelivery policies, dead-letter queues",
+    "Use VM queues and Anypoint MQ for asynchronous, reliable processing",
+    "Manage transactions (local and XA) and transactional scopes",
+    "Use the Cache scope and idempotency (Idempotent Message Validator)",
+    "Understand thread pools, back-pressure, and horizontal/vertical scaling",
+    "Design for high availability: clustering and multiple workers"
+   ],
+   "notes": "\n<h3>Streaming in Mule 4</h3>\n<p>Components that return <code>InputStream</code> or streamable collections (File, FTP, Database, HTTP, Sockets, Salesforce…) stream by default, and Mule wraps them in <strong>repeatable streams</strong> so multiple components can read the same content.</p>\n<table>\n<tr><th>Strategy</th><th>How it works</th><th>Defaults</th><th>Trade-offs</th></tr>\n<tr><td><strong>Repeatable file-stored</strong> (EE default)</td><td>Buffers in memory up to a threshold, then overflows to a temp file on disk</td><td>512 KB in-memory buffer (<code>inMemorySize</code>)</td><td>Handles any size; disk I/O cost beyond the buffer</td></tr>\n<tr><td><strong>Repeatable in-memory</strong> (CE default)</td><td>Buffers in memory, expanding as needed up to a max</td><td>initial 512 KB, +512 KB increments (<code>initialBufferSize</code>, <code>bufferSizeIncrement</code>, <code>maxInMemorySize</code>)</td><td>Fastest; raises <code>STREAM_MAXIMUM_SIZE_EXCEEDED</code> if max is hit</td></tr>\n<tr><td><strong>Non-repeatable</strong></td><td>No buffering — the raw stream, readable ONCE</td><td>—</td><td>Lowest memory/latency; a second read fails or gets an empty/consumed stream</td></tr>\n</table>\n<pre><code>&lt;file:read path=\"huge.csv\"&gt;\n  &lt;repeatable-file-store-stream inMemorySize=\"1\" bufferUnit=\"MB\"/&gt;\n&lt;/file:read&gt;\n\n&lt;http:request ...&gt;\n  &lt;non-repeatable-stream/&gt;   &lt;!-- read-once optimization --&gt;\n&lt;/http:request&gt;</code></pre>\n<ul>\n<li><strong>Streamed objects</strong> (auto-paging connectors like Database/Salesforce) buffer by <em>instance count</em>, not bytes: in-memory default <strong>500 objects</strong> (+100 increments); the EE file-store variant serializes overflow with Kryo.</li>\n<li><strong>DataWeave</strong>: reader property <code>streaming=true</code> processes input sequentially (CSV/JSON — access data in order, single pass); writer property <code>deferred=true</code> streams output downstream before the whole result is materialized.</li>\n<li>Gotchas: logging <code>#[payload]</code>, the debugger's payload preview, or multiple concurrent reads of a <em>non-repeatable</em> stream consume it. Repeatable streams solve this at the cost of buffering.</li>\n</ul>\n\n<h3>Reliability patterns</h3>\n<figure><img src=\"images/reliability-pattern.png\" alt=\"Reliable acquisition flow: receive message, add to VM queue, respond; application logic flow consumes from the queue transactionally\"><figcaption>The reliable acquisition pattern: accept + persist first, process asynchronously afterwards <em>(source: docs.mulesoft.com)</em></figcaption></figure>\n<ul>\n<li><strong>Reliable acquisition flow:</strong> couple a non-transactional source (HTTP) with a transactional/persistent channel: receive → <strong>write to a persistent VM queue</strong> (or JMS/Anypoint MQ) → acknowledge the caller. A separate <strong>application logic flow</strong> consumes from the queue with <code>transactionalAction=\"ALWAYS_BEGIN\"</code> — if processing fails, the message rolls back to the queue instead of being lost.</li>\n<li><strong>VM queues:</strong> intra-app (or intra-cluster) messaging. <code>queueType=\"PERSISTENT\"</code> survives restarts using file-based storage (standalone runtimes) — no extra software; in-memory (TRANSIENT) is faster but lost on crash. Publish with <code>sendCorrelationId=\"ALWAYS\"</code> to keep end-to-end tracing.</li>\n<li><strong>Until Successful:</strong> wraps processors and retries them until success, up to <code>maxRetries</code> with <code>millisBetweenRetries</code>; exhaustion raises <code>MULE:RETRY_EXHAUSTED</code>. For synchronous in-flow retries (flaky API call).</li>\n<li><strong>Reconnection strategies</strong> (on connector configs): retry the <em>connection</em> (count/frequency or forever) — distinct from retrying the operation.</li>\n<li><strong>Redelivery policy</strong> (on listeners): counts how many times the <em>same message</em> fails processing; exceeding <code>maxRedeliveryCount</code> raises <code>MULE:REDELIVERY_EXHAUSTED</code> — handle it by parking the message in a <strong>dead-letter queue (DLQ)</strong> for inspection/replay.</li>\n<li><strong>Anypoint MQ</strong> (hosted cloud messaging): standard queues, <strong>FIFO queues</strong> (ordering), <strong>message exchanges</strong> (fan-out pub/sub), ack modes (IMMEDIATE / AUTO / MANUAL), delivery-count-based <strong>DLQ routing</strong>, and a subscriber <strong>circuit breaker</strong>. Use it for cross-app messaging on CloudHub (VM queues don't cross apps).</li>\n<li>File-based sources: enable watermarking and avoid deleting/moving the file until downstream processing completes — the file itself is the reprocessing safety net.</li>\n</ul>\n\n<h3>Transactions</h3>\n<table>\n<tr><th></th><th>Single Resource (local)</th><th>XA (Extended Architecture)</th></tr>\n<tr><td>Scope</td><td>ONE resource: all operations from the same connector using the same global config</td><td>MULTIPLE resources as one atomic unit (e.g. JMS + Database)</td></tr>\n<tr><td>Protocol</td><td>Native resource transaction</td><td>Two-phase commit (transaction manager required)</td></tr>\n<tr><td>Performance</td><td>Fast</td><td>Slower, heavier</td></tr>\n<tr><td>Nesting</td><td>Not supported</td><td>Supported</td></tr>\n</table>\n<p><strong>Transactional actions</strong> (source or Try scope): <code>ALWAYS_BEGIN</code> (start new; error if nesting a single-resource tx), <code>ALWAYS_JOIN</code> (must join an existing tx, error if none), <code>BEGIN_OR_JOIN</code>, <code>JOIN_IF_POSSIBLE</code> (join if present), <code>NOT_SUPPORTED</code> (run outside the tx), <code>INDIFFERENT</code>/<code>NONE</code>.</p>\n<ul>\n<li>Only transactional connectors participate: <strong>JMS, VM, Database</strong> (and JDBC-based). HTTP, File, SFTP are NOT transactional.</li>\n<li>A <strong>Try scope</strong> starts a transaction inside a flow whose source is non-transactional (e.g. HTTP-triggered flow wrapping two DB writes).</li>\n<li><strong>Rollback semantics with error handlers:</strong> an error reaching an <strong>On Error Propagate</strong> that is at the level owning the transaction → <strong>rollback</strong>; handled by <strong>On Error Continue</strong> → the transaction stays alive and <strong>commits</strong> (the handler's processors even run inside it). Choosing Continue by accident can commit partial work — classic exam trap.</li>\n</ul>\n\n<h3>Performance and scaling</h3>\n<ul>\n<li>Mule 4 uses a single <strong>self-tuning thread pool (UBER)</strong> with automatic <strong>back-pressure</strong> — when the app can't keep up, sources are throttled (HTTP returns 503). You rarely size pools; you shape concurrency with <code>maxConcurrency</code> on flows and batch/parallel components.</li>\n<li><strong>Cache scope:</strong> stores the result of its inner processors in an Object Store keyed by a hash of the message (or a custom key). Serve repeated idempotent requests without recomputing; entries need repeatable/consumable payloads and a sensible TTL/invalidation strategy (Invalidate Cache / Invalidate Key operations).</li>\n<li><strong>Idempotent Message Validator:</strong> computes an ID (<code>idExpression</code>) per message, stores seen IDs in an Object Store, and raises <code>MULE:DUPLICATE_MESSAGE</code> for repeats — exactly-once protection at the entry point.</li>\n<li><strong>Scaling:</strong> vertical = larger workers (more vCores/memory per instance); horizontal = more workers/replicas with automatic load balancing (CloudHub) — also the availability play. Stateless apps scale horizontally best; shared state must live in external stores (Object Store v2, DB, MQ), never in memory.</li>\n<li><strong>Clustering</strong> (customer-hosted): nodes form one logical unit over a distributed in-memory grid — persistent object stores and VM queues are shared cluster-wide; <strong>scheduled/polling sources run on the primary node only</strong> by default to avoid duplicate triggering.</li>\n</ul>\n<p class=\"tip\"><strong>Exam tip:</strong> pick the right reliability tool: retry an operation now → Until Successful; survive app crash without losing accepted messages → persistent queue + transaction (reliable acquisition); stop poison messages → redelivery policy + DLQ; atomic write to two systems → XA. And know the streaming defaults (512 KB buffers, 500 objects).</p>"
+  },
+  {
+   "id": "d2",
+   "title": "Maintainable and Modular Mule Applications (Maven)",
+   "weight": 25,
+   "topicDocs": {
+    "POM anatomy of a Mule project": "https://docs.mulesoft.com/mule-runtime/latest/mmp-concept",
+    "Maven lifecycle (what runs when)": "https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html",
+    "Exchange as a Maven repository": "https://docs.mulesoft.com/exchange/to-publish-assets-maven",
+    "Reuse mechanisms — pick the right one": "https://docs.mulesoft.com/mule-runtime/latest/shared-resources",
+    "Versioning and configuration": "https://semver.org/"
+   },
+   "docs": [
+    {
+     "label": "Mule Maven plugin",
+     "url": "https://docs.mulesoft.com/mule-runtime/latest/mmp-concept"
+    },
+    {
+     "label": "Publish assets to Exchange with Maven",
+     "url": "https://docs.mulesoft.com/exchange/to-publish-assets-maven"
+    }
+   ],
+   "objectives": [
+    "Explain the Maven lifecycle and the POM structure of a Mule project",
+    "Use the mule-maven-plugin to package and deploy applications",
+    "Manage dependencies, including Mule plugins and shared Java libraries",
+    "Create and consume reusable connectors/modules from Exchange",
+    "Externalize common configuration with parent POMs and properties",
+    "Version assets meaningfully (semantic versioning) and publish to Exchange",
+    "Structure applications for reuse: domains, libraries, and API fragments"
+   ],
+   "notes": "\n<h3>POM anatomy of a Mule project</h3>\n<pre><code>&lt;project&gt;\n  &lt;groupId&gt;com.acme&lt;/groupId&gt;            &lt;!-- org id when publishing to Exchange --&gt;\n  &lt;artifactId&gt;orders-sapi&lt;/artifactId&gt;\n  &lt;version&gt;1.2.0&lt;/version&gt;\n  &lt;packaging&gt;mule-application&lt;/packaging&gt;\n\n  &lt;build&gt;&lt;plugins&gt;\n    &lt;plugin&gt;\n      &lt;groupId&gt;org.mule.tools.maven&lt;/groupId&gt;\n      &lt;artifactId&gt;mule-maven-plugin&lt;/artifactId&gt;\n      &lt;extensions&gt;true&lt;/extensions&gt;\n      &lt;configuration&gt;\n        &lt;sharedLibraries&gt;                 &lt;!-- expose a JAR to connectors --&gt;\n          &lt;sharedLibrary&gt;\n            &lt;groupId&gt;com.mysql&lt;/groupId&gt;&lt;artifactId&gt;mysql-connector-j&lt;/artifactId&gt;\n          &lt;/sharedLibrary&gt;\n        &lt;/sharedLibraries&gt;\n        &lt;cloudhub2Deployment&gt;\n          &lt;uri&gt;https://anypoint.mulesoft.com&lt;/uri&gt;\n          &lt;target&gt;Cloudhub-US-East-2&lt;/target&gt;\n          &lt;environment&gt;${env}&lt;/environment&gt;\n          &lt;connectedAppClientId&gt;${ca.id}&lt;/connectedAppClientId&gt;\n          &lt;connectedAppClientSecret&gt;${ca.secret}&lt;/connectedAppClientSecret&gt;\n          &lt;connectedAppGrantType&gt;client_credentials&lt;/connectedAppGrantType&gt;\n        &lt;/cloudhub2Deployment&gt;\n      &lt;/configuration&gt;\n    &lt;/plugin&gt;\n  &lt;/plugins&gt;&lt;/build&gt;\n\n  &lt;dependencies&gt;\n    &lt;dependency&gt;                          &lt;!-- a connector = mule-plugin --&gt;\n      &lt;groupId&gt;org.mule.connectors&lt;/groupId&gt;\n      &lt;artifactId&gt;mule-http-connector&lt;/artifactId&gt;\n      &lt;version&gt;1.9.x&lt;/version&gt;\n      &lt;classifier&gt;mule-plugin&lt;/classifier&gt;\n    &lt;/dependency&gt;\n  &lt;/dependencies&gt;\n&lt;/project&gt;</code></pre>\n<ul>\n<li><strong>Classifiers matter:</strong> <code>mule-plugin</code> marks Mule extensions/connectors; API specs from Exchange use <code>raml</code> / <code>oas</code> / <code>raml-fragment</code> classifiers; plain Java JARs have none.</li>\n<li><strong>Shared libraries:</strong> ordinary JAR dependencies are isolated from connectors by Mule's classloading. Drivers used BY a connector (JDBC driver, JMS client) must be listed under <code>sharedLibraries</code> or the connector can't see them — a frequent real-world and exam gotcha.</li>\n</ul>\n\n<h3>Maven lifecycle (what runs when)</h3>\n<table>\n<tr><th>Phase</th><th>Mule project effect</th></tr>\n<tr><td><code>clean</code></td><td>Delete <code>target/</code></td></tr>\n<tr><td><code>compile</code></td><td>Compile/validate app resources</td></tr>\n<tr><td><code>test</code></td><td><strong>Run MUnit suites</strong> (munit-maven-plugin), compute coverage</td></tr>\n<tr><td><code>package</code></td><td>Build the deployable JAR in <code>target/</code></td></tr>\n<tr><td><code>install</code></td><td>Copy artifact to the local repository (~/.m2)</td></tr>\n<tr><td><code>deploy</code></td><td>Publish to a remote repository (Exchange) — and with <code>-DmuleDeploy</code>, the mule-maven-plugin <strong>deploys the app</strong> to the configured target instead</td></tr>\n</table>\n<p>Deployment targets supported by the plugin: <code>cloudHubDeployment</code> (CH 1.0), <code>cloudhub2Deployment</code>, <code>rtfDeployment</code> (Runtime Fabric), <code>armDeployment</code> (customer-hosted via Runtime Manager agent), <code>standaloneDeployment</code>. Credentials should be a <strong>Connected App</strong> (client_credentials grant, minimal scopes) — never personal accounts in CI.</p>\n\n<h3>Exchange as a Maven repository</h3>\n<ul>\n<li><strong>Consume:</strong> add the Exchange repo URL to the POM/settings and credentials to <code>settings.xml</code> (<code>&lt;server&gt;</code> with connected app or username/token). Exchange assets then resolve like any dependency.</li>\n<li><strong>Publish:</strong> set <code>groupId = your Anypoint organization ID</code>, add Exchange as <code>distributionManagement</code>, run <code>mvn deploy</code>. Works for applications (templates/examples), custom connectors, API specs, and fragments.</li>\n</ul>\n\n<h3>Reuse mechanisms — pick the right one</h3>\n<table>\n<tr><th>Need</th><th>Mechanism</th></tr>\n<tr><td>Same build config/plugin versions everywhere</td><td><strong>Parent POM</strong> (published to Exchange/repo; children use <code>&lt;parent&gt;</code>)</td></tr>\n<tr><td>Shared Java utilities</td><td>Plain JAR dependency (+ sharedLibraries if connectors need it)</td></tr>\n<tr><td>Reusable flows/operations with versioning</td><td>Custom <strong>Mule plugin</strong> / connector (Mule SDK or packaged module) on Exchange</td></tr>\n<tr><td>Shared connector configs on one runtime</td><td><strong>Domain project</strong> (customer-hosted only)</td></tr>\n<tr><td>Shared API types/traits/examples</td><td><strong>API fragments</strong> on Exchange, imported by specs</td></tr>\n<tr><td>Shared DataWeave functions</td><td>DW library module (.dwl) packaged and published as a dependency</td></tr>\n</table>\n\n<h3>Versioning and configuration</h3>\n<ul>\n<li><strong>Semantic versioning</strong> MAJOR.MINOR.PATCH: breaking change → MAJOR (new API instance/URL, e.g. <code>/v2</code>); backwards-compatible feature → MINOR; fix → PATCH. Adding an optional field is minor; removing/renaming/retyping is major.</li>\n<li><strong>Build once, deploy many:</strong> one artifact promoted through dev→test→prod. Environment differences via <code>${env}.yaml</code> property files + deploy-time properties; secrets encrypted (secure properties) or injected by the pipeline; <code>mule-artifact.json</code>'s <code>secureProperties</code> list masks values in Runtime Manager.</li>\n<li><code>mule-artifact.json</code> also pins <code>minMuleVersion</code> — deployment to an older runtime fails fast.</li>\n</ul>\n<p class=\"tip\"><strong>Exam tip:</strong> memorize the lifecycle order and what <code>mvn deploy -DmuleDeploy</code> does vs plain <code>mvn deploy</code> (app deployment vs repository publish). Know why a JDBC driver goes in <code>sharedLibraries</code>, and that Exchange's groupId = organization ID.</p>"
+  },
+  {
+   "id": "d3",
+   "title": "Securing Data",
+   "weight": 20,
+   "topicDocs": {
+    "TLS building blocks": "https://docs.mulesoft.com/mule-runtime/latest/tls-configuration",
+    "Secure configuration properties": "https://docs.mulesoft.com/mule-runtime/latest/secure-configuration-properties",
+    "Payload-level cryptography": "https://docs.mulesoft.com/mule-runtime/latest/cryptography",
+    "API security policies (API Manager)": "https://docs.mulesoft.com/mule-gateway/policies-included-directory"
+   },
+   "docs": [
+    {
+     "label": "TLS configuration",
+     "url": "https://docs.mulesoft.com/mule-runtime/latest/tls-configuration"
+    },
+    {
+     "label": "Secure configuration properties",
+     "url": "https://docs.mulesoft.com/mule-runtime/latest/secure-configuration-properties"
+    },
+    {
+     "label": "Cryptography module",
+     "url": "https://docs.mulesoft.com/mule-runtime/latest/cryptography"
+    },
+    {
+     "label": "Included policies directory",
+     "url": "https://docs.mulesoft.com/mule-gateway/policies-included-directory"
+    }
+   ],
+   "objectives": [
+    "Configure one-way and two-way (mutual) TLS on HTTP listeners and requesters",
+    "Create and use keystores and truststores",
+    "Encrypt property files with the Mule Secure Configuration Properties module",
+    "Use the Cryptography module to encrypt/decrypt and sign payloads",
+    "Apply security-related API policies (OAuth 2.0, JWT validation, client ID enforcement)",
+    "Protect sensitive data in transit and at rest across environments"
+   ],
+   "notes": "\n<h3>TLS building blocks</h3>\n<ul>\n<li>A <strong>TLS Context</strong> (<code>tls:context</code>) is a reusable global element referenced by TLS-capable connectors (HTTP, FTPS, Email, Sockets…). It can hold a <strong>keystore</strong> (<code>tls:key-store</code>) and/or a <strong>truststore</strong> (<code>tls:trust-store</code>).</li>\n<li><strong>Keystore = your identity</strong>: private key + certificate. Two passwords: the store's and the key's (<code>keyPassword</code>). <strong>Truststore = who you believe</strong>: public certificates of trusted parties/CAs. By default Mule trusts the JRE's CA truststore, so public-CA certificates need no custom truststore.</li>\n<li>Formats: <strong>JKS</strong> (default), <strong>PKCS12</strong>, JCEKS — created and managed with <code>keytool</code> (match the JDK version the runtime uses).</li>\n</ul>\n<svg viewBox=\"0 0 640 240\" style=\"max-width:640px;width:100%\" role=\"img\" aria-label=\"One-way vs two-way TLS\">\n  <style>.t-b{fill:none;stroke:currentColor;stroke-width:1.5}.t-t{font:600 13px sans-serif;fill:currentColor}.t-s{font:11.5px sans-serif;fill:currentColor;opacity:.75}.t-a{stroke:currentColor;stroke-width:1.2;marker-end:url(#tArr)}</style>\n  <defs><marker id=\"tArr\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L6,3 L0,6 z\" fill=\"currentColor\"/></marker></defs>\n  <text x=\"10\" y=\"24\" class=\"t-t\">One-way TLS</text>\n  <rect x=\"10\" y=\"36\" width=\"180\" height=\"60\" rx=\"8\" class=\"t-b\"/><text x=\"24\" y=\"60\" class=\"t-t\">Client</text><text x=\"24\" y=\"80\" class=\"t-s\">truststore (validate server)</text>\n  <rect x=\"450\" y=\"36\" width=\"180\" height=\"60\" rx=\"8\" class=\"t-b\"/><text x=\"464\" y=\"60\" class=\"t-t\">Server</text><text x=\"464\" y=\"80\" class=\"t-s\">keystore (prove identity)</text>\n  <line x1=\"192\" y1=\"58\" x2=\"446\" y2=\"58\" class=\"t-a\"/><text x=\"240\" y=\"50\" class=\"t-s\">server presents certificate</text>\n  <text x=\"10\" y=\"144\" class=\"t-t\">Two-way (mutual) TLS</text>\n  <rect x=\"10\" y=\"156\" width=\"180\" height=\"70\" rx=\"8\" class=\"t-b\"/><text x=\"24\" y=\"180\" class=\"t-t\">Client</text><text x=\"24\" y=\"198\" class=\"t-s\">truststore + keystore</text>\n  <rect x=\"450\" y=\"156\" width=\"180\" height=\"70\" rx=\"8\" class=\"t-b\"/><text x=\"464\" y=\"180\" class=\"t-t\">Server</text><text x=\"464\" y=\"198\" class=\"t-s\">keystore + truststore</text>\n  <line x1=\"192\" y1=\"176\" x2=\"446\" y2=\"176\" class=\"t-a\"/><text x=\"240\" y=\"168\" class=\"t-s\">server certificate →</text>\n  <line x1=\"446\" y1=\"206\" x2=\"192\" y2=\"206\" class=\"t-a\"/><text x=\"240\" y=\"222\" class=\"t-s\">← client certificate</text>\n</svg>\n<table>\n<tr><th>Scenario</th><th>Listener (server) needs</th><th>Requester (client) needs</th></tr>\n<tr><td>Expose HTTPS (one-way)</td><td>Keystore</td><td>Truststore only if the cert isn't publicly trusted</td></tr>\n<tr><td>Call HTTPS with private/self-signed cert</td><td>—</td><td>Truststore with that cert/CA</td></tr>\n<tr><td>Mutual TLS</td><td>Keystore + truststore, client auth required</td><td>Keystore + truststore</td></tr>\n</table>\n<ul>\n<li><code>insecure=\"true\"</code> on a truststore disables validation — <strong>prototyping only, never production</strong>.</li>\n<li>Protocols/ciphers restricted at two levels: runtime (<code>tls-default.conf</code> in <code>$MULE_HOME/conf</code>, or FIPS mode with <code>tls-fips140-2.conf</code>) and app (<code>enabledProtocols</code>, <code>enabledCipherSuites</code>) — a protocol must be enabled in <em>both</em> to be used.</li>\n</ul>\n\n<h3>Secure configuration properties</h3>\n<ol>\n<li>Encrypt values with the <strong>Secure Properties Tool</strong> JAR: <code>java -cp secure-properties-tool.jar com.mulesoft.tools.SecurePropertiesTool string encrypt AES CBC myKey \"myPassword\"</code>. Methods: <code>string</code> (one value), <code>file</code> (each value in a file), <code>file-level</code> (the whole file). Algorithms: AES (typical), Blowfish, DES(ede)…; modes: <strong>CBC (default)</strong>, CFB, ECB, OFB.</li>\n<li>Put the result in the properties file wrapped as <code>![encryptedValue]</code> — no spaces/characters after the bracket (trailing spaces break decryption):\n<pre><code>db:\n  password: \"![kD8s2n...==]\"</code></pre></li>\n<li>Add a <strong>Secure Properties Config</strong> global element (Mule Secure Configuration Properties module): file, key <code>${secure.key}</code>, algorithm/mode matching the encryption.</li>\n<li>Reference with the <strong>mandatory <code>secure::</code> prefix</strong> — for every property in a secure file, even unencrypted ones: <code>${secure::db.password}</code>.</li>\n<li>Pass the key at deploy time, never in code: <code>-Dsecure.key=myKey</code> / a <em>hidden</em> Runtime Manager property / CI-injected secret.</li>\n</ol>\n<p><code>mule-artifact.json</code>'s <code>secureProperties</code> array additionally <strong>masks</strong> named properties in Runtime Manager UIs/APIs (masking ≠ encryption — you typically want both).</p>\n\n<h3>Payload-level cryptography</h3>\n<p>The <strong>Cryptography module</strong> protects data at rest / end-to-end (beyond transport TLS): <strong>PGP</strong> (encrypt/decrypt/sign/verify with key rings), <strong>JCE</strong> (symmetric/asymmetric Java crypto), <strong>XML</strong> (XML encryption/signature). Use when files or messages must remain encrypted wherever they land (e.g. PGP-encrypt a file before SFTP upload).</p>\n\n<h3>API security policies (API Manager)</h3>\n<table>\n<tr><th>Policy</th><th>What it validates</th><th>Notes</th></tr>\n<tr><td>Client ID enforcement</td><td>client_id/client_secret of a registered, contracted consumer</td><td>Identity of the <em>application</em>; enables SLA tiers</td></tr>\n<tr><td>OAuth 2.0 access token enforcement</td><td>Bearer token against the authorization server (introspection)</td><td>Supports scopes; needs the provider configured</td></tr>\n<tr><td>JWT validation</td><td>Signed JWT locally: signature (JWKS or shared secret), expiry, audience/claims</td><td>No per-request round trip to the provider — lower latency</td></tr>\n<tr><td>Basic authentication</td><td>Username/password (simple/LDAP)</td><td>Legacy/internal use</td></tr>\n<tr><td>IP allowlist / blocklist</td><td>Source IP</td><td>Network-level complement, not identity</td></tr>\n</table>\n<p><strong>Defense in depth:</strong> TLS for transport → gateway policies for authN/authZ and abuse control → secure properties for configuration secrets → cryptography for payloads → per-environment keys/certs (never share prod secrets with dev). HTTPS should also protect the connection between a proxy/gateway and the backend (\"last mile\").</p>\n<p class=\"tip\"><strong>Exam tip:</strong> map the failure to the missing piece — handshake fails calling a self-signed service → client truststore; server must identify callers by certificate → mutual TLS (server adds truststore + requires client auth); \"decryption fails\" with correct key → check <code>![...]</code> wrapping/trailing spaces and algorithm/mode match; property readable in RM UI → add to <code>secureProperties</code>.</p>"
+  },
+  {
+   "id": "d4",
+   "title": "Building Monitorable Mule Applications",
+   "weight": 15,
+   "topicDocs": {
+    "Log4j 2 configuration": "https://docs.mulesoft.com/mule-runtime/latest/logging-in-mule",
+    "Correlation and structure": "https://docs.mulesoft.com/mule-runtime/latest/correlation-id",
+    "Anypoint Monitoring": "https://docs.mulesoft.com/monitoring/",
+    "Alerts in Runtime Manager vs API Manager": "https://docs.mulesoft.com/runtime-manager/alerts-on-runtime-manager",
+    "Business-level tracking": "https://docs.mulesoft.com/mule-runtime/latest/business-events"
+   },
+   "docs": [
+    {
+     "label": "Logging in Mule (Log4j 2)",
+     "url": "https://docs.mulesoft.com/mule-runtime/latest/logging-in-mule"
+    },
+    {
+     "label": "Anypoint Monitoring",
+     "url": "https://docs.mulesoft.com/monitoring/"
+    },
+    {
+     "label": "Runtime Manager alerts",
+     "url": "https://docs.mulesoft.com/runtime-manager/alerts-on-runtime-manager"
+    }
+   ],
+   "objectives": [
+    "Configure application logging with Log4j 2 (levels, categories, appenders, async logging)",
+    "Write effective, structured log messages with correlation IDs",
+    "Use Anypoint Monitoring: built-in and custom dashboards, log search, alerts",
+    "Create alerts in Runtime Manager and API Manager (e.g. response time, policy violations)",
+    "Track business events and use the Custom Business Event component",
+    "Expose application health for external monitoring"
+   ],
+   "notes": "\n<h3>Log4j 2 configuration</h3>\n<p>Each app owns <code>src/main/resources/log4j2.xml</code>: <strong>appenders</strong> (where logs go) and <strong>loggers</strong> (which categories log at which level).</p>\n<pre><code>&lt;Configuration&gt;\n  &lt;Appenders&gt;\n    &lt;RollingFile name=\"file\" fileName=\"${sys:mule.home}/logs/orders-api.log\" ...&gt;\n      &lt;PatternLayout pattern=\"%d [%t] %-5p %c - %m%n\"/&gt;\n    &lt;/RollingFile&gt;\n    &lt;!-- ship to an external system: Http, Socket, or a Splunk/ELK appender --&gt;\n  &lt;/Appenders&gt;\n  &lt;Loggers&gt;\n    &lt;AsyncLogger name=\"com.acme.orders\" level=\"DEBUG\"/&gt;   &lt;!-- your categories --&gt;\n    &lt;AsyncLogger name=\"org.mule.runtime.core.internal.processor.LoggerMessageProcessor\"\n                 level=\"INFO\"/&gt;                            &lt;!-- Logger component output --&gt;\n    &lt;AsyncRoot level=\"INFO\"&gt;&lt;AppenderRef ref=\"file\"/&gt;&lt;/AsyncRoot&gt;\n  &lt;/Loggers&gt;\n&lt;/Configuration&gt;</code></pre>\n<ul>\n<li><strong>Levels</strong>: ERROR &gt; WARN &gt; INFO &gt; DEBUG &gt; TRACE — a category set to INFO suppresses its DEBUG/TRACE. Tune noisy third-party categories down, your own up, without touching flows.</li>\n<li><strong>Sync vs async</strong>: async loggers/appenders don't block event processing → higher throughput, but buffered entries can be lost on a crash and strict ordering weakens. Synchronous logging is the safe-but-slower choice for audit-critical logs.</li>\n<li><strong>Logger component</strong>: message (DataWeave), level, and <strong>category</strong> (e.g. <code>com.acme.orders.payment</code>) — always set meaningful categories so operators can filter/level them per environment.</li>\n<li><strong>CloudHub:</strong> the platform captures stdout logs with retention limits; to use custom appenders/external log systems, <em>disable CloudHub logs</em> for the app (checkbox in Runtime Manager, subject to org permissions) and ship via your appender. On CloudHub 2.0/RTF, sidecars/log forwarding fill this role.</li>\n</ul>\n\n<h3>Correlation and structure</h3>\n<ul>\n<li>Every event has a <strong>correlationId</strong>, printed by default log patterns. It <strong>propagates across apps</strong> via the <code>X-Correlation-ID</code> HTTP header (HTTP connector sends/reads it automatically) — search it in centralized logs to trace one business transaction end-to-end through the application network.</li>\n<li>Prefer <strong>structured (JSON) log messages</strong> with stable fields (event, orderId, status) — machines parse them, dashboards aggregate them. Log at boundaries: received / calling X / completed / failed. <strong>Never log credentials or full sensitive payloads</strong>; mask PII.</li>\n</ul>\n\n<h3>Anypoint Monitoring</h3>\n<table>\n<tr><th>Capability</th><th>What you get</th></tr>\n<tr><td>Built-in dashboards</td><td>Per-app metrics out of the box: request volume, response times, error rates, CPU/memory, connector performance</td></tr>\n<tr><td>Custom dashboards</td><td>Compose charts over any collected metrics (per app, API, or business metric)</td></tr>\n<tr><td>Log management</td><td>Centralized log search across apps; longer retention and advanced features with the <strong>Titanium</strong> subscription</td></tr>\n<tr><td>Alerts</td><td>Threshold alerts on metrics (e.g. avg response time &gt; 2s for 5 min, error ratio &gt; 5%)</td></tr>\n<tr><td>Functional monitoring (BAT)</td><td>Scheduled <em>black-box tests</em> that call endpoints (from public/private locations) and assert on responses — uptime and behavior from the consumer's perspective</td></tr>\n</table>\n<p><strong>Anypoint Visualizer</strong> renders the real application network graph (who calls whom) from traffic data — useful for impact analysis and architecture reviews.</p>\n\n<h3>Alerts in Runtime Manager vs API Manager</h3>\n<table>\n<tr><th>Runtime Manager (operational)</th><th>API Manager (API-level)</th></tr>\n<tr><td>Application down / not responding</td><td>Policy violation (e.g. rate-limit exceeded)</td></tr>\n<tr><td>Worker not responding / restarted</td><td>Request count threshold</td></tr>\n<tr><td>Deployment success/failure</td><td>Response time threshold</td></tr>\n<tr><td>Custom application notifications</td><td>Response codes (4xx/5xx ratios)</td></tr>\n</table>\n<p>Alert channels: email to platform users/arbitrary addresses; alerts have severity and can be scoped per app/API instance and environment.</p>\n\n<h3>Business-level tracking</h3>\n<ul>\n<li><strong>Custom Business Event</strong> component: publishes a named milestone (e.g. \"OrderPlaced\") with key/value metadata (order id, amount) — visible in monitoring/analytics, independent of technical logs. Default flow/event tracking can also be enabled per flow (\"transaction id\" for business correlation).</li>\n<li>Health for external monitors: expose a lightweight <code>/health</code> (or use API Functional Monitoring) returning dependency status — load balancers and uptime checks probe it.</li>\n</ul>\n<p class=\"tip\"><strong>Exam tip:</strong> know WHERE each thing is configured — app logging: log4j2.xml; app down alert: Runtime Manager; policy-violation alert: API Manager; cross-app log search: Anypoint Monitoring (Titanium for long retention); tracing one transaction across apps: correlation ID via X-Correlation-ID.</p>"
+  },
+  {
+   "id": "d5",
+   "title": "Production-Ready APIs and Automated Testing",
+   "weight": 13,
+   "topicDocs": {
+    "MUnit test structure": "https://docs.mulesoft.com/munit/latest/munit-test-concept",
+    "Coverage and the Maven build": "https://docs.mulesoft.com/munit/latest/coverage-maven-concept",
+    "Production readiness checklist": "https://docs.mulesoft.com/api-manager/latest/latest-overview-concept",
+    "Versioning and deprecation": "https://semver.org/"
+   },
+   "docs": [
+    {
+     "label": "MUnit",
+     "url": "https://docs.mulesoft.com/munit/latest/"
+    },
+    {
+     "label": "MUnit coverage (Maven)",
+     "url": "https://docs.mulesoft.com/munit/latest/coverage-maven-concept"
+    },
+    {
+     "label": "Anypoint Exchange",
+     "url": "https://docs.mulesoft.com/exchange/"
+    }
+   ],
+   "objectives": [
+    "Test applications with MUnit: test suites, asserts, mocks, spies",
+    "Set MUnit coverage requirements and run tests in a Maven build",
+    "Prepare APIs for production: autodiscovery, policies, contracts",
+    "Implement API versioning and deprecation strategies",
+    "Integrate builds and deployments into CI/CD pipelines",
+    "Govern APIs with Exchange documentation and API instances per environment"
+   ],
+   "notes": "\n<h3>MUnit test structure</h3>\n<p>Suites are XML files in <code>src/test/munit</code>; each test has three blocks — <strong>Behavior</strong> (arrange), <strong>Execution</strong> (act), <strong>Validation</strong> (assert):</p>\n<pre><code>&lt;munit:test name=\"getFlights-returns-200\"&gt;\n  &lt;munit:behavior&gt;\n    &lt;munit-tools:mock-when processor=\"db:select\"&gt;\n      &lt;munit-tools:with-attributes&gt;\n        &lt;munit-tools:with-attribute attributeName=\"doc:name\" whereValue=\"Select flights\"/&gt;\n      &lt;/munit-tools:with-attributes&gt;\n      &lt;munit-tools:then-return&gt;\n        &lt;munit-tools:payload value='#[[{\"code\":\"ER38sd\"},{\"code\":\"ER45if\"}]]'/&gt;\n      &lt;/munit-tools:then-return&gt;\n    &lt;/munit-tools:mock-when&gt;\n  &lt;/munit:behavior&gt;\n  &lt;munit:execution&gt;\n    &lt;flow-ref name=\"getFlightsFlow\"/&gt;\n  &lt;/munit:execution&gt;\n  &lt;munit:validation&gt;\n    &lt;munit-tools:assert-that expression=\"#[sizeOf(payload)]\"\n        is=\"#[MunitTools::equalTo(2)]\"/&gt;\n  &lt;/munit:validation&gt;\n&lt;/munit:test&gt;</code></pre>\n<table>\n<tr><th>Component</th><th>Purpose</th></tr>\n<tr><td><strong>Mock When</strong></td><td>Replace a processor (matched by name + attributes like <code>doc:name</code>) with a canned payload/attributes/variables — or <strong>Then throw</strong> an error (typeId e.g. <code>HTTP:CONNECTIVITY</code>) to drive error handlers deterministically</td></tr>\n<tr><td><strong>Spy</strong></td><td>Assert on the event <em>before</em> and/or <em>after</em> a real processor runs, without replacing it</td></tr>\n<tr><td><strong>Verify Call</strong></td><td>Assert a processor was invoked N times / at least / at most</td></tr>\n<tr><td><strong>Assert That / Assert Equals / Fail</strong></td><td>Assertions with <code>MunitTools</code> matchers: <code>equalTo</code>, <code>notNullValue</code>, <code>hasSize</code>, <code>containsString</code>, <code>hasKey</code>…</td></tr>\n<tr><td><strong>Before/After Suite &amp; Before/After Test</strong></td><td>One-time vs per-test setup/teardown</td></tr>\n<tr><td><strong>Set Event</strong></td><td>Build the input event (payload, attributes, vars) for the flow under test</td></tr>\n</table>\n<ul>\n<li>Testing an HTTP-triggered flow: either flow-ref the flow directly with a Set Event that mimics listener attributes, or <em>enable flow sources</em> and call the real endpoint with an HTTP Request inside the test.</li>\n<li>Tests can be tagged, ignored, or <strong>parameterized</strong> (run the same suite over multiple input files).</li>\n</ul>\n\n<h3>Coverage and the Maven build</h3>\n<pre><code>&lt;plugin&gt;\n  &lt;groupId&gt;com.mulesoft.munit.tools&lt;/groupId&gt;\n  &lt;artifactId&gt;munit-maven-plugin&lt;/artifactId&gt;\n  &lt;configuration&gt;\n    &lt;coverage&gt;\n      &lt;runCoverage&gt;true&lt;/runCoverage&gt;\n      &lt;failBuild&gt;true&lt;/failBuild&gt;\n      &lt;requiredApplicationCoverage&gt;80&lt;/requiredApplicationCoverage&gt;\n      &lt;requiredResourceCoverage&gt;70&lt;/requiredResourceCoverage&gt;\n      &lt;requiredFlowCoverage&gt;60&lt;/requiredFlowCoverage&gt;\n      &lt;formats&gt;&lt;format&gt;html&lt;/format&gt;&lt;format&gt;json&lt;/format&gt;&lt;/formats&gt;\n    &lt;/coverage&gt;\n  &lt;/configuration&gt;\n&lt;/plugin&gt;</code></pre>\n<ul>\n<li>MUnit runs in the <strong>test</strong> phase (<code>mvn test</code>); coverage thresholds at application/resource/flow level can <strong>fail the build</strong> — the standard CI quality gate. Tests are excluded from the deployable JAR.</li>\n<li>Typical pipeline: commit → <code>mvn clean package</code> (compiles + MUnit + coverage) → publish artifact/spec to Exchange → <code>mvn deploy -DmuleDeploy</code> per environment with injected properties/secrets → smoke/functional tests → promote. Same artifact every stage; Connected App credentials; secure keys from the secret store.</li>\n</ul>\n\n<h3>Production readiness checklist</h3>\n<ul>\n<li><strong>One API instance per environment</strong> in API Manager; the app pairs via <strong>autodiscovery</strong> with an environment-specific <code>api.id</code> property. Policies/SLAs configured per instance.</li>\n<li>Baseline policies: an identity policy (client ID enforcement / OAuth / JWT) + rate limiting or spike control; TLS on all endpoints; secure properties for secrets.</li>\n<li><strong>Exchange documentation</strong>: portal pages, examples, terms; enable the mocking service for evaluation; consumers self-serve access via contracts and SLA tiers.</li>\n<li>Operational: alerts (RM + API Manager), dashboards, correlation-friendly logging, health endpoint, scaling plan (workers/replicas), and MUnit coverage gate in CI.</li>\n</ul>\n\n<h3>Versioning and deprecation</h3>\n<ul>\n<li>Only <strong>MAJOR</strong> versions surface to consumers (URL segment <code>/v2</code> or new instance); MINOR/PATCH stay backwards-compatible. Additive changes (new optional field/resource) must not break clients; contract-breaking changes require a new major version.</li>\n<li><strong>Deprecation flow:</strong> release v2 alongside v1 → mark v1 <em>deprecated</em> in Exchange/API Manager (blocks/flags new access requests, signals consumers) → notify contract holders with a sunset date → monitor v1 traffic → retire after the window. Never silently redirect or delete while contracts are active.</li>\n</ul>\n<p class=\"tip\"><strong>Exam tip:</strong> Mock When vs Spy vs Verify is the most-tested MUnit distinction: replace = Mock, observe without replacing = Spy, count calls = Verify. Also memorize the coverage config knobs (<code>failBuild</code>, <code>requiredApplicationCoverage</code>) and that MUnit binds to the Maven <em>test</em> phase.</p>"
+  }
+ ]
+}

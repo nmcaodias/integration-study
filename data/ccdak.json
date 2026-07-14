@@ -1,0 +1,953 @@
+{
+ "id": "ccdak",
+ "name": "Confluent Certified Developer for Apache Kafka",
+ "short": "CCDAK",
+ "exam": {
+  "questions": 60,
+  "minutes": 90,
+  "passPct": 70
+ },
+ "questions": [
+  {
+   "id": "kk-001",
+   "section": "k1",
+   "q": "A topic has 6 partitions. Which ordering guarantee does Kafka provide for its records?",
+   "options": [
+    "Total order across the whole topic",
+    "Order is guaranteed only within each partition",
+    "Order is guaranteed per broker",
+    "No ordering guarantees at all"
+   ],
+   "answer": 1,
+   "explanation": "Each partition is an ordered append-only log, but there is no coordination of order ACROSS partitions. Records that must be ordered relative to each other must share a partition — which is why they are given the same key."
+  },
+  {
+   "id": "kk-002",
+   "section": "k1",
+   "q": "All events for a given customer must be processed in order. How is this achieved when producing?",
+   "options": [
+    "Set acks=all",
+    "Use the customer ID as the message key so all of a customer's events hash to the same partition",
+    "Use a single-partition topic for all customers",
+    "Enable compression"
+   ],
+   "answer": 1,
+   "explanation": "Keyed records are partitioned by murmur2(key) % numPartitions, so one customer's events always land on the same partition and stay ordered. A single partition would also work but destroys parallelism for all customers."
+  },
+  {
+   "id": "kk-003",
+   "section": "k1",
+   "q": "A consumer group with 8 consumers reads a topic with 6 partitions. What happens?",
+   "options": [
+    "Two consumers remain idle with no partitions assigned",
+    "All 8 consumers share partitions in round-robin per record",
+    "The group fails to start",
+    "Kafka automatically adds 2 partitions"
+   ],
+   "answer": 0,
+   "explanation": "Within a group each partition goes to exactly one consumer, so at most 6 consumers can be active on 6 partitions — the extra 2 get nothing. Partition count is the group's maximum parallelism."
+  },
+  {
+   "id": "kk-004",
+   "section": "k1",
+   "q": "A topic is configured with replication.factor=3 and min.insync.replicas=2, and producers use acks=all. What does this setup guarantee?",
+   "options": [
+    "Writes succeed even if all three replicas are down",
+    "Every acknowledged write exists on at least 2 replicas, and the topic tolerates one broker failure without losing acknowledged data",
+    "Exactly-once delivery to consumers",
+    "Consumers read from follower replicas"
+   ],
+   "answer": 1,
+   "explanation": "acks=all waits for all in-sync replicas, and min.insync.replicas=2 refuses writes if fewer than 2 are in sync. One broker can fail (ISR=2 still meets the minimum); acknowledged data always exists on ≥2 replicas. This is the canonical durability configuration."
+  },
+  {
+   "id": "kk-005",
+   "section": "k1",
+   "q": "With min.insync.replicas=2 on an RF=3 topic, two brokers holding replicas of a partition go down. What do producers using acks=all experience?",
+   "options": [
+    "Writes continue normally against the single remaining replica",
+    "Writes fail with NotEnoughReplicas errors until the ISR recovers",
+    "Data is silently redirected to another topic",
+    "Consumers also stop being able to read"
+   ],
+   "answer": 1,
+   "explanation": "The ISR (1) is below min.insync.replicas (2), so acks=all produces are rejected — availability is sacrificed to protect durability. Reads of already-committed data can continue from the remaining leader."
+  },
+  {
+   "id": "kk-006",
+   "section": "k1",
+   "q": "Which statement describes log compaction (cleanup.policy=compact)?",
+   "options": [
+    "Records older than retention.ms are deleted regardless of key",
+    "Kafka eventually retains at least the most recent value for each key; a null-value record (tombstone) marks a key for deletion",
+    "The log is compressed with zstd",
+    "Only consumed records are removed"
+   ],
+   "answer": 1,
+   "explanation": "Compaction is per-key retention of the latest value — turning a topic into a durable changelog (great for table-like state). Tombstones delete keys. Time/size deletion is the 'delete' policy; consumption never removes data."
+  },
+  {
+   "id": "kk-007",
+   "section": "k1",
+   "q": "Two different applications, each with its own group.id, consume the same topic. How is data delivered?",
+   "options": [
+    "The applications split the records between them",
+    "Each application (group) receives ALL records; within each group, partitions are divided among its consumers",
+    "Only the first group to subscribe receives data",
+    "Both groups must have identical consumer counts"
+   ],
+   "answer": 1,
+   "explanation": "Consumer groups are independent — Kafka is pub-sub across groups and queue-like within a group. Each group maintains its own offsets in __consumer_offsets."
+  },
+  {
+   "id": "kk-008",
+   "section": "k1",
+   "q": "Which combination of client settings secures a connection to a SASL/SCRAM-secured cluster over TLS?",
+   "options": [
+    "security.protocol=PLAINTEXT with an ACL",
+    "security.protocol=SASL_SSL, sasl.mechanism=SCRAM-SHA-512, sasl.jaas.config with the credentials, plus a truststore for the broker certificates",
+    "compression.type=ssl",
+    "enable.idempotence=true"
+   ],
+   "answer": 1,
+   "explanation": "SASL_SSL = SASL authentication over a TLS-encrypted channel; the mechanism and JAAS config carry the SCRAM credentials, and the truststore validates the brokers. ACLs then authorize the authenticated principal."
+  },
+  {
+   "id": "kk-009",
+   "section": "k1",
+   "q": "A consumer application is denied with a TopicAuthorizationException although the topic exists. What is the most likely cause?",
+   "options": [
+    "The topic has too many partitions",
+    "The client's principal lacks the required ACLs (e.g., Read on the topic and Read on the consumer group)",
+    "The consumer uses the wrong compression codec",
+    "auto.offset.reset is unset"
+   ],
+   "answer": 1,
+   "explanation": "Authorization errors are ACL problems: a consuming principal needs Read on the topic AND Read on its group. Authentication succeeded (otherwise the error would be an authentication failure)."
+  },
+  {
+   "id": "kk-010",
+   "section": "k1",
+   "q": "What replaaced ZooKeeper's role in modern Kafka clusters (Kafka 4.x)?",
+   "options": [
+    "An external etcd cluster",
+    "KRaft — an internal Raft-based controller quorum managing cluster metadata",
+    "A relational database",
+    "Schema Registry"
+   ],
+   "answer": 1,
+   "explanation": "KRaft mode has Kafka manage its own metadata via a Raft consensus quorum of controllers — no external ZooKeeper. Client APIs are unaffected; it's a cluster architecture change."
+  },
+  {
+   "id": "kk-011",
+   "section": "k1",
+   "q": "Partitions are added to an existing topic whose producers use keyed messages. What is the consequence?",
+   "options": [
+    "Nothing — Kafka rebalances old data automatically",
+    "New records for a key may map to a DIFFERENT partition than that key's older records, breaking per-key ordering across the boundary",
+    "All old data is deleted",
+    "Producers must restart before any records flow"
+   ],
+   "answer": 1,
+   "explanation": "Partitioning is hash(key) % numPartitions — changing numPartitions changes the mapping. Existing data stays where it was, so a key's history spans partitions and ordered consumption per key is broken across the change. Plan partition counts up front for keyed topics."
+  },
+  {
+   "id": "kk-012",
+   "section": "k1",
+   "q": "What are Kafka message headers for?",
+   "options": [
+    "Determining which partition a record goes to",
+    "Carrying metadata (correlation IDs, trace context, schema hints) alongside the key and value without affecting partitioning",
+    "Storing the record's offset",
+    "Compressing the payload"
+   ],
+   "answer": 1,
+   "explanation": "Headers are key/value metadata attached to records — used for tracing, routing hints, and provenance. Partitioning uses the message key, not headers."
+  },
+  {
+   "id": "kk-013",
+   "section": "k2",
+   "q": "What does enable.idempotence=true on a producer actually prevent?",
+   "options": [
+    "Duplicates caused by the application calling send() twice",
+    "Duplicates caused by the producer's own retries after transient failures, while preserving per-partition ordering",
+    "Duplicates on the consumer side after rebalances",
+    "All duplicates end-to-end"
+   ],
+   "answer": 1,
+   "explanation": "Idempotence gives each producer session sequence numbers so broker-side retry duplicates are discarded. It does NOT dedupe application-level re-sends nor consumer-side reprocessing — those need transactions or idempotent consumers."
+  },
+  {
+   "id": "kk-014",
+   "section": "k2",
+   "q": "A consume-transform-produce application must achieve exactly-once semantics from input topic to output topic. What is required?",
+   "options": [
+    "enable.idempotence=true alone",
+    "Kafka transactions: a transactional.id producer sending output AND committing consumed offsets in the same transaction, with downstream consumers using isolation.level=read_committed",
+    "acks=all with retries=0",
+    "Manual commitSync after each record"
+   ],
+   "answer": 1,
+   "explanation": "EOS for read-process-write means the output records and the input offset commit are atomic — that's sendOffsetsToTransaction inside a transaction. read_committed consumers then ignore aborted attempts. Idempotence alone only covers producer retry duplicates."
+  },
+  {
+   "id": "kk-015",
+   "section": "k2",
+   "q": "A consumer with enable.auto.commit=true crashes AFTER auto-commit ran but BEFORE it finished processing the last polled batch. What happens to those records?",
+   "options": [
+    "They are redelivered after restart",
+    "They are lost to this group — the committed offset already moved past them",
+    "They are moved to a dead letter queue",
+    "The broker reprocesses them"
+   ],
+   "answer": 1,
+   "explanation": "Auto-commit can commit offsets for records not yet processed, creating an at-most-once window. To get at-least-once, commit manually AFTER processing (commitSync/commitAsync)."
+  },
+  {
+   "id": "kk-016",
+   "section": "k2",
+   "q": "A consumer processing takes up to 10 minutes per batch, and the group keeps rebalancing with 'consumer left the group' messages. Which setting is being violated?",
+   "options": [
+    "session.timeout.ms — heartbeats are missing",
+    "max.poll.interval.ms — too much time passes between poll() calls; raise it or reduce max.poll.records",
+    "auto.offset.reset",
+    "linger.ms"
+   ],
+   "answer": 1,
+   "explanation": "Heartbeats run on a background thread, so session.timeout isn't the issue — the poll-interval timer is. If poll() isn't called within max.poll.interval.ms (default 5 min), the consumer is evicted. Raise the limit, shrink batches, or speed up processing."
+  },
+  {
+   "id": "kk-017",
+   "section": "k2",
+   "q": "When does auto.offset.reset=earliest take effect?",
+   "options": [
+    "On every consumer restart",
+    "Only when the group has no valid committed offset for a partition (new group, expired offsets, or out-of-range)",
+    "Whenever lag exceeds a threshold",
+    "Every time a rebalance happens"
+   ],
+   "answer": 1,
+   "explanation": "auto.offset.reset is the FALLBACK position. With valid committed offsets, consumption always resumes from them — earliest/latest only applies when no usable offset exists."
+  },
+  {
+   "id": "kk-018",
+   "section": "k2",
+   "q": "Which producer configuration change increases throughput at the cost of a little latency?",
+   "options": [
+    "acks=0",
+    "Increase linger.ms (e.g., 5–100 ms) and batch.size so larger, better-compressed batches are sent",
+    "Decrease buffer.memory",
+    "max.in.flight=1"
+   ],
+   "answer": 1,
+   "explanation": "linger.ms deliberately waits to fill batches; bigger batches amortize request overhead and compress better — the standard throughput knob. acks=0 trades DURABILITY (not just latency) and isn't a batching improvement."
+  },
+  {
+   "id": "kk-019",
+   "section": "k2",
+   "q": "In Schema Registry, subject 'orders-value' uses BACKWARD compatibility. What does registering a new schema version require, and which side upgrades first?",
+   "options": [
+    "New schema must be readable by the OLD schema; producers upgrade first",
+    "Consumers using the NEW schema must be able to read data written with the PREVIOUS schema (e.g., deleted fields / added optional fields); consumers upgrade first",
+    "Schemas can never change",
+    "Both sides must upgrade simultaneously"
+   ],
+   "answer": 1,
+   "explanation": "BACKWARD = new reader, old data. Consumers deploy the new schema first and can still read what current producers write; then producers may upgrade. FORWARD is the reverse (producers first); FULL is both."
+  },
+  {
+   "id": "kk-020",
+   "section": "k2",
+   "q": "How does a consumer know which Avro schema a record was written with, using the Confluent wire format?",
+   "options": [
+    "The full schema is embedded in every message",
+    "Each message carries a schema ID; the deserializer fetches (and caches) that schema from Schema Registry",
+    "The topic name encodes the schema",
+    "Schemas are guessed from the bytes"
+   ],
+   "answer": 1,
+   "explanation": "The wire format is magic byte + 4-byte schema ID + payload — compact messages, with the schema itself stored once in the registry and cached client-side after first fetch."
+  },
+  {
+   "id": "kk-021",
+   "section": "k2",
+   "q": "A producer intermittently logs NotLeaderForPartitionException but messages eventually arrive. What is happening?",
+   "options": [
+    "The topic is corrupt and must be recreated",
+    "A retriable error: partition leadership moved (broker restart/rebalance); the producer refreshes metadata and retries automatically",
+    "The producer's serializer is broken",
+    "The message exceeded max.request.size"
+   ],
+   "answer": 1,
+   "explanation": "Leadership changes are normal transient cluster events — classic RETRIABLE errors the client handles with retries + metadata refresh. Serialization and record-too-large errors are non-retriable and would fail every attempt."
+  },
+  {
+   "id": "kk-022",
+   "section": "k2",
+   "q": "A consumer hits a record that always throws SerializationException, blocking the partition. What is the standard remedy?",
+   "options": [
+    "Restart the consumer until it works",
+    "Catch/handle the poison record: skip past its offset (or use an error-tolerant deserializer) and publish it to a dead-letter topic for analysis",
+    "Delete the topic",
+    "Reduce fetch.max.bytes"
+   ],
+   "answer": 1,
+   "explanation": "Deserialization failures are non-retriable — the same bytes fail forever, so retrying blocks the partition. Skip-and-DLQ keeps the pipeline flowing while preserving the bad record for investigation."
+  },
+  {
+   "id": "kk-023",
+   "section": "k2",
+   "q": "Which tool shows a consumer group's current offset, log-end offset, and lag per partition from the command line?",
+   "options": [
+    "kafka-topics.sh --describe",
+    "kafka-consumer-groups.sh --describe --group <name>",
+    "kafka-console-consumer.sh --from-beginning",
+    "kafka-configs.sh --describe"
+   ],
+   "answer": 1,
+   "explanation": "kafka-consumer-groups.sh --describe lists each partition's CURRENT-OFFSET, LOG-END-OFFSET and LAG (plus member assignments) — also the tool for --reset-offsets. kafka-topics.sh describes topic structure, not group positions."
+  },
+  {
+   "id": "kk-024",
+   "section": "k2",
+   "q": "Where is producer-side compression applied, and what maximizes its benefit?",
+   "options": [
+    "Per record on the broker; benefit is fixed",
+    "Per batch on the producer (compression.type); larger batches (linger.ms/batch.size) compress better",
+    "Only consumers can compress",
+    "Compression requires Schema Registry"
+   ],
+   "answer": 1,
+   "explanation": "The producer compresses whole batches before sending; brokers typically store them compressed and consumers decompress. Because compression works on batch payloads, better batching directly improves ratio and throughput."
+  },
+  {
+   "id": "kk-025",
+   "section": "k2",
+   "q": "Which API creates topics, alters configurations, and lists consumer-group offsets programmatically?",
+   "options": [
+    "Producer API",
+    "AdminClient (Admin API)",
+    "Streams API",
+    "Connect REST API"
+   ],
+   "answer": 1,
+   "explanation": "AdminClient is the management API for cluster resources: topics, configs, ACLs, consumer groups and their offsets. The Connect REST API manages connectors only."
+  },
+  {
+   "id": "kk-026",
+   "section": "k3",
+   "q": "A Kafka Streams application reads a topic with 8 partitions. The team deploys 10 instances (1 stream thread each) for throughput. What happens?",
+   "options": [
+    "All 10 instances process data",
+    "Only 8 instances get tasks — parallelism is capped by input partitions; 2 instances stay idle",
+    "The app fails to start",
+    "Kafka adds partitions automatically"
+   ],
+   "answer": 1,
+   "explanation": "Streams creates one task per input partition; tasks are the unit of parallelism distributed across instances/threads sharing the application.id. Beyond 8 active workers there is nothing to assign."
+  },
+  {
+   "id": "kk-027",
+   "section": "k3",
+   "q": "Which abstraction models 'the current price of each product, updated over time'?",
+   "options": [
+    "KStream — every record is an independent event",
+    "KTable — a changelog where each key holds its latest value",
+    "A windowed KStream",
+    "A repartition topic"
+   ],
+   "answer": 1,
+   "explanation": "Latest-value-per-key semantics is exactly a KTable: new records for a key UPDATE the table. A KStream would treat every price change as a separate immutable event."
+  },
+  {
+   "id": "kk-028",
+   "section": "k3",
+   "q": "A stream must be enriched with a small reference dataset (200 rows) on a key different from the stream's key, without repartitioning. Which construct fits?",
+   "options": [
+    "KTable join (co-partitioned)",
+    "GlobalKTable join — fully replicated to each instance and joinable on any key via a key mapper",
+    "Windowed stream-stream join",
+    "Merge of two KStreams"
+   ],
+   "answer": 1,
+   "explanation": "GlobalKTables are replicated in full to every instance, so joins don't require co-partitioning and can use an arbitrary join key. Perfect for small lookup data; regular KTable joins need same key + same partition count."
+  },
+  {
+   "id": "kk-029",
+   "section": "k3",
+   "q": "What backs a Kafka Streams state store for fault tolerance?",
+   "options": [
+    "A relational database configured by the user",
+    "A compacted changelog topic in Kafka; after failure, state is restored by replaying it (standby replicas shorten recovery)",
+    "A snapshot file uploaded to S3",
+    "Nothing — state is lost on failure"
+   ],
+   "answer": 1,
+   "explanation": "Every state store writes its updates to a changelog topic. On task migration/failure the store is rebuilt from that topic; num.standby.replicas maintains warm copies to cut restore time."
+  },
+  {
+   "id": "kk-030",
+   "section": "k3",
+   "q": "Count user clicks in fixed, non-overlapping 5-minute buckets. Which window type is this?",
+   "options": [
+    "Hopping window (size 5 min, advance 1 min)",
+    "Tumbling window of 5 minutes",
+    "Session window with 5-minute gap",
+    "Sliding window"
+   ],
+   "answer": 1,
+   "explanation": "Tumbling = fixed size, no overlap (each event in exactly one window). Hopping overlaps (size + smaller advance); session windows are activity-based with an inactivity gap; sliding relates records within a time difference."
+  },
+  {
+   "id": "kk-031",
+   "section": "k3",
+   "q": "Group user activity into sessions that end after 30 minutes of inactivity. Which window applies?",
+   "options": [
+    "Tumbling 30-minute window",
+    "Session windows with a 30-minute inactivity gap",
+    "Hopping window advancing 30 minutes",
+    "No windowing needed"
+   ],
+   "answer": 1,
+   "explanation": "Session windows are dynamic: they extend while events keep arriving and close when the gap (30 min) elapses without activity — precisely the sessionization use case."
+  },
+  {
+   "id": "kk-032",
+   "section": "k3",
+   "q": "What configuration turns on exactly-once processing in a Kafka Streams application?",
+   "options": [
+    "enable.idempotence=true",
+    "processing.guarantee=exactly_once_v2",
+    "isolation.level=read_committed",
+    "acks=all"
+   ],
+   "answer": 1,
+   "explanation": "Streams wraps its consume-process-produce cycle (including changelog writes) in transactions when processing.guarantee=exactly_once_v2 is set — the one-line EOS switch. The other settings are pieces Streams manages internally."
+  },
+  {
+   "id": "kk-033",
+   "section": "k3",
+   "q": "Before a stream-stream join, one stream is re-keyed with selectKey(). What does Streams do to make the join correct?",
+   "options": [
+    "Fails at startup",
+    "Writes the re-keyed stream through an internal repartition topic so equal keys land in the same task",
+    "Broadcasts all records to every task",
+    "Ignores the new key"
+   ],
+   "answer": 1,
+   "explanation": "After a key change, records with the same new key may sit in different partitions. Streams inserts a repartition topic to shuffle them so join/aggregation tasks see all records for a key. (Joins also require equal partition counts — co-partitioning.)"
+  },
+  {
+   "id": "kk-034",
+   "section": "k3",
+   "q": "By default, which notion of time drives Kafka Streams windowing?",
+   "options": [
+    "Wall-clock time when the record is processed",
+    "Event time from the record's timestamp (customizable with a TimestampExtractor)",
+    "Broker disk-flush time",
+    "The consumer's poll time"
+   ],
+   "answer": 1,
+   "explanation": "Streams windows on record timestamps (event time), so out-of-order and late records still fall into their correct windows (within the grace period). Processing time would make results depend on when the app happens to run."
+  },
+  {
+   "id": "kk-035",
+   "section": "k3",
+   "q": "A windowed aggregation emits multiple intermediate updates per window, but the sink should receive only one final result per window. What is the idiomatic solution?",
+   "options": [
+    "Poll less often",
+    "Use suppress() to hold updates until the window closes (grace period elapsed), emitting only the final value",
+    "Set linger.ms high on the producer",
+    "Use a GlobalKTable"
+   ],
+   "answer": 1,
+   "explanation": "Streams refines window results continuously; suppress(untilWindowCloses) buffers them and forwards only the final result when the window plus grace period ends."
+  },
+  {
+   "id": "kk-036",
+   "section": "k3",
+   "q": "How does a Kafka Streams application scale out at runtime?",
+   "options": [
+    "It cannot scale without redeployment",
+    "Start additional instances with the SAME application.id — tasks and their state migrate automatically to the new members",
+    "Change group.id per instance",
+    "Increase replication factor"
+   ],
+   "answer": 1,
+   "explanation": "application.id doubles as the consumer group id: new instances join the group, the tasks rebalance across members, and state stores are rebuilt/migrated (changelogs, standbys). Same mechanism in reverse handles instance loss."
+  },
+  {
+   "id": "kk-037",
+   "section": "k3",
+   "q": "What is a Kafka Streams application, operationally?",
+   "options": [
+    "A server process installed on each Kafka broker",
+    "A standard Java application using a client library — deployed like any app (VMs, Docker, Kubernetes), with no processing cluster to install",
+    "A plugin inside ZooKeeper",
+    "A managed Confluent Cloud-only service"
+   ],
+   "answer": 1,
+   "explanation": "Streams is a library, not a cluster: the topology runs inside your own JVM processes, coordinated through Kafka itself. Deployment is ordinary application deployment — which is exactly why it fits Docker/Kubernetes pipelines."
+  },
+  {
+   "id": "kk-038",
+   "section": "k4",
+   "q": "Data must be copied continuously from a PostgreSQL database into Kafka, and from Kafka into Elasticsearch, with minimal custom code. What is the recommended approach?",
+   "options": [
+    "Write a custom producer and consumer application",
+    "Kafka Connect: a source connector for PostgreSQL and a sink connector for Elasticsearch, both configuration-driven",
+    "Kafka Streams with JDBC calls",
+    "A cron job with the console producer"
+   ],
+   "answer": 1,
+   "explanation": "This is Kafka Connect's exact purpose: existing connectors handle offsets, retries, scaling, and schemas via configuration. Custom clients re-implement all of that; Streams is for processing, not system integration."
+  },
+  {
+   "id": "kk-039",
+   "section": "k4",
+   "q": "Where does a DISTRIBUTED Kafka Connect cluster store connector configurations, source offsets, and status?",
+   "options": [
+    "Local files on each worker",
+    "In internal Kafka topics (config, offset, and status topics) shared by the worker group",
+    "In ZooKeeper",
+    "In Schema Registry"
+   ],
+   "answer": 1,
+   "explanation": "Distributed mode keeps its state in Kafka itself, which is what makes workers stateless and fault-tolerant — any worker can pick up work. Standalone mode is the one using local files."
+  },
+  {
+   "id": "kk-040",
+   "section": "k4",
+   "q": "How is a connector created and managed in a distributed Connect cluster?",
+   "options": [
+    "Editing server.properties and restarting brokers",
+    "Via the Connect REST API — POST the connector config; use it also for status, pause/resume, restart, delete",
+    "Only through ZooKeeper CLI",
+    "By placing a file on each worker"
+   ],
+   "answer": 1,
+   "explanation": "Distributed Connect is managed at runtime over its REST interface (e.g., POST /connectors, GET /connectors/<name>/status). Standalone workers take properties files at startup instead."
+  },
+  {
+   "id": "kk-041",
+   "section": "k4",
+   "q": "What is the relationship between a connector and its tasks?",
+   "options": [
+    "They are the same thing",
+    "The connector is the logical job definition; it splits the work into tasks (bounded by tasks.max) that run distributed across workers — the actual unit of parallelism",
+    "Tasks manage workers",
+    "One task always equals one topic"
+   ],
+   "answer": 1,
+   "explanation": "Connector = coordination + config; tasks = the parallel data-copying units. Effective parallelism is also limited by the source's divisible units (tables, files) or the topic's partitions for sinks."
+  },
+  {
+   "id": "kk-042",
+   "section": "k4",
+   "q": "A JDBC source connector must write Avro records with schemas managed centrally. What configuration achieves this?",
+   "options": [
+    "The JDBC connector always writes Avro",
+    "Set value.converter=io.confluent.connect.avro.AvroConverter with value.converter.schema.registry.url — converters are independent of the connector",
+    "Use StringConverter",
+    "Enable errors.tolerance=all"
+   ],
+   "answer": 1,
+   "explanation": "Converters translate Connect's internal records to bytes and are configured separately from the connector logic — the same connector can emit Avro, Protobuf, JSON Schema, or plain JSON depending on converter settings."
+  },
+  {
+   "id": "kk-043",
+   "section": "k4",
+   "q": "Field 'ssn' must be masked and records routed to a per-region topic as they flow through a connector — no external processing step. What mechanism does Connect provide?",
+   "options": [
+    "A custom Kafka Streams job",
+    "Single Message Transforms (SMTs) chained in the connector config (e.g., MaskField + a routing transform)",
+    "Broker interceptors",
+    "Schema Registry compatibility rules"
+   ],
+   "answer": 1,
+   "explanation": "SMTs apply lightweight per-record transformations inside the connector pipeline. For heavier logic (joins, aggregation) you'd use a stream processor between source and sink instead."
+  },
+  {
+   "id": "kk-044",
+   "section": "k4",
+   "q": "A sink connector keeps dying on malformed records. It must skip them but keep them for later inspection. Which configuration applies?",
+   "options": [
+    "errors.tolerance=none",
+    "errors.tolerance=all with errors.deadletterqueue.topic.name (and context headers enabled) — failed records go to a DLQ topic",
+    "tasks.max=1",
+    "key.converter=StringConverter"
+   ],
+   "answer": 1,
+   "explanation": "Tolerance 'all' keeps the task alive past bad records, and the DLQ topic (a SINK-connector feature) captures each failure — with reasons in headers when enabled — instead of silently dropping it."
+  },
+  {
+   "id": "kk-045",
+   "section": "k4",
+   "q": "Compared with a polling JDBC source, what advantage does log-based CDC (e.g., Debezium) provide?",
+   "options": [
+    "It requires no connector at all",
+    "It reads the database's transaction log: captures every change including DELETEs, with low latency and minimal load on tables",
+    "It works without the database running",
+    "It converts data to Avro automatically"
+   ],
+   "answer": 1,
+   "explanation": "Polling misses deletes, adds query load, and is bounded by the poll interval. Reading the transaction log streams every committed row change (with before/after images), which is why CDC is preferred for database replication into Kafka."
+  },
+  {
+   "id": "kk-046",
+   "section": "k4",
+   "q": "One worker in a 3-worker distributed Connect cluster crashes. What happens to the tasks it was running?",
+   "options": [
+    "They are lost until the worker returns",
+    "The remaining workers rebalance and take over the failed worker's connectors/tasks, resuming from offsets stored in Kafka",
+    "All connectors restart from the beginning of history",
+    "The cluster stops accepting REST calls"
+   ],
+   "answer": 1,
+   "explanation": "Because config/offsets/status live in Kafka topics, workers are interchangeable: the group rebalances the failed worker's tasks and they resume from their last committed source offsets."
+  },
+  {
+   "id": "kk-047",
+   "section": "k4",
+   "q": "Which statement about standalone Connect workers is TRUE?",
+   "options": [
+    "They are recommended for production for simplicity",
+    "They run in a single process with offsets in a local file — no fault tolerance or horizontal scaling; fine for development and testing",
+    "They store offsets in Kafka automatically",
+    "They cannot run source connectors"
+   ],
+   "answer": 1,
+   "explanation": "Standalone = one process, local offset storage, no failover — a dev/test convenience. Production runs distributed mode for fault tolerance, scaling, and REST management."
+  },
+  {
+   "id": "kk-048",
+   "section": "k5",
+   "q": "Producer callback logic (success metrics, error handling) must be unit-tested without a broker. Which tool fits?",
+   "options": [
+    "Testcontainers Kafka",
+    "MockProducer — records sent messages for assertions and can simulate send failures (errorNext)",
+    "kafka-console-producer",
+    "TopologyTestDriver"
+   ],
+   "answer": 1,
+   "explanation": "MockProducer is the in-memory test double from kafka-clients: assert on history(), drive callbacks with simulated success/failure — no broker, no network, deterministic."
+  },
+  {
+   "id": "kk-049",
+   "section": "k5",
+   "q": "Which combination tests a Kafka Streams topology synchronously without any running Kafka cluster?",
+   "options": [
+    "MockConsumer + MockProducer",
+    "TopologyTestDriver with TestInputTopic and TestOutputTopic",
+    "kafka-consumer-groups.sh",
+    "A three-broker Testcontainers cluster"
+   ],
+   "answer": 1,
+   "explanation": "TopologyTestDriver executes the topology in-process: pipe records via TestInputTopic, assert results from TestOutputTopic, and query state stores directly — fast, deterministic unit tests for Streams logic."
+  },
+  {
+   "id": "kk-050",
+   "section": "k5",
+   "q": "A tumbling-window aggregation with a grace period must be tested deterministically, including late-arrival behavior. How?",
+   "options": [
+    "Thread.sleep() in the test until the window closes",
+    "Use TopologyTestDriver's explicit time control — pipe records with chosen timestamps and advance wall-clock time to trigger window closing",
+    "Run it in production and watch",
+    "Windows cannot be tested"
+   ],
+   "answer": 1,
+   "explanation": "The test driver lets you SET record timestamps and advance time programmatically, so window boundaries, grace periods, and suppress() emissions are exercised deterministically — no sleeps, no flakiness."
+  },
+  {
+   "id": "kk-051",
+   "section": "k5",
+   "q": "Which risks are NOT covered by mocks and the TopologyTestDriver, and therefore need an integration test with a real broker (e.g., Testcontainers)?",
+   "options": [
+    "Branching logic in a topology",
+    "Security handshakes, real Schema Registry (de)serialization, transactions, and rebalance behavior",
+    "A map() transformation",
+    "Callback code on send"
+   ],
+   "answer": 1,
+   "explanation": "Interaction-level concerns — auth/TLS, registry round-trips, transactional semantics, group coordination — only exist against real infrastructure. Pure logic belongs in fast unit tests; keep both layers."
+  },
+  {
+   "id": "kk-052",
+   "section": "k5",
+   "q": "How should schema changes be prevented from breaking production consumers?",
+   "options": [
+    "Deploy and monitor for errors",
+    "Check candidate schemas against the registry's compatibility mode in CI (compatibility REST endpoint or schema-registry:test-compatibility Maven goal) so incompatible changes fail the build",
+    "Disable compatibility checking",
+    "Use StringSerializer everywhere"
+   ],
+   "answer": 1,
+   "explanation": "Schema Registry can validate a proposed schema against the subject's BACKWARD/FORWARD/FULL rules before anything is deployed — wiring that check into CI catches breaking changes at build time."
+  },
+  {
+   "id": "kk-053",
+   "section": "k5",
+   "q": "What design choice makes producer/consumer application code easy to unit test?",
+   "options": [
+    "Instantiating KafkaProducer inside every method",
+    "Injecting the Producer/Consumer interface into the logic class, so tests pass MockProducer/MockConsumer and production passes real clients",
+    "Making all methods static",
+    "Testing only via the CLI"
+   ],
+   "answer": 1,
+   "explanation": "Dependency injection against the client INTERFACES is what lets the same logic run with mocks in tests. Hard-coded client construction forces integration tests for everything."
+  },
+  {
+   "id": "kk-054",
+   "section": "k6",
+   "q": "What exactly is consumer lag for a partition?",
+   "options": [
+    "The time since the consumer last polled",
+    "Log end offset minus the consumer's current/committed offset — how many records behind the consumer is",
+    "The number of rebalances per hour",
+    "Bytes in the fetch buffer"
+   ],
+   "answer": 1,
+   "explanation": "Lag counts unconsumed records between the partition's newest offset and the consumer's position. Persistent lag growth is THE signal that consumption can't keep up with production."
+  },
+  {
+   "id": "kk-055",
+   "section": "k6",
+   "q": "How do Kafka clients expose their metrics for collection?",
+   "options": [
+    "They write CSV files",
+    "Via JMX MBeans (per client/topic/node), typically scraped by agents like the Prometheus JMX exporter",
+    "Only through Confluent Control Center",
+    "Metrics must be coded manually"
+   ],
+   "answer": 1,
+   "explanation": "Producer, consumer, Streams, and Connect all register JMX metrics out of the box; monitoring stacks scrape them. Streams adds thread/task/store metrics with configurable recording levels."
+  },
+  {
+   "id": "kk-056",
+   "section": "k6",
+   "q": "Which producer metric indicates messages that ultimately FAILED delivery after exhausting retries, and what should its value be?",
+   "options": [
+    "record-retry-rate; high values are normal",
+    "record-error-rate; it should be ~0 and alerted on otherwise",
+    "batch-size-avg; should be 0",
+    "compression-rate-avg; should be 1"
+   ],
+   "answer": 1,
+   "explanation": "record-error-rate counts definitive send failures — data loss from the app's perspective, so alert on any sustained non-zero value. record-retry-rate is the early-warning cousin: transient trouble being retried."
+  },
+  {
+   "id": "kk-057",
+   "section": "k6",
+   "q": "Lag grows steadily on exactly ONE of a topic's 12 partitions. What is the most likely cause to investigate first?",
+   "options": [
+    "The whole cluster is undersized",
+    "A hot key skewing traffic to that partition (or one stuck/slow consumer instance) — check key distribution and that assignee's health",
+    "Schema Registry is down",
+    "linger.ms is too high"
+   ],
+   "answer": 1,
+   "explanation": "Uniform problems raise lag everywhere; single-partition lag points to skew (one key getting disproportionate traffic) or the specific consumer assigned to it. Key cardinality/hashing is the classic culprit."
+  },
+  {
+   "id": "kk-058",
+   "section": "k6",
+   "q": "Duplicates appear downstream after consumer crashes, even though processing is correct. The metrics show frequent rebalances. What is the explanation?",
+   "options": [
+    "Kafka randomly duplicates data",
+    "At-least-once consumption: records processed but not yet committed before the crash/rebalance are redelivered — make handling idempotent or adopt transactions/EOS",
+    "The producer's compression corrupts batches",
+    "Lag is negative"
+   ],
+   "answer": 1,
+   "explanation": "Between processing and offset commit there is always a redelivery window under at-least-once. Frequent rebalances widen it. Fixes: idempotent writes keyed on record identity, or exactly-once processing where applicable."
+  },
+  {
+   "id": "kk-059",
+   "section": "k6",
+   "q": "How can telemetry (counting, tracing) be added to every produced and consumed record WITHOUT modifying business code?",
+   "options": [
+    "Fork the Kafka client library",
+    "Configure ProducerInterceptor / ConsumerInterceptor classes via interceptor.classes — hooks that observe records on send and on consume",
+    "Add a broker plugin",
+    "Enable DEBUG logging"
+   ],
+   "answer": 1,
+   "explanation": "Interceptors are the client-side extension point for cross-cutting observability (Confluent's monitoring interceptors use it). They see records in the send/consume path with zero business-code changes."
+  },
+  {
+   "id": "kk-060",
+   "section": "k6",
+   "q": "A trace ID must follow one business transaction from the HTTP request, through the producer, into a consumer three services away. Where does the trace context travel in Kafka?",
+   "options": [
+    "In the message key (replacing the business key)",
+    "In message HEADERS (e.g., W3C/OpenTelemetry trace context), propagated producer → consumer",
+    "In the topic name",
+    "It cannot cross Kafka"
+   ],
+   "answer": 1,
+   "explanation": "Headers are the metadata channel: tracing libraries inject context on produce and extract it on consume, keeping the trace intact — without abusing the key (which would change partitioning!)."
+  },
+  {
+   "id": "kk-061",
+   "section": "k6",
+   "q": "A producer starts throwing TimeoutException and bufferpool-wait-time climbs. What is happening?",
+   "options": [
+    "Consumers are lagging",
+    "The producer generates data faster than the cluster accepts it (or brokers are slow/unreachable): batches back up in buffer.memory until send() blocks and times out",
+    "Log compaction deleted the topic",
+    "The consumer group rebalanced"
+   ],
+   "answer": 1,
+   "explanation": "buffer.memory fills when the I/O thread can't drain batches fast enough — from broker slowness, network issues, or plain overproduction. Check request-latency and cluster health; consumer lag is unrelated to producer buffering."
+  },
+  {
+   "id": "kk-062",
+   "section": "k6",
+   "q": "Which end-to-end health check catches pipeline delay that per-component metrics can miss?",
+   "options": [
+    "Broker CPU usage",
+    "End-to-end latency: compare the record's event timestamp with the time it is finally processed by the last consumer",
+    "Topic partition count",
+    "Number of connectors deployed"
+   ],
+   "answer": 1,
+   "explanation": "Each hop can look healthy while queueing between hops accumulates delay. Measuring event-time-to-final-processing spans the entire pipeline — the metric that reflects what the business actually experiences."
+  }
+ ],
+ "sections": [
+  {
+   "id": "k1",
+   "title": "Apache Kafka Fundamentals",
+   "weight": 23,
+   "topicDocs": {
+    "Topics, partitions, and offsets": "https://kafka.apache.org/documentation/#intro_concepts_and_terms",
+    "Brokers, replication, and the ISR": "https://kafka.apache.org/documentation/#replication",
+    "Message keys and partition assignment": "https://docs.confluent.io/platform/current/clients/producer.html",
+    "Consumer groups": "https://docs.confluent.io/platform/current/clients/consumer.html",
+    "Retention and log compaction": "https://kafka.apache.org/documentation/#compaction",
+    "Delivery semantics": "https://docs.confluent.io/kafka/design/delivery-semantics.html",
+    "Kafka security basics": "https://docs.confluent.io/platform/current/security/overview.html",
+    "KRaft and the control plane": "https://kafka.apache.org/documentation/#kraft"
+   },
+   "objectives": [
+    "Explain Kafka's data model: topics, partitions, offsets, and ordering",
+    "Describe brokers, replication, leaders/followers, and the ISR",
+    "Explain message keys, key hashing, and partition assignment",
+    "Describe consumer groups and how partitions are distributed",
+    "Explain data retention and log compaction",
+    "Compare delivery semantics: at-most-once, at-least-once, exactly-once",
+    "Describe Kafka security fundamentals (encryption, authentication, authorization)"
+   ],
+   "notes": "\n<h3>Topics, partitions, and offsets</h3>\n<figure><img src=\"images/kafka-log-anatomy.png\" alt=\"A topic split into three partitions, each an ordered append-only log with sequential offsets; writes append to the end\"><figcaption>A topic is a set of partitions; each partition is an ordered, append-only log with sequential offsets <em>(source: kafka.apache.org)</em></figcaption></figure>\n<ul>\n<li>A <strong>topic</strong> is a named stream of records, split into <strong>partitions</strong>. Each partition is an <em>ordered, immutable, append-only log</em>; each record in it gets a sequential <strong>offset</strong>.</li>\n<li><strong>Ordering is guaranteed only WITHIN a partition</strong> — never across partitions of a topic. If a use case needs total order for a set of records (e.g. all events of one customer), those records must share a partition (⇒ same key).</li>\n<li>Consumers track their position as <em>the next offset to read</em> per partition; reading does NOT remove data (Kafka is a log, not a queue) — many independent consumer groups read the same data.</li>\n<li>Partition count = the topic's <strong>maximum parallelism</strong> for a consumer group. Partitions can be <em>added</em> later (breaks key→partition mapping for existing keys!) but never removed.</li>\n<li>Records are key/value pairs plus a timestamp and optional <strong>headers</strong> (metadata for tracing, routing, schema hints — not used for partitioning).</li>\n</ul>\n\n<h3>Brokers, replication, and the ISR</h3>\n<ul>\n<li>A cluster is a set of <strong>brokers</strong>; each partition lives on brokers as one <strong>leader</strong> replica plus <code>replication.factor − 1</code> <strong>follower</strong> replicas. All produce/consume traffic goes through the <strong>leader</strong> (followers replicate by fetching).</li>\n<li>The <strong>ISR (in-sync replicas)</strong> is the set of replicas fully caught up with the leader. On leader failure, a new leader is elected <em>from the ISR</em> — no data loss if the ISR had the data.</li>\n<li><code>min.insync.replicas</code> (broker/topic config): the minimum ISR size for writes with <code>acks=all</code> to succeed. The classic durable setup: <strong>RF=3, min.insync.replicas=2, acks=all</strong> — tolerates one broker down while never acknowledging a write held by fewer than 2 replicas; producers get <code>NotEnoughReplicasException</code> if the ISR shrinks below 2.</li>\n<li><strong>Unclean leader election</strong> (electing a non-ISR replica) trades data loss for availability; it is disabled by default.</li>\n</ul>\n\n<h3>Message keys and partition assignment</h3>\n<ul>\n<li>Producer partitioning: <strong>key present</strong> → <code>partition = murmur2(key) % numPartitions</code> — the same key ALWAYS lands on the same partition (ordering per key). <strong>Key = null</strong> → sticky partitioning: the producer fills a batch to one random partition, then switches (efficient round-robin-ish distribution).</li>\n<li>A producer can also set the partition explicitly or plug a custom <code>Partitioner</code>.</li>\n<li>Design consequence: choose keys with enough <strong>cardinality</strong> to spread load; a low-cardinality key (e.g. country) creates hot partitions. Changing partition count remaps keys — plan partitions up front for keyed topics.</li>\n</ul>\n\n<h3>Consumer groups</h3>\n<figure><img src=\"images/kafka-consumer-groups.png\" alt=\"A four-partition topic consumed by group A (two consumers, two partitions each) and group B (four consumers, one partition each)\"><figcaption>Each group divides the partitions among its members; every group gets all the data <em>(source: kafka.apache.org)</em></figcaption></figure>\n<ul>\n<li>Consumers with the same <code>group.id</code> form a <strong>consumer group</strong>: each partition is assigned to <strong>exactly one consumer in the group</strong>. More consumers than partitions ⇒ the extras sit <strong>idle</strong>.</li>\n<li>Different groups are independent — each receives every record (pub-sub across groups, queue-like within a group).</li>\n<li>Group membership is coordinated by a broker acting as <strong>group coordinator</strong>; consumers heartbeat, and joins/leaves/failures trigger a <strong>rebalance</strong> (partition reassignment). Committed offsets are stored in the internal <code>__consumer_offsets</code> topic.</li>\n</ul>\n\n<h3>Retention and log compaction</h3>\n<table>\n<tr><th>Cleanup policy</th><th>Behavior</th><th>Use case</th></tr>\n<tr><td><code>delete</code> (default)</td><td>Segments older than <code>retention.ms</code> (default 7 days) or beyond <code>retention.bytes</code> are deleted — regardless of consumption</td><td>Event streams, telemetry</td></tr>\n<tr><td><code>compact</code></td><td>Keeps <strong>at least the latest record per key</strong>; older values for the same key are eventually removed; a <code>null</code> value (\"tombstone\") deletes the key</td><td>Changelogs, table-like state (latest value per entity)</td></tr>\n<tr><td><code>compact,delete</code></td><td>Both: compaction plus time/size-based expiry</td><td>Bounded changelogs</td></tr>\n</table>\n<p>Retention is per topic; consumers must keep up or re-read from what still exists (<code>auto.offset.reset</code> decides where a group starts with no valid offset: <code>earliest</code> or <code>latest</code>).</p>\n\n<h3>Delivery semantics</h3>\n<table>\n<tr><th>Semantics</th><th>How it happens</th><th>Cost</th></tr>\n<tr><td>At-most-once</td><td>Commit/ack BEFORE processing (or producer with acks=0) — failures lose data, never duplicate</td><td>Data loss possible</td></tr>\n<tr><td>At-least-once</td><td>Process THEN commit; producer retries — failures re-deliver</td><td>Duplicates possible ⇒ consumers should be idempotent</td></tr>\n<tr><td>Exactly-once</td><td>Idempotent producer + <strong>transactions</strong> (Kafka-to-Kafka), consumer <code>isolation.level=read_committed</code></td><td>Some latency/throughput overhead; EOS applies to Kafka↔Kafka pipelines (external sinks still need idempotency)</td></tr>\n</table>\n\n<h3>Kafka security basics</h3>\n<ul>\n<li><strong>Encryption in transit:</strong> TLS between clients and brokers (and inter-broker); listeners defined per protocol (PLAINTEXT, SSL, SASL_SSL…).</li>\n<li><strong>Authentication:</strong> SASL mechanisms — <code>PLAIN</code> (username/password, over TLS!), <code>SCRAM-SHA-256/512</code>, <code>GSSAPI</code> (Kerberos), <code>OAUTHBEARER</code> — or mutual TLS (client certificates).</li>\n<li><strong>Authorization:</strong> <strong>ACLs</strong> per principal on resources (topic, group, cluster) and operations (Read, Write, Create…). A typical client needs Read on the topic + Read on its consumer group, or Write on the topic to produce.</li>\n<li>Clients configure this with <code>security.protocol</code>, <code>sasl.mechanism</code>, <code>sasl.jaas.config</code>, plus truststore/keystore settings.</li>\n</ul>\n\n<h3>KRaft and the control plane</h3>\n<p>Kafka's metadata (topics, partitions, leaders, configs) was historically coordinated by <strong>ZooKeeper</strong>; modern Kafka uses <strong>KRaft</strong> — brokers/controllers run the Raft consensus protocol internally, removing ZooKeeper entirely (default since Kafka 4.0). For a developer the client APIs are unchanged; know that cluster metadata and controller election are internal (a <em>controller quorum</em>) and that administration happens via the <strong>Admin API</strong>/CLI tools.</p>\n<p class=\"tip\"><strong>Exam tip:</strong> the most-tested fundamentals: ordering only within a partition; same key → same partition; consumers &gt; partitions ⇒ idle consumers; RF=3 + min.insync.replicas=2 + acks=all tolerates exactly one broker loss; compaction keeps the latest value per key (tombstones delete). Memorize these cold.</p>"
+  },
+  {
+   "id": "k2",
+   "title": "Apache Kafka Application Development",
+   "weight": 28,
+   "topicDocs": {
+    "The producer: send path and key configs": "https://docs.confluent.io/platform/current/clients/producer.html",
+    "Idempotence and transactions (EOS)": "https://docs.confluent.io/kafka/design/delivery-semantics.html",
+    "The consumer: poll loop, commits, rebalancing": "https://docs.confluent.io/platform/current/clients/consumer.html",
+    "Serialization and Schema Registry": "https://docs.confluent.io/platform/current/schema-registry/fundamentals/avro.html",
+    "Error handling: retriable vs non-retriable": "https://docs.confluent.io/platform/current/clients/producer.html",
+    "Admin API and CLI tools": "https://kafka.apache.org/documentation/#adminapi",
+    "Compression and batching": "https://kafka.apache.org/documentation/#producerconfigs"
+   },
+   "objectives": [
+    "Configure and tune producers (acks, batching, retries, idempotence)",
+    "Implement exactly-once semantics with idempotent producers and transactions",
+    "Configure and tune consumers (poll loop, offset commits, rebalancing)",
+    "Use serializers/deserializers and Schema Registry with Avro/JSON/Protobuf",
+    "Handle retriable and non-retriable errors in clients",
+    "Use the Admin API and command-line tools",
+    "Apply compression and batching for throughput"
+   ],
+   "notes": "\n<h3>The producer: send path and key configs</h3>\n<p><code>send()</code> is asynchronous: records go through the (key/value) <strong>serializer</strong> → <strong>partitioner</strong> → an in-memory <strong>batch per partition</strong> (<code>buffer.memory</code>), and a background I/O thread ships batches. A callback (or the returned Future) reports success (RecordMetadata) or failure.</p>\n<table>\n<tr><th>Config</th><th>Meaning</th></tr>\n<tr><td><code>acks</code></td><td><code>0</code> = fire-and-forget; <code>1</code> = leader has written it; <code>all</code> = all in-sync replicas have it (durable; pair with min.insync.replicas)</td></tr>\n<tr><td><code>retries</code> / <code>delivery.timeout.ms</code></td><td>Automatic retry of transient failures; delivery.timeout.ms bounds the whole attempt</td></tr>\n<tr><td><code>enable.idempotence</code></td><td>Broker de-duplicates producer retries (sequence numbers) — no duplicates from retries, per-partition ordering preserved; default true in modern clients</td></tr>\n<tr><td><code>max.in.flight.requests.per.connection</code></td><td>Concurrent unacked requests; with idempotence ≤5 ordering is still guaranteed</td></tr>\n<tr><td><code>linger.ms</code> / <code>batch.size</code></td><td>Wait up to linger.ms to fill batches up to batch.size — the main throughput/latency trade-off knobs</td></tr>\n<tr><td><code>compression.type</code></td><td>none / gzip / snappy / lz4 / zstd — compresses whole batches</td></tr>\n</table>\n\n<h3>Idempotence and transactions (EOS)</h3>\n<ul>\n<li><strong>Idempotent producer</strong> = no duplicates <em>from retries</em> on one producer session. It does NOT dedupe application-level re-sends.</li>\n<li><strong>Transactions</strong>: set a stable <code>transactional.id</code>, then <code>initTransactions() → beginTransaction() → send(...) + sendOffsetsToTransaction(...) → commitTransaction()</code>. Enables atomic <em>consume-transform-produce</em>: output records and consumed-offset commits succeed or abort together.</li>\n<li>Downstream consumers must set <code>isolation.level=read_committed</code> to skip aborted records (default is read_uncommitted).</li>\n<li>Exactly-once applies Kafka-to-Kafka; writing to an external DB still needs idempotent writes or its own transaction coordination.</li>\n</ul>\n\n<h3>The consumer: poll loop, commits, rebalancing</h3>\n<pre><code>while (true) {\n  ConsumerRecords&lt;K,V&gt; records = consumer.poll(Duration.ofMillis(250));\n  for (ConsumerRecord&lt;K,V&gt; rec : records) process(rec);\n  consumer.commitSync();          // manual at-least-once\n}</code></pre>\n<ul>\n<li><strong>Offset commits:</strong> <code>enable.auto.commit=true</code> commits every <code>auto.commit.interval.ms</code> during poll (risk: commits records not yet processed → possible loss on crash). Manual <code>commitSync()</code> (blocking, retried) or <code>commitAsync()</code> (fast, no retry) AFTER processing gives at-least-once.</li>\n<li><strong>Liveness:</strong> heartbeats (background thread) within <code>session.timeout.ms</code> keep membership; <code>max.poll.interval.ms</code> caps time between polls — exceed it (slow processing) and the group evicts the consumer, causing a rebalance. Tune it, or lower <code>max.poll.records</code>.</li>\n<li><strong>Rebalancing:</strong> assignment strategies include range, round-robin, sticky, and <strong>cooperative-sticky</strong> (incremental — only moved partitions stop, no global stop-the-world). A <code>ConsumerRebalanceListener</code> lets you commit/cleanup on revocation.</li>\n<li><code>auto.offset.reset</code> (earliest/latest/none) applies only when the group has NO valid committed offset.</li>\n<li>Consumers are <strong>not thread-safe</strong> — one consumer per thread; scale by adding consumers (up to partition count).</li>\n</ul>\n\n<h3>Serialization and Schema Registry</h3>\n<ul>\n<li>Producers serialize keys/values to bytes; consumers must deserialize with a compatible scheme. Common formats: <strong>Avro</strong>, <strong>JSON Schema</strong>, <strong>Protobuf</strong> (all supported by Confluent SerDes) — plus primitives (String, Long…).</li>\n<li><strong>Schema Registry</strong> stores versioned schemas per <strong>subject</strong> (default: <code>&lt;topic&gt;-key</code> / <code>&lt;topic&gt;-value</code>); the wire format is a magic byte + <strong>schema ID</strong> + payload — consumers fetch schemas by ID and cache them.</li>\n<li><strong>Compatibility modes</strong> govern schema evolution:</li>\n</ul>\n<table>\n<tr><th>Mode</th><th>New schema can be used to read…</th><th>Safe changes</th><th>Upgrade order</th></tr>\n<tr><td>BACKWARD (default)</td><td>data written with the previous schema</td><td>delete fields, add optional fields (with defaults)</td><td>Consumers first</td></tr>\n<tr><td>FORWARD</td><td>old schema reads data written with the new one</td><td>add fields, delete optional fields</td><td>Producers first</td></tr>\n<tr><td>FULL</td><td>both directions</td><td>only add/remove optional fields with defaults</td><td>Any order</td></tr>\n</table>\n<p>*_TRANSITIVE variants check against ALL previous versions, not just the latest.</p>\n\n<h3>Error handling: retriable vs non-retriable</h3>\n<table>\n<tr><th>Retriable (client retries automatically)</th><th>Non-retriable (fix required)</th></tr>\n<tr><td>LeaderNotAvailable / NotLeaderForPartition, NetworkException, NotEnoughReplicas, timeouts — transient cluster events</td><td>SerializationException, RecordTooLargeException (&gt; max.request.size / message.max.bytes), AuthorizationException, InvalidTopicException</td></tr>\n</table>\n<p>Producer: rely on retries + idempotence for the left column; catch and handle (log/DLQ/alert) the right. Consumer: a poison record that fails deserialization will fail on EVERY poll — catch it, skip past it (seek beyond, or use an error-handling deserializer) and route it to a dead-letter topic.</p>\n\n<h3>Admin API and CLI tools</h3>\n<ul>\n<li><strong>AdminClient</strong>: programmatic create/describe/delete topics, alter configs, list consumer groups and their offsets/lag, manage ACLs.</li>\n<li>CLI equivalents: <code>kafka-topics.sh</code> (--create --partitions --replication-factor / --describe), <code>kafka-console-producer.sh</code> / <code>kafka-console-consumer.sh</code> (--from-beginning, --group), <code>kafka-consumer-groups.sh</code> (--describe shows per-partition <strong>LAG</strong>; --reset-offsets), <code>kafka-configs.sh</code>.</li>\n</ul>\n\n<h3>Compression and batching</h3>\n<ul>\n<li>Compression is set on the <strong>producer</strong> (whole-batch compression); brokers usually store batches as-is; consumers decompress. Bigger batches (higher linger.ms/batch.size) compress better — compounding throughput gains at a small latency cost.</li>\n<li>zstd/lz4 are the modern favorites (good ratio/CPU balance); gzip best ratio, most CPU.</li>\n</ul>\n<p class=\"tip\"><strong>Exam tip:</strong> favorite questions — what acks=all requires (paired min.insync.replicas); idempotence stopping retry duplicates but transactions being needed for consume-transform-produce EOS; auto-commit's data-loss window vs manual commit-after-processing; max.poll.interval.ms evictions on slow processing; BACKWARD compatibility = consumers upgrade first; and the retriable/non-retriable split.</p>"
+  },
+  {
+   "id": "k3",
+   "title": "Apache Kafka Streams",
+   "weight": 12,
+   "topicDocs": {
+    "Topology, tasks, and threads": "https://docs.confluent.io/platform/current/streams/concepts.html",
+    "KStream, KTable, GlobalKTable": "https://docs.confluent.io/platform/current/streams/concepts.html",
+    "Stateful processing: state stores and internal topics": "https://kafka.apache.org/documentation/streams/",
+    "Windowing and time": "https://docs.confluent.io/platform/current/streams/concepts.html",
+    "Joins": "https://kafka.apache.org/documentation/streams/",
+    "Processing guarantees": "https://docs.confluent.io/kafka/design/delivery-semantics.html"
+   },
+   "objectives": [
+    "Describe the Streams processing topology, tasks, and threading model",
+    "Choose between KStream, KTable, and GlobalKTable",
+    "Use stateful operations: aggregations, state stores, and internal topics",
+    "Apply windowing (tumbling, hopping, sliding, session) and time semantics",
+    "Join streams and tables correctly",
+    "Configure processing guarantees (at-least-once, exactly-once)"
+   ],
+   "notes": "\n<h3>Topology, tasks, and threads</h3>\n<ul>\n<li>Kafka Streams is a <strong>client library</strong> (plain Java app — no cluster to install; deploy like any app, e.g. in Docker/Kubernetes). A <strong>topology</strong> is the graph of sources → processors → sinks built with the DSL (<code>StreamsBuilder</code>) or Processor API.</li>\n<li>The topology is split into <strong>tasks</strong> — one per input partition — the unit of parallelism. Tasks are distributed over <code>num.stream.threads</code> and over all app instances sharing the same <code>application.id</code> (which is also the consumer group id). <strong>Max parallelism = input partition count</strong>; extra instances/threads idle.</li>\n<li>Scaling out = start another instance with the same application.id: tasks (and their state) migrate automatically.</li>\n</ul>\n\n<h3>KStream, KTable, GlobalKTable</h3>\n<table>\n<tr><th></th><th>KStream</th><th>KTable</th><th>GlobalKTable</th></tr>\n<tr><td>Semantics</td><td>Event stream — every record is an independent fact (\"orders placed\")</td><td>Changelog — latest value per key (\"current price per product\"); updates overwrite</td><td>Like KTable but FULLY replicated to every instance</td></tr>\n<tr><td>Reads topic</td><td>All partitions split across tasks</td><td>All partitions split across tasks</td><td>Every instance reads ALL partitions</td></tr>\n<tr><td>Join keying</td><td colspan=\"2\">Stream-stream and stream-table joins require <strong>co-partitioning</strong> (same key, same partition count)</td><td>Join on any key (via mapper) — no co-partitioning needed</td></tr>\n<tr><td>Typical use</td><td>Transformations, enrichment events</td><td>Aggregation results, reference data that updates</td><td>Small, broadly needed lookup data</td></tr>\n</table>\n\n<h3>Stateful processing: state stores and internal topics</h3>\n<ul>\n<li>Stateful operations (<code>count</code>, <code>aggregate</code>, <code>reduce</code>, joins, windowing) keep local <strong>state stores</strong> (RocksDB on disk by default, in-memory optional).</li>\n<li>Every state store is backed by a compacted <strong>changelog topic</strong> in Kafka — the source of truth. On instance failure/migration, state is <strong>restored by replaying the changelog</strong>; <code>num.standby.replicas</code> keeps warm copies to shorten failover.</li>\n<li>Re-keying operations (<code>groupBy</code>, <code>selectKey</code> before an aggregation/join) create internal <strong>repartition topics</strong> so records with the same new key meet in the same task.</li>\n<li>State is queryable in-process (<strong>interactive queries</strong>) for serving lookups without an external DB.</li>\n</ul>\n\n<h3>Windowing and time</h3>\n<table>\n<tr><th>Window</th><th>Shape</th><th>Example</th></tr>\n<tr><td>Tumbling</td><td>Fixed size, non-overlapping</td><td>Count per 5 minutes</td></tr>\n<tr><td>Hopping</td><td>Fixed size, overlapping (size + advance)</td><td>5-min window advancing every 1 min</td></tr>\n<tr><td>Sliding</td><td>Bound to record pairs within a time difference</td><td>Joins/aggregations over \"within 30 s of each other\"</td></tr>\n<tr><td>Session</td><td>Activity-based, closed by an inactivity gap</td><td>User sessions with 10-min idle gap</td></tr>\n</table>\n<ul>\n<li>Streams operates on <strong>event time</strong> by default (record timestamps; custom <code>TimestampExtractor</code> possible), not wall-clock arrival time.</li>\n<li>Late/out-of-order records within the window's <strong>grace period</strong> still update it; results are continuously refined (use <code>suppress()</code> to emit only the final result when a window closes).</li>\n</ul>\n\n<h3>Joins</h3>\n<ul>\n<li><strong>Stream–stream</strong> joins are always <em>windowed</em> (records must occur within the window) and support inner/left/outer.</li>\n<li><strong>Stream–table</strong> joins enrich events with the table's <em>current</em> value for the key (inner/left).</li>\n<li><strong>Table–table</strong> joins produce an updating joined table.</li>\n<li>Except with GlobalKTables, join inputs must be <strong>co-partitioned</strong>: same key space and the SAME number of partitions — otherwise Streams throws or requires an explicit repartition.</li>\n</ul>\n\n<h3>Processing guarantees</h3>\n<ul>\n<li><code>processing.guarantee=at_least_once</code> (default) — duplicates possible after failures.</li>\n<li><code>processing.guarantee=exactly_once_v2</code> — wraps the consume-process-produce cycle (including state-store changelogs) in Kafka transactions; requires brokers ≥ 2.5, adds modest overhead. This is the one-line EOS switch for Streams apps.</li>\n</ul>\n<p class=\"tip\"><strong>Exam tip:</strong> classic questions — tasks = input partitions (adding instances beyond that does nothing); KTable = latest value per key (vs KStream = every event); GlobalKTable = fully replicated, no co-partitioning; state restored from changelog topics; exactly_once_v2 as the EOS setting; tumbling vs hopping vs session recognition from a scenario.</p>"
+  },
+  {
+   "id": "k4",
+   "title": "Kafka Connect",
+   "weight": 15,
+   "topicDocs": {
+    "What Connect is and when to use it": "https://docs.confluent.io/platform/current/connect/index.html",
+    "Workers: standalone vs distributed": "https://docs.confluent.io/platform/current/connect/index.html",
+    "Connectors, tasks, and scaling": "https://developer.confluent.io/courses/kafka-connect/intro/",
+    "Converters and Schema Registry": "https://docs.confluent.io/platform/current/connect/index.html",
+    "Single Message Transforms (SMTs)": "https://docs.confluent.io/platform/current/connect/transforms/overview.html",
+    "Error handling and dead letter queues": "https://docs.confluent.io/platform/current/connect/index.html",
+    "Change Data Capture (CDC)": "https://developer.confluent.io/courses/kafka-connect/intro/"
+   },
+   "objectives": [
+    "Explain Kafka Connect's purpose: source and sink integration without custom code",
+    "Compare standalone and distributed worker deployments",
+    "Configure connectors and scale them with tasks",
+    "Choose converters and integrate Schema Registry",
+    "Apply Single Message Transforms",
+    "Configure error tolerance and dead letter queues",
+    "Describe CDC (change data capture) with source connectors"
+   ],
+   "notes": "\n<h3>What Connect is and when to use it</h3>\n<svg viewBox=\"0 0 660 170\" style=\"max-width:660px;width:100%\" role=\"img\" aria-label=\"Kafka Connect pipeline\">\n  <style>.kc-b{fill:none;stroke:currentColor;stroke-width:1.5}.kc-t{font:600 13px sans-serif;fill:currentColor}.kc-s{font:11px sans-serif;fill:currentColor;opacity:.75}.kc-a{stroke:currentColor;stroke-width:1.4;marker-end:url(#kcArr)}</style>\n  <defs><marker id=\"kcArr\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L6,3 L0,6 z\" fill=\"currentColor\"/></marker></defs>\n  <rect x=\"8\" y=\"55\" width=\"110\" height=\"60\" rx=\"8\" class=\"kc-b\"/><text x=\"24\" y=\"82\" class=\"kc-t\">Database</text><text x=\"24\" y=\"100\" class=\"kc-s\">(external system)</text>\n  <rect x=\"158\" y=\"45\" width=\"130\" height=\"80\" rx=\"8\" class=\"kc-b\" style=\"fill:rgba(14,111,190,.10)\"/><text x=\"172\" y=\"75\" class=\"kc-t\">Source</text><text x=\"172\" y=\"92\" class=\"kc-t\">connector</text><text x=\"172\" y=\"110\" class=\"kc-s\">Connect worker</text>\n  <rect x=\"328\" y=\"35\" width=\"120\" height=\"100\" rx=\"8\" class=\"kc-b\" style=\"fill:rgba(30,142,78,.10)\"/><text x=\"352\" y=\"80\" class=\"kc-t\">Kafka</text><text x=\"344\" y=\"98\" class=\"kc-s\">topics</text>\n  <rect x=\"488\" y=\"45\" width=\"120\" height=\"80\" rx=\"8\" class=\"kc-b\" style=\"fill:rgba(14,111,190,.10)\"/><text x=\"502\" y=\"75\" class=\"kc-t\">Sink</text><text x=\"502\" y=\"92\" class=\"kc-t\">connector</text><text x=\"502\" y=\"110\" class=\"kc-s\">Connect worker</text>\n  <line x1=\"120\" y1=\"85\" x2=\"154\" y2=\"85\" class=\"kc-a\"/><line x1=\"290\" y1=\"85\" x2=\"324\" y2=\"85\" class=\"kc-a\"/><line x1=\"450\" y1=\"85\" x2=\"484\" y2=\"85\" class=\"kc-a\"/>\n  <text x=\"614\" y=\"80\" class=\"kc-s\">→ S3,</text><text x=\"614\" y=\"94\" class=\"kc-s\">Elastic,</text><text x=\"614\" y=\"108\" class=\"kc-s\">DB…</text>\n</svg>\n<ul>\n<li>Kafka Connect is the framework for <strong>configuration-driven integration</strong> between Kafka and external systems: <strong>source connectors</strong> pull data INTO Kafka; <strong>sink connectors</strong> push data OUT of Kafka. No custom producer/consumer code — you deploy a connector plugin and give it a JSON/properties config.</li>\n<li>Connect handles the hard parts for you: offset tracking (where the source left off / what the sink has written), scaling, fault tolerance, retries, schemas, and transformation hooks. Prefer it over hand-written glue code whenever a connector exists.</li>\n</ul>\n\n<h3>Workers: standalone vs distributed</h3>\n<table>\n<tr><th></th><th>Standalone</th><th>Distributed</th></tr>\n<tr><td>Processes</td><td>One worker process</td><td>Cluster of workers sharing a <code>group.id</code></td></tr>\n<tr><td>Config/offsets stored</td><td>Local files</td><td>Internal Kafka topics (config, offsets, status)</td></tr>\n<tr><td>Fault tolerance / scaling</td><td>None — the process IS the system</td><td>Work is rebalanced across workers; add workers to scale</td></tr>\n<tr><td>Management</td><td>Properties file at startup</td><td><strong>REST API</strong> (create/pause/resume/delete connectors, view status)</td></tr>\n<tr><td>Use</td><td>Dev, testing, one-off local jobs</td><td>Anything production</td></tr>\n</table>\n\n<h3>Connectors, tasks, and scaling</h3>\n<ul>\n<li>A <strong>connector</strong> instance is the logical job (e.g. \"this database → these topics\"); it divides work into <strong>tasks</strong> — the actual units that copy data, spread across workers.</li>\n<li><code>tasks.max</code> caps parallelism; the effective task count also depends on the source's dividable units (e.g. number of tables, or a JDBC source may cap at one task) and, for sinks, the topic's partitions.</li>\n<li>Failed tasks can be restarted via the REST API (<code>/connectors/&lt;name&gt;/status</code>, <code>/restart</code>).</li>\n</ul>\n\n<h3>Converters and Schema Registry</h3>\n<ul>\n<li><strong>Converters</strong> translate between Connect's internal data representation and the bytes in Kafka: <code>key.converter</code> / <code>value.converter</code> set per worker or per connector. Common: <code>AvroConverter</code>, <code>ProtobufConverter</code>, <code>JsonSchemaConverter</code> (all with <code>...converter.schema.registry.url</code>), plain <code>JsonConverter</code> (optionally with embedded schemas), <code>StringConverter</code>.</li>\n<li>Converters are chosen INDEPENDENTLY of the connector — the same JDBC source can write Avro or JSON depending on converter config. Mismatched converters between producer side and consumer side are the classic \"deserialization garbage\" root cause.</li>\n</ul>\n\n<h3>Single Message Transforms (SMTs)</h3>\n<ul>\n<li>Lightweight, per-record transformations applied in the connector pipeline (source: before writing to Kafka; sink: before writing to the target): rename/mask/insert fields, route records to different topics, cast types, extract keys, filter records.</li>\n<li>Configured as a chain: <code>transforms=mask,route</code> with per-transform classes/settings. For anything heavier (joins, aggregations, lookups) use a stream processor (Kafka Streams) between source and sink instead of stretching SMTs.</li>\n</ul>\n\n<h3>Error handling and dead letter queues</h3>\n<ul>\n<li><code>errors.tolerance=none</code> (default — task fails on a bad record) vs <code>all</code> (skip and continue).</li>\n<li><strong>Sink connectors</strong> can route failed records to a <strong>dead letter queue topic</strong>: <code>errors.deadletterqueue.topic.name</code> (+ <code>context.headers.enable</code> to attach failure reasons as headers). DLQs apply to sinks, not sources.</li>\n<li><code>errors.retry.timeout</code> enables retries of transient failures before tolerance/DLQ handling kicks in.</li>\n</ul>\n\n<h3>Change Data Capture (CDC)</h3>\n<ul>\n<li>CDC source connectors (e.g. <strong>Debezium</strong>) read a database's <strong>transaction log</strong> (not query polling) and publish every row-level INSERT/UPDATE/DELETE as an event — low latency, no load on tables, captures deletes.</li>\n<li>Contrast with JDBC source polling (periodic SELECTs with an incrementing/timestamp column): simpler, but misses deletes, adds DB load, and has poll-interval latency.</li>\n<li>CDC events conventionally carry before/after images; deletes are followed by tombstones for compacted topics — pairing naturally with KTable-style consumption.</li>\n</ul>\n<p class=\"tip\"><strong>Exam tip:</strong> distributed workers store config/offsets/status in internal Kafka topics and are managed over REST — standalone uses local files; that contrast is heavily tested. So are: tasks as the unit of parallelism (tasks.max), converters being independent of connectors, DLQs being a SINK feature, and log-based CDC vs polling trade-offs.</p>"
+  },
+  {
+   "id": "k5",
+   "title": "Application Testing",
+   "weight": 8,
+   "topicDocs": {
+    "Unit testing producers and consumers": "https://kafka.apache.org/documentation/",
+    "Testing Kafka Streams topologies": "https://docs.confluent.io/platform/current/streams/developer-guide/test-streams.html",
+    "Integration testing with real brokers": "https://docs.confluent.io/platform/current/streams/developer-guide/test-streams.html",
+    "Testing schema evolution": "https://docs.confluent.io/platform/current/schema-registry/fundamentals/avro.html"
+   },
+   "objectives": [
+    "Unit test producer and consumer logic with mocks",
+    "Test Kafka Streams topologies with TopologyTestDriver",
+    "Design integration tests against real (containerized/embedded) brokers",
+    "Test schema compatibility before deployment"
+   ],
+   "notes": "\n<h3>Unit testing producers and consumers</h3>\n<ul>\n<li>The Kafka clients library ships test doubles: <strong>MockProducer</strong> and <strong>MockConsumer</strong> — no broker needed.</li>\n<li><strong>MockProducer</strong> records everything your code sends (<code>history()</code>) and can simulate success or failure of sends (<code>errorNext(exception)</code>) — assert what was produced, to which topic/partition, with which key, and that callbacks/error paths behave.</li>\n<li><strong>MockConsumer</strong> lets tests seed assigned partitions, records, and end offsets, then verifies the poll-loop logic: processing, commit behavior, rebalance listener handling.</li>\n<li>Structure application code so the Kafka client is injected — logic classes take a <code>Producer&lt;K,V&gt;</code>/<code>Consumer&lt;K,V&gt;</code> interface, tests pass the mock, production passes the real client.</li>\n</ul>\n\n<h3>Testing Kafka Streams topologies</h3>\n<pre><code>TopologyTestDriver driver = new TopologyTestDriver(builder.build(), props);\nTestInputTopic&lt;String, Order&gt; in =\n    driver.createInputTopic(\"orders\", stringSerde.serializer(), orderSerde.serializer());\nTestOutputTopic&lt;String, Long&gt; out =\n    driver.createOutputTopic(\"order-counts\", stringSerde.deserializer(), longSerde.deserializer());\n\nin.pipeInput(\"cust-1\", order1);\nin.pipeInput(\"cust-1\", order2);\nassertEquals(2L, out.readKeyValue().value);   // synchronous, deterministic</code></pre>\n<ul>\n<li><strong>TopologyTestDriver</strong> executes the topology <em>synchronously without any broker</em>: pipe records into <strong>TestInputTopic</strong>s, read results from <strong>TestOutputTopic</strong>s, and query state stores directly (<code>driver.getKeyValueStore(...)</code>).</li>\n<li>It controls <strong>time explicitly</strong> — advance wall-clock/event time to test windowing, grace periods, and suppression deterministically (no sleeps, no flakiness).</li>\n</ul>\n\n<h3>Integration testing with real brokers</h3>\n<ul>\n<li>Unit tests can't cover: real serialization against a Schema Registry, security handshakes, rebalancing behavior, transactions, connector configs. For those, run a REAL Kafka in the test: <strong>Testcontainers</strong> (Kafka container per test class — today's standard), embedded Kafka utilities, or a shared test cluster.</li>\n<li>Keep them separate from unit tests (slower, resource-heavy); make topics unique per run; assert with consumers polling until a timeout rather than fixed sleeps.</li>\n<li>Test failure modes deliberately: kill the container to observe retry/idempotence behavior; produce poison records to verify DLQ paths.</li>\n</ul>\n\n<h3>Testing schema evolution</h3>\n<ul>\n<li>Before deploying a producer with a changed schema, verify compatibility against the registry: the Schema Registry <strong>compatibility check REST endpoint</strong> (or Maven plugin <code>schema-registry:test-compatibility</code>) validates a candidate schema against the subject's configured mode (BACKWARD/FORWARD/FULL) — wire this into CI so incompatible changes fail the build, not production consumers.</li>\n</ul>\n<p class=\"tip\"><strong>Exam tip:</strong> map tool to layer — MockProducer/MockConsumer for client logic, <strong>TopologyTestDriver</strong> (with TestInputTopic/TestOutputTopic) for Streams topologies without a broker, Testcontainers/embedded Kafka for integration concerns, and registry compatibility checks in CI for schema changes. TopologyTestDriver's deterministic time control for window testing is a favorite question.</p>"
+  },
+  {
+   "id": "k6",
+   "title": "Application Observability",
+   "weight": 13,
+   "topicDocs": {
+    "Client metrics via JMX": "https://docs.confluent.io/platform/current/kafka/monitoring.html",
+    "Consumer lag — the number-one signal": "https://docs.confluent.io/platform/current/kafka/monitoring.html",
+    "Producer health metrics": "https://docs.confluent.io/platform/current/kafka/monitoring.html",
+    "Logging, tracing, and interceptors": "https://docs.confluent.io/platform/current/kafka/monitoring.html",
+    "Troubleshooting common scenarios": "https://docs.confluent.io/platform/current/clients/consumer.html"
+   },
+   "objectives": [
+    "Expose and collect client metrics (JMX) for producers, consumers, and Streams",
+    "Monitor consumer lag and alert on it",
+    "Track producer health: errors, retries, latency, throughput",
+    "Use logging, tracing, and interceptors for end-to-end visibility",
+    "Troubleshoot common client-side problems from metrics"
+   ],
+   "notes": "\n<h3>Client metrics via JMX</h3>\n<ul>\n<li>All Kafka clients (producer, consumer, Streams, Connect) expose metrics through <strong>JMX MBeans</strong>; scrape them with your monitoring stack (Prometheus JMX exporter, etc.). Metrics exist per client, per topic, and per node.</li>\n<li>Kafka Streams adds thread/task/processor/state-store metrics (<code>metrics.recording.level</code> controls granularity); Connect exposes connector/task status and throughput metrics.</li>\n<li>Watch BOTH sides: client metrics tell you how YOUR app behaves; broker-side metrics (under-replicated partitions, request handler idle %) tell you about the cluster — a developer is expected to read the client side fluently.</li>\n</ul>\n\n<h3>Consumer lag — the number-one signal</h3>\n<ul>\n<li><strong>Lag = log end offset − committed/current offset</strong>, per partition: how far behind the consumer is. Growing lag means the app can't keep up (or stopped).</li>\n<li>Sources: consumer metric <code>records-lag-max</code>, <code>kafka-consumer-groups.sh --describe --group app</code> (shows CURRENT-OFFSET, LOG-END-OFFSET, LAG per partition), and external lag exporters (e.g. Burrow) for fleet-wide monitoring.</li>\n<li>Alert on <em>sustained growth</em>, not momentary spikes. Remedies: faster processing (batch/parallelize the work), more consumers (up to partition count), more partitions (planned!), or tuning <code>max.poll.records</code>/processing pipeline.</li>\n<li>Also watch <strong>rebalance metrics</strong> (rebalance rate, time-between-poll) — frequent rebalances often masquerade as lag problems.</li>\n</ul>\n\n<h3>Producer health metrics</h3>\n<table>\n<tr><th>Metric</th><th>What it tells you</th></tr>\n<tr><td><code>record-error-rate</code></td><td>Sends that ultimately FAILED (post-retries) — should be ~0; alert otherwise</td></tr>\n<tr><td><code>record-retry-rate</code></td><td>Transient trouble being retried — early warning of cluster/network issues</td></tr>\n<tr><td><code>request-latency-avg/max</code></td><td>Broker round-trip time — rising latency precedes buffer exhaustion</td></tr>\n<tr><td><code>batch-size-avg</code>, <code>records-per-request-avg</code>, <code>compression-rate-avg</code></td><td>Batching efficiency — small batches = tune linger.ms/batch.size</td></tr>\n<tr><td><code>buffer-available-bytes</code> / <code>bufferpool-wait-time</code></td><td>buffer.memory pressure — send() will start blocking (max.block.ms) when exhausted</td></tr>\n</table>\n\n<h3>Logging, tracing, and interceptors</h3>\n<ul>\n<li>Client logs (log4j/slf4j) surface warnings you should not ignore: rebalances, disconnections, expired transactions, slow commits.</li>\n<li><strong>Message headers</strong> carry correlation/trace IDs across the pipeline; standard practice is W3C/OpenTelemetry trace context propagated producer → consumer so one business transaction is traceable end to end.</li>\n<li><strong>Interceptors</strong> (<code>ProducerInterceptor</code> / <code>ConsumerInterceptor</code>) hook onSend/onConsume for cross-cutting telemetry (count, tag, trace) without touching business code — this is how Confluent Monitoring interceptors work.</li>\n<li>End-to-end latency = event timestamp vs processing time at the consumer — measure it; per-hop metrics alone hide pipeline delays.</li>\n</ul>\n\n<h3>Troubleshooting common scenarios</h3>\n<table>\n<tr><th>Symptom</th><th>Likely cause → check</th></tr>\n<tr><td>Lag grows on ALL partitions</td><td>Processing too slow overall → processing time per record, thread pool, downstream calls</td></tr>\n<tr><td>Lag grows on ONE partition</td><td>Hot key/skewed partitioning, or one stuck consumer → key distribution, that consumer's logs</td></tr>\n<tr><td>Consumer keeps leaving the group</td><td>poll() gaps exceed <code>max.poll.interval.ms</code> → reduce max.poll.records or speed up processing</td></tr>\n<tr><td>Duplicates downstream</td><td>At-least-once + rebalances/crashes between processing and commit → idempotent handling or EOS/transactions</td></tr>\n<tr><td>Producer TimeoutException, buffer full</td><td>Cluster slow/unreachable or produce rate &gt; capacity → request latency, cluster health, buffer.memory</td></tr>\n<tr><td>Consumer gets garbage / DeserializationException</td><td>Serializer/converter mismatch or schema change → producer serializer vs consumer deserializer, registry compatibility</td></tr>\n</table>\n<p class=\"tip\"><strong>Exam tip:</strong> consumer LAG is the metric the exam cares most about — know its definition, where to read it (metrics + kafka-consumer-groups.sh --describe), and the remediation options. Producer-side, record-error-rate vs record-retry-rate (failed vs retried) is the classic pair. And every \"consumer evicted from group\" scenario resolves to max.poll.interval.ms.</p>"
+  }
+ ]
+}

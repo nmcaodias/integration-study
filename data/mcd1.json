@@ -1,0 +1,1364 @@
+{
+ "id": "mcd1",
+ "name": "MuleSoft Certified Developer – Level 1",
+ "short": "MCD Level 1",
+ "exam": {
+  "questions": 60,
+  "minutes": 120,
+  "passPct": 70
+ },
+ "questions": [
+  {
+   "id": "m1-001",
+   "section": "s1",
+   "q": "In API-led connectivity, which layer is responsible for unlocking data from core systems of record and insulating consumers from changes to those systems?",
+   "options": [
+    "Experience API layer",
+    "Process API layer",
+    "System API layer",
+    "Orchestration API layer"
+   ],
+   "answer": 2,
+   "explanation": "System APIs sit closest to core systems (databases, SaaS, legacy). They expose the underlying data in a canonical way and shield upstream consumers from changes to those systems. Process APIs orchestrate; Experience APIs tailor data for specific channels."
+  },
+  {
+   "id": "m1-002",
+   "section": "s1",
+   "q": "A company wants to enable reuse and self-service of integration assets across lines of business, publish best practices, and measure asset consumption. According to MuleSoft, what organizational model should be established?",
+   "options": [
+    "A Center of Excellence (CoE) that builds all integrations centrally",
+    "A Center for Enablement (C4E) that enables teams to build and consume reusable assets",
+    "An Integration Competency Center that approves every API design",
+    "An outsourced integration delivery team"
+   ],
+   "answer": 1,
+   "explanation": "The C4E is a cross-functional enablement team: it ensures assets are productized, published, discoverable, and consumed, and it measures that consumption. Unlike a traditional CoE, it enables other teams rather than doing all delivery itself."
+  },
+  {
+   "id": "m1-003",
+   "section": "s1",
+   "q": "Which HTTP method and characteristic combination is correct according to standard REST conventions?",
+   "options": [
+    "GET requests include a request body describing the query",
+    "POST requests are idempotent and used to retrieve resources",
+    "PUT requests replace/update a resource at a known URI and are idempotent",
+    "DELETE requests must always include a request body"
+   ],
+   "answer": 2,
+   "explanation": "PUT updates (or creates) a resource at a known URI, and repeating the same PUT yields the same result (idempotent). GET and DELETE conventionally carry no body, and POST (create/process) is not idempotent."
+  },
+  {
+   "id": "m1-004",
+   "section": "s1",
+   "q": "Which Anypoint Platform component is used to discover, share, and reuse assets such as API specifications, connectors, and templates?",
+   "options": [
+    "Runtime Manager",
+    "Anypoint Exchange",
+    "API Designer",
+    "Anypoint Monitoring"
+   ],
+   "answer": 1,
+   "explanation": "Exchange is the marketplace/catalog of reusable assets. Runtime Manager deploys and manages apps, API Designer creates specs, and Anypoint Monitoring provides dashboards and alerts."
+  },
+  {
+   "id": "m1-005",
+   "section": "s1",
+   "q": "What is the primary cause of the 'IT delivery gap' that MuleSoft's application network approach aims to close?",
+   "options": [
+    "Businesses request fewer projects while IT capacity grows",
+    "The demand on IT grows much faster than IT's delivery capacity with point-to-point integration",
+    "Cloud providers limit the number of APIs a company can build",
+    "Developers refuse to document their code"
+   ],
+   "answer": 1,
+   "explanation": "Business demands on IT grow rapidly, but custom point-to-point integration doesn't scale, so IT delivery capacity stays roughly flat. Reusable APIs in an application network let each project deliver faster than the last, closing the gap."
+  },
+  {
+   "id": "m1-006",
+   "section": "s1",
+   "q": "A web storefront needs data aggregated from several process APIs, formatted specifically for its UI. In API-led connectivity, where should this channel-specific formatting logic live?",
+   "options": [
+    "In the System API layer",
+    "In the Experience API layer",
+    "In the database stored procedures",
+    "In an API proxy policy"
+   ],
+   "answer": 1,
+   "explanation": "Experience APIs reconfigure data for the needs of a specific channel or end user experience (web, mobile, partner). System APIs unlock core systems and Process APIs hold channel-agnostic business logic."
+  },
+  {
+   "id": "m1-007",
+   "section": "s2",
+   "q": "In a RAML specification, what is the correct way to define a URI parameter for retrieving a single flight by its ID?",
+   "options": [
+    "/flights?ID: get:",
+    "/flights/{ID}: with a nested get: method",
+    "/flights/:ID: with a nested get: method",
+    "/flights/[ID]: with a nested get: method"
+   ],
+   "answer": 1,
+   "explanation": "RAML nests resources, and URI parameters are declared with curly braces: /flights/{ID}. The :ID syntax belongs to other frameworks (e.g. Express), and square brackets are not valid RAML."
+  },
+  {
+   "id": "m1-008",
+   "section": "s2",
+   "q": "When should a query parameter be used instead of a URI parameter in an API design?",
+   "options": [
+    "When identifying a specific, unique resource",
+    "When filtering or restricting the set of results returned from a collection",
+    "When sending sensitive credentials",
+    "When the value is required for the request to succeed"
+   ],
+   "answer": 1,
+   "explanation": "URI parameters identify a specific resource (/flights/23); query parameters filter, sort, or paginate collections (/flights?destination=SFO). Required vs optional is orthogonal — query params can be required too, but resource identity belongs in the URI."
+  },
+  {
+   "id": "m1-009",
+   "section": "s2",
+   "q": "An API design team wants consumers to try an API and give feedback before any implementation is built. What Anypoint Platform feature makes this possible?",
+   "options": [
+    "The mocking service, exercised from the API console in Exchange or API Designer",
+    "Runtime Manager sandbox workers",
+    "The Mule debugger",
+    "API Manager SLA tiers"
+   ],
+   "answer": 0,
+   "explanation": "The mocking service simulates the API from its specification and example data, so consumers can send real HTTP requests to a mock endpoint from the API console — a key part of the design-first lifecycle (design, simulate, get feedback, validate)."
+  },
+  {
+   "id": "m1-010",
+   "section": "s2",
+   "q": "In RAML, what is the purpose of a trait?",
+   "options": [
+    "To define a reusable data type for request bodies",
+    "To define a reusable set of method-level properties, such as pagination query parameters, applied with 'is:'",
+    "To secure the API with OAuth",
+    "To split the RAML file into multiple physical files"
+   ],
+   "answer": 1,
+   "explanation": "Traits capture reusable method-level patterns (query params, headers, responses) and are applied to methods with 'is: [traitName]'. resourceTypes do the same at resource level; types define data structures; !include splits files."
+  },
+  {
+   "id": "m1-011",
+   "section": "s2",
+   "q": "A RAML spec defines: /flights: get: queryParameters: destination: enum: [SFO, LAX, CLE]. Which request is valid against this API?",
+   "options": [
+    "GET /flights/destination/SFO",
+    "GET /flights?destination=SFO",
+    "POST /flights with body {\"destination\": \"SFO\"}",
+    "GET /flights?dest=SFO"
+   ],
+   "answer": 1,
+   "explanation": "destination is defined as a query parameter of the GET /flights method, so it is passed as ?destination=SFO. The parameter name must match exactly, and it is not a URI path segment."
+  },
+  {
+   "id": "m1-012",
+   "section": "s2",
+   "q": "Which RAML fragment type is used to define a reusable data structure that can be published to Exchange and referenced from multiple API specifications?",
+   "options": [
+    "NamedExample fragment",
+    "DataType fragment",
+    "Trait fragment",
+    "Overlay fragment"
+   ],
+   "answer": 1,
+   "explanation": "A DataType fragment defines a reusable type (e.g. AmericanFlight). NamedExample holds example instances, Traits hold method patterns, and Overlays/Extensions modify existing specs."
+  },
+  {
+   "id": "m1-013",
+   "section": "s3",
+   "q": "What are the two main parts of a Mule message?",
+   "options": [
+    "Payload and variables",
+    "Payload and attributes",
+    "Headers and body",
+    "Inbound properties and outbound properties"
+   ],
+   "answer": 1,
+   "explanation": "A Mule message = payload (the data) + attributes (metadata such as HTTP query params and headers). Variables belong to the Mule event, alongside the message. Inbound/outbound properties were Mule 3 concepts."
+  },
+  {
+   "id": "m1-014",
+   "section": "s3",
+   "q": "A flow receives an HTTP request with the query parameter ?code=SFO. Which DataWeave expression accesses its value?",
+   "options": [
+    "payload.code",
+    "attributes.queryParams.code",
+    "vars.queryParams.code",
+    "message.inboundProperties.code"
+   ],
+   "answer": 1,
+   "explanation": "HTTP metadata like query parameters, URI parameters, and headers is stored in the message attributes: attributes.queryParams.code. The payload holds the request body, and vars are only what you set yourself."
+  },
+  {
+   "id": "m1-015",
+   "section": "s3",
+   "q": "What happens to the attributes of a Mule message when the event passes through an HTTP Request operation?",
+   "options": [
+    "They are preserved unchanged",
+    "They are merged with the response headers",
+    "They are replaced by new attributes from the HTTP response (status code, headers, etc.)",
+    "They are copied into flow variables automatically"
+   ],
+   "answer": 2,
+   "explanation": "Every connector operation that returns a message replaces the attributes with metadata about ITS result — after an HTTP Request, attributes contain the response status code and headers. Save anything you need first (e.g. in a variable)."
+  },
+  {
+   "id": "m1-016",
+   "section": "s3",
+   "q": "A developer needs to call an external API to get a currency rate but must keep the current payload intact for the next processor. What is the recommended approach?",
+   "options": [
+    "Wrap the HTTP Request in a Try scope",
+    "Set the target parameter of the HTTP Request operation to store the response in a variable",
+    "Copy the payload into the attributes first",
+    "Use a subflow so payload changes are discarded"
+   ],
+   "answer": 1,
+   "explanation": "The target (and target value) parameter stores the operation's output in a variable instead of overwriting the payload — the standard Mule 4 enrichment pattern."
+  },
+  {
+   "id": "m1-017",
+   "section": "s3",
+   "q": "Which statement about flow variables (vars) is true?",
+   "options": [
+    "They persist across an HTTP Request call to another Mule application",
+    "They are lost when the event passes through a Flow Reference",
+    "They persist for the current flow and through Flow References within the same application",
+    "They can only store String values"
+   ],
+   "answer": 2,
+   "explanation": "Variables travel with the Mule event through Flow References (and back). They do NOT cross a transport boundary to another application — only the payload and any headers you explicitly set are transmitted. Variables can hold any type."
+  },
+  {
+   "id": "m1-018",
+   "section": "s3",
+   "q": "In an event processor's field, what syntax embeds a DataWeave expression inline?",
+   "options": [
+    "${payload.name}",
+    "#[payload.name]",
+    "{{payload.name}}",
+    "%[payload.name]"
+   ],
+   "answer": 1,
+   "explanation": "Inline DataWeave expressions use #[ ... ]. The ${ } syntax is for property placeholders resolved at startup, not runtime expressions."
+  },
+  {
+   "id": "m1-019",
+   "section": "s4",
+   "q": "What is the difference between a subflow and a private flow?",
+   "options": [
+    "A subflow has an event source; a private flow does not",
+    "A private flow has its own error handling scope; a subflow does not and inherits the caller's",
+    "A subflow can only be called once per application",
+    "There is no difference; the names are interchangeable"
+   ],
+   "answer": 1,
+   "explanation": "Neither has an event source, but a private flow has its own processing strategy and error handling, while a subflow inherits everything from the calling flow (and is slightly more performant)."
+  },
+  {
+   "id": "m1-020",
+   "section": "s4",
+   "q": "When a Flow Reference calls another flow in the same application, what data does the called flow receive?",
+   "options": [
+    "Only the payload",
+    "The payload and attributes but not variables",
+    "The entire Mule event: payload, attributes, and variables",
+    "A copy of the event; changes are discarded on return"
+   ],
+   "answer": 2,
+   "explanation": "A Flow Reference passes the whole Mule event, and any changes made by the referenced flow (payload, variables) come back to the calling flow. This differs from crossing a transport boundary, where only the payload is sent."
+  },
+  {
+   "id": "m1-021",
+   "section": "s4",
+   "q": "A developer wants database credentials to differ between dev and prod without changing code. What is the recommended Mule 4 approach?",
+   "options": [
+    "Hardcode both sets and use a Choice router",
+    "Store values in YAML properties files (e.g. dev.yaml, prod.yaml) selected by a system property like -Denv=dev, referenced with ${db.user}",
+    "Store credentials in the flow name",
+    "Use DataWeave vars in every connector configuration"
+   ],
+   "answer": 1,
+   "explanation": "Property placeholders externalize configuration. A common pattern is per-environment YAML files whose name is built from an env system property: <file>${env}.yaml</file>, referenced via ${db.user} in configs and p('db.user') in DataWeave."
+  },
+  {
+   "id": "m1-022",
+   "section": "s4",
+   "q": "What is the purpose of a Mule domain project?",
+   "options": [
+    "To bundle multiple applications into one deployable JAR",
+    "To share global configurations (like an HTTP Listener config and port) among applications deployed to the same customer-hosted Mule runtime",
+    "To enable CloudHub applications to share vCores",
+    "To group APIs in Exchange"
+   ],
+   "answer": 1,
+   "explanation": "Domains let apps on the same customer-hosted runtime share resources such as HTTP Listener configurations (port sharing) and connections. Domains are not supported on CloudHub, where each app runs on its own worker."
+  },
+  {
+   "id": "m1-023",
+   "section": "s4",
+   "q": "In DataWeave, how do you read a value from a configuration properties file registered in the application?",
+   "options": [
+    "vars.db_host",
+    "p('db.host')",
+    "properties.db.host",
+    "${db.host} inside the DataWeave body"
+   ],
+   "answer": 1,
+   "explanation": "In DataWeave scripts, use the p() function: p('db.host'). The ${db.host} placeholder syntax works in component configuration fields, not inside DataWeave expressions."
+  },
+  {
+   "id": "m1-024",
+   "section": "s4",
+   "q": "Why would a developer move connector configurations into a separate global elements XML file?",
+   "options": [
+    "It is required for the application to compile",
+    "To improve readability and organize reusable configurations referenced by many flows",
+    "Global elements only work in a separate file",
+    "To encrypt the configurations"
+   ],
+   "answer": 1,
+   "explanation": "Global configurations can live in any config file; keeping them in a dedicated file (e.g. global.xml) is a best practice for organization and reuse. It's a convention, not a requirement."
+  },
+  {
+   "id": "m1-025",
+   "section": "s5",
+   "q": "When APIkit generates flows from a RAML specification, how does the APIkit Router determine which flow handles a request?",
+   "options": [
+    "By the flow's position in the configuration file",
+    "By matching the request's method and resource path to the flow's name (e.g. get:\\flights:api-config)",
+    "By reading a routing table in the pom.xml",
+    "By evaluating a Choice router inside the main flow"
+   ],
+   "answer": 1,
+   "explanation": "APIkit routes by flow naming convention: the generated flow name encodes method, resource (and config name). Renaming these flows breaks routing."
+  },
+  {
+   "id": "m1-026",
+   "section": "s5",
+   "q": "A request violates the API specification (a required query parameter is missing). What does the APIkit Router do by default?",
+   "options": [
+    "Routes the request anyway and lets the implementation fail",
+    "Raises an APIKIT:BAD_REQUEST error, which the generated error handler maps to a 400 response",
+    "Returns a 500 response with no body",
+    "Silently drops the request"
+   ],
+   "answer": 1,
+   "explanation": "The APIkit Router validates requests against the spec. Invalid requests raise APIKIT:BAD_REQUEST, and the scaffolded error handlers return the corresponding HTTP status (400)."
+  },
+  {
+   "id": "m1-027",
+   "section": "s5",
+   "q": "What does the anypoint platform automatically generate when a RAML API specification is published to Exchange, making the API easy to consume from Studio?",
+   "options": [
+    "A SOAP WSDL",
+    "A REST Connector (via REST Connect) with one operation per method",
+    "A Java SDK",
+    "An APIkit error handler"
+   ],
+   "answer": 1,
+   "explanation": "REST Connect generates a connector from the published spec. Developers add it to their project from Exchange and get typed operations instead of hand-configured HTTP Request calls."
+  },
+  {
+   "id": "m1-028",
+   "section": "s5",
+   "q": "Inside an APIkit-generated implementation flow for GET /flights/{ID}, how is the ID value accessed?",
+   "options": [
+    "payload.ID",
+    "attributes.uriParams.ID",
+    "vars.ID",
+    "attributes.queryParams.ID"
+   ],
+   "answer": 1,
+   "explanation": "URI parameters extracted by the router are placed in attributes.uriParams. Query parameters go to attributes.queryParams."
+  },
+  {
+   "id": "m1-029",
+   "section": "s5",
+   "q": "Which statement describes a benefit of generating an API interface with APIkit rather than building it manually?",
+   "options": [
+    "APIkit removes the need for an HTTP Listener",
+    "APIkit guarantees zero-downtime deployments",
+    "The interface stays consistent with the specification, and request validation plus error handling scaffolding come for free",
+    "APIkit automatically writes the implementation logic for each resource"
+   ],
+   "answer": 2,
+   "explanation": "APIkit scaffolds routing flows, validates requests against the spec, and generates standard error handlers. Business logic still has to be implemented by the developer."
+  },
+  {
+   "id": "m1-030",
+   "section": "s5",
+   "q": "A developer regenerates APIkit flows after the RAML spec added a new resource. What happens to existing implementation flows?",
+   "options": [
+    "They are deleted and must be rewritten",
+    "They are preserved; APIkit adds flows only for the new resource/method pairs",
+    "They are renamed with a version suffix",
+    "They are moved to a backup project"
+   ],
+   "answer": 1,
+   "explanation": "Regenerating flows from an updated spec adds missing flows for new resources/methods while leaving existing implementation flows intact."
+  },
+  {
+   "id": "m1-031",
+   "section": "s6",
+   "q": "In a Choice router with three 'when' routes and a default route, the event matches the conditions of both the first and second routes. What happens?",
+   "options": [
+    "Both matching routes execute in parallel",
+    "Only the first matching route executes",
+    "The default route executes because the match is ambiguous",
+    "An error is raised"
+   ],
+   "answer": 1,
+   "explanation": "The Choice router executes exactly one route: the FIRST whose expression evaluates true. If none match, the otherwise/default route runs."
+  },
+  {
+   "id": "m1-032",
+   "section": "s6",
+   "q": "What payload does a Scatter-Gather return after all its routes complete successfully?",
+   "options": [
+    "The payload of the last route only",
+    "An array of payloads in route order",
+    "An object with keys \"0\", \"1\", ... each containing that route's Mule message (payload and attributes)",
+    "The original request payload unchanged"
+   ],
+   "answer": 2,
+   "explanation": "Scatter-Gather aggregates results into an object keyed by route index; each value holds that route's message. Developers typically follow it with DataWeave like flatten(payload pluck $.payload) to merge results."
+  },
+  {
+   "id": "m1-033",
+   "section": "s6",
+   "q": "How does the Scatter-Gather router process its routes?",
+   "options": [
+    "Sequentially, stopping at the first failure",
+    "Concurrently, sending a copy of the event to every route and waiting for all to complete",
+    "Round-robin, one route per incoming event",
+    "Only the fastest route's result is kept"
+   ],
+   "answer": 1,
+   "explanation": "Scatter-Gather multicasts a copy of the event to all routes in parallel and waits for all of them. Round-robin describes the Round Robin router; 'first successful' describes First Successful."
+  },
+  {
+   "id": "m1-034",
+   "section": "s6",
+   "q": "What happens when an 'Is number' validation component from the Validation module receives a non-numeric string?",
+   "options": [
+    "It sets the payload to false",
+    "It throws a Mule error of type VALIDATION:INVALID_NUMBER",
+    "It logs a warning and continues",
+    "It converts the value to 0"
+   ],
+   "answer": 1,
+   "explanation": "Validation components throw typed Mule errors on failure (VALIDATION namespace) rather than returning booleans, so failures can be handled by error handlers."
+  },
+  {
+   "id": "m1-035",
+   "section": "s6",
+   "q": "A flow must route an order to exactly one of three handlers based on payload.orderType, with a fallback for unknown types. Which component fits best?",
+   "options": [
+    "Scatter-Gather",
+    "Choice router with three when routes and a default route",
+    "For Each scope",
+    "First Successful router"
+   ],
+   "answer": 1,
+   "explanation": "Conditional single-route dispatching with a fallback is exactly the Choice router's job. Scatter-Gather would send the order to ALL handlers."
+  },
+  {
+   "id": "m1-036",
+   "section": "s6",
+   "q": "By default, what happens if one route inside a Scatter-Gather fails?",
+   "options": [
+    "The other routes are cancelled and their results discarded silently",
+    "Scatter-Gather waits for all routes, then raises a composite routing error containing the failure(s)",
+    "The failed route is retried three times",
+    "The failure is ignored and the aggregate contains only successful routes"
+   ],
+   "answer": 1,
+   "explanation": "All routes run; if any fail, a COMPOSITE_ROUTING error aggregating the failures is raised. Handling partial failures requires error handling inside the routes (e.g. Try scopes)."
+  },
+  {
+   "id": "m1-037",
+   "section": "s7",
+   "q": "An HTTP-triggered flow has an On Error Continue scope that matches the raised error. What HTTP response does the caller receive?",
+   "options": [
+    "A 500 error response, because an error occurred",
+    "The flow's success response (200 by default), with the payload produced by the error handler",
+    "A 400 Bad Request",
+    "No response; the connection is closed"
+   ],
+   "answer": 1,
+   "explanation": "On Error Continue handles the error and continues as if the flow succeeded, so the HTTP Listener returns its success response. On Error Propagate would return the error (500) response."
+  },
+  {
+   "id": "m1-038",
+   "section": "s7",
+   "q": "Flow A calls Flow B via Flow Reference. Flow B raises an error that is handled by an On Error Propagate scope in Flow B. What happens in Flow A?",
+   "options": [
+    "Flow A continues normally after the Flow Reference",
+    "The error propagates to Flow A, where its error handling (or the default handler) takes over; the rest of Flow A does not execute normally",
+    "Flow A restarts from the beginning",
+    "Flow A receives the error as its payload and continues"
+   ],
+   "answer": 1,
+   "explanation": "On Error Propagate re-throws the error after running its processors, so the error surfaces at the Flow Reference in Flow A and is handled by Flow A's error handling."
+  },
+  {
+   "id": "m1-039",
+   "section": "s7",
+   "q": "Which expression accesses the type of the error that was raised, inside an error handler?",
+   "options": [
+    "payload.errorType",
+    "error.errorType",
+    "vars.error.type",
+    "attributes.error"
+   ],
+   "answer": 1,
+   "explanation": "In an error handler, the error object exposes error.errorType, error.description, and error.cause. The payload remains whatever it was when the error occurred."
+  },
+  {
+   "id": "m1-040",
+   "section": "s7",
+   "q": "A developer wants one error handler to be used by all flows in the application that do not define their own. What should they configure?",
+   "options": [
+    "An On Error Continue in every flow",
+    "A Try scope around every flow",
+    "A global error handler referenced as the application's default error handler in the project configuration",
+    "An APIkit console flow"
+   ],
+   "answer": 2,
+   "explanation": "Define a global error handler (Error Handler global element) and set it as the default error handler in the Mule configuration properties. It applies only to flows without their own handler — it is a fallback, not an addition."
+  },
+  {
+   "id": "m1-041",
+   "section": "s7",
+   "q": "What is the purpose of a Try scope?",
+   "options": [
+    "To retry failed processors automatically",
+    "To handle errors at the level of one or more processors inside a flow, with its own error handling scopes",
+    "To run processors in parallel",
+    "To catch Java exceptions only, not Mule errors"
+   ],
+   "answer": 1,
+   "explanation": "A Try scope wraps a set of processors and attaches error handling to just that section, enabling processor-level handling (e.g. continue after one risky call fails). It does not retry by itself — that's Until Successful."
+  },
+  {
+   "id": "m1-042",
+   "section": "s7",
+   "q": "An error handler has two On Error scopes: the first matches type MULE:ANY, the second matches HTTP:NOT_FOUND. An HTTP:NOT_FOUND error is raised. Which scope handles it?",
+   "options": [
+    "The second, because it is the most specific match",
+    "The first, because scopes are evaluated in order and MULE:ANY matches everything",
+    "Both scopes execute in order",
+    "Neither; the error propagates"
+   ],
+   "answer": 1,
+   "explanation": "Error scopes are evaluated top to bottom and the FIRST match wins. Since all errors extend MULE:ANY, the first scope catches everything — specific handlers must be placed before general ones."
+  },
+  {
+   "id": "m1-043",
+   "section": "s7",
+   "q": "Why would a developer configure error mapping on a connector operation?",
+   "options": [
+    "To retry the operation with backoff",
+    "To convert a low-level error (e.g. HTTP:NOT_FOUND) into a custom, application-specific error type (e.g. APP:CUSTOMER_NOT_FOUND)",
+    "To suppress all errors from the operation",
+    "To log the error automatically"
+   ],
+   "answer": 1,
+   "explanation": "Error mapping renames/reclassifies errors into custom namespaces so error handlers can react to business-meaningful types instead of transport-level ones."
+  },
+  {
+   "id": "m1-044",
+   "section": "s8",
+   "q": "Given payload = [{price: 10}, {price: 20}], what does this script return?\n\n%dw 2.0\noutput application/json\n---\npayload map (item, index) -> { p: item.price * 2 }",
+   "options": [
+    "[{p: 20}, {p: 40}]",
+    "{p: [20, 40]}",
+    "[{price: 20}, {price: 40}]",
+    "An error, because map requires $ syntax"
+   ],
+   "answer": 0,
+   "explanation": "map transforms each array element with the lambda; named parameters (item, index) are equivalent to $ and $$. Each element becomes an object with key p and doubled price."
+  },
+  {
+   "id": "m1-045",
+   "section": "s8",
+   "q": "Which DataWeave expression removes duplicate elements from an array of objects based on their 'id' field?",
+   "options": [
+    "payload filter $.id",
+    "payload distinctBy $.id",
+    "payload groupBy $.id",
+    "payload orderBy $.id"
+   ],
+   "answer": 1,
+   "explanation": "distinctBy returns unique elements based on the criteria expression. groupBy would return an object of arrays keyed by id; filter keeps elements matching a boolean."
+  },
+  {
+   "id": "m1-046",
+   "section": "s8",
+   "q": "What must be true for a DataWeave script that outputs application/xml?",
+   "options": [
+    "The body must produce a single root element",
+    "The body must be an array",
+    "All values must be strings",
+    "The script must import dw::xml"
+   ],
+   "answer": 0,
+   "explanation": "XML documents require exactly one root element, so the top level of the script body must reduce to a single key. Multiple top-level keys or an array cause an error."
+  },
+  {
+   "id": "m1-047",
+   "section": "s8",
+   "q": "Which expression converts the string \"2024-03-15\" into a Date and formats today's date as \"15-03-2024\" style output?",
+   "options": [
+    "\"2024-03-15\" as Date and now() as String {format: \"dd-MM-yyyy\"}",
+    "toDate(\"2024-03-15\") and format(now(), \"dd-MM-yyyy\")",
+    "Date(\"2024-03-15\") and now().format(\"dd-MM-yyyy\")",
+    "\"2024-03-15\" as String {format: Date}"
+   ],
+   "answer": 0,
+   "explanation": "Type coercion uses the 'as' operator, optionally with format metadata: value as Date, and now() as String {format: \"dd-MM-yyyy\"}."
+  },
+  {
+   "id": "m1-048",
+   "section": "s8",
+   "q": "Where should a reusable DataWeave function library be placed, and how is it used in a Transform Message component?",
+   "options": [
+    "In a .dwl file under src/main/resources (e.g. modules/MyModule.dwl), imported with 'import modules::MyModule'",
+    "In pom.xml as a dependency",
+    "In the flow's error handler",
+    "In a Java class annotated @DataWeave"
+   ],
+   "answer": 0,
+   "explanation": "Custom modules are .dwl files on the classpath (src/main/resources). Import them in the header: import modules::MyModule (then MyModule::myFun) or import * from modules::MyModule."
+  },
+  {
+   "id": "m1-049",
+   "section": "s8",
+   "q": "Which DataWeave function calls another flow from inside a script and returns that flow's payload?",
+   "options": [
+    "invoke()",
+    "lookup()",
+    "callFlow()",
+    "flowRef()"
+   ],
+   "answer": 1,
+   "explanation": "lookup(\"flowName\", payload) executes a flow (not a subflow) and returns its resulting payload. It should be used sparingly — errors in the called flow can be hard to handle."
+  },
+  {
+   "id": "m1-050",
+   "section": "s8",
+   "q": "Given payload = [{\"dest\":\"SFO\",\"price\":100},{\"dest\":\"LAX\",\"price\":75},{\"dest\":\"SFO\",\"price\":90}], what does 'payload groupBy $.dest' return?",
+   "options": [
+    "An array sorted by dest",
+    "An object with keys \"SFO\" and \"LAX\", each containing an array of the matching objects",
+    "An array with duplicate destinations removed",
+    "The count of flights per destination"
+   ],
+   "answer": 1,
+   "explanation": "groupBy returns an object whose keys are the criteria values and whose values are arrays of matching elements: {SFO: [...2 items...], LAX: [...1 item...]}."
+  },
+  {
+   "id": "m1-051",
+   "section": "s8",
+   "q": "In a DataWeave script, where are 'var' and 'fun' declarations placed?",
+   "options": [
+    "In the body, after the --- separator",
+    "In the header, before the --- separator",
+    "In a separate properties file",
+    "Inside #[ ] blocks only"
+   ],
+   "answer": 1,
+   "explanation": "The header (above ---) holds directives: %dw 2.0, output, var, fun, import, type, ns. The body (below ---) is a single expression producing the output."
+  },
+  {
+   "id": "m1-052",
+   "section": "s9",
+   "q": "Why should a Database Select query use input parameters (e.g. WHERE code = :code) instead of string-concatenating values into the SQL?",
+   "options": [
+    "Concatenation is not supported by the Database connector",
+    "Input parameters prevent SQL injection and let the driver handle escaping and types",
+    "Input parameters make the query run in parallel",
+    "Named parameters are required for SELECT statements"
+   ],
+   "answer": 1,
+   "explanation": "Parameterized queries bind values safely (:code with input parameters map #[{code: ...}]), preventing SQL injection. Concatenation works but is unsafe."
+  },
+  {
+   "id": "m1-053",
+   "section": "s9",
+   "q": "An HTTP Request operation receives a 404 from the remote REST service. What happens by default?",
+   "options": [
+    "The payload is set to null and the flow continues",
+    "A Mule error of type HTTP:NOT_FOUND is raised",
+    "The request is retried automatically",
+    "The response body is returned as the payload with no error"
+   ],
+   "answer": 1,
+   "explanation": "By default only 2xx responses are treated as success; other statuses raise typed errors (HTTP:NOT_FOUND, HTTP:INTERNAL_SERVER_ERROR...). The success range is configurable via the response validator / success status codes."
+  },
+  {
+   "id": "m1-054",
+   "section": "s9",
+   "q": "Which connector is used to consume a SOAP web service in Mule 4, and how is it configured?",
+   "options": [
+    "HTTP Request pointing at the WSDL",
+    "Web Service Consumer, configured with the service's WSDL location, service, port, and address",
+    "SOAPkit Router",
+    "REST Connect connector generated from the WSDL"
+   ],
+   "answer": 1,
+   "explanation": "The Web Service Consumer connector consumes SOAP services from their WSDL, exposing the SOAP operations. Requests are built as XML — usually with a Transform Message before the operation."
+  },
+  {
+   "id": "m1-055",
+   "section": "s9",
+   "q": "How are parameters typically passed to a SOAP web service operation invoked with the Web Service Consumer?",
+   "options": [
+    "As query parameters on the endpoint URL",
+    "By building the expected SOAP body XML with a Transform Message (DataWeave) before the operation",
+    "As Mule variables that the connector reads automatically",
+    "In the connector's 'arguments' table"
+   ],
+   "answer": 1,
+   "explanation": "The Web Service Consumer expects the payload to be the operation's SOAP body. Studio exposes the operation's metadata so a Transform Message can map data to the correct XML structure."
+  },
+  {
+   "id": "m1-056",
+   "section": "s9",
+   "q": "A flow must process each new CSV file that appears in a directory, then prevent the same file from being processed again. Which approach is correct?",
+   "options": [
+    "An On New or Updated File listener with a post-processing action (move or delete the file)",
+    "A Scheduler that reads all files every minute with no state",
+    "An HTTP Listener that watches the file system",
+    "A For Each scope around a File Read"
+   ],
+   "answer": 0,
+   "explanation": "The File listener triggers per new/updated file; configuring post-processing (move to another directory, rename, or delete) prevents reprocessing. Without it, files are picked up repeatedly."
+  },
+  {
+   "id": "m1-057",
+   "section": "s9",
+   "q": "What messaging model does a JMS queue provide, in contrast to a JMS topic?",
+   "options": [
+    "Queues broadcast to all consumers; topics deliver to exactly one",
+    "Queues provide point-to-point delivery (one consumer gets each message); topics provide publish/subscribe (all subscribers get each message)",
+    "Queues are synchronous HTTP; topics are asynchronous",
+    "There is no difference in Mule 4"
+   ],
+   "answer": 1,
+   "explanation": "Point-to-point (queue): each message is consumed by a single receiver. Pub/sub (topic): every active subscriber receives a copy of each message."
+  },
+  {
+   "id": "m1-058",
+   "section": "s10",
+   "q": "What is the payload after a For Each scope finishes processing a collection?",
+   "options": [
+    "The last element processed",
+    "An array of the results of each iteration",
+    "The original payload that entered the scope",
+    "null"
+   ],
+   "answer": 2,
+   "explanation": "For Each returns the ORIGINAL payload; payload modifications inside the scope are discarded after it completes. Variables set inside, however, persist."
+  },
+  {
+   "id": "m1-059",
+   "section": "s10",
+   "q": "In which Batch Job phase does the payload become a BatchJobResult object with counts of successful and failed records?",
+   "options": [
+    "Load and Dispatch",
+    "Process",
+    "On Complete",
+    "Aggregate"
+   ],
+   "answer": 2,
+   "explanation": "On Complete runs once after all records are processed; its payload is the BatchJobResult (processed/successful/failed counts). The original input payload is not available there."
+  },
+  {
+   "id": "m1-060",
+   "section": "s10",
+   "q": "How are records processed inside the Process phase of a Batch Job?",
+   "options": [
+    "Strictly sequentially in input order",
+    "Asynchronously and in parallel across batch steps",
+    "Only one record at a time per application",
+    "In reverse order"
+   ],
+   "answer": 1,
+   "explanation": "Batch queues each record and processes them in parallel through the steps — a key difference from For Each (sequential). Order of completion is not guaranteed."
+  },
+  {
+   "id": "m1-061",
+   "section": "s10",
+   "q": "A batch step must insert records into a database in bulk groups of 100. What component achieves this?",
+   "options": [
+    "A For Each with batch size 100",
+    "A Batch Aggregator inside the batch step with size 100",
+    "A Scatter-Gather with 100 routes",
+    "The On Complete phase"
+   ],
+   "answer": 1,
+   "explanation": "The Batch Aggregator collects records within a step into groups (fixed size or streaming) so they can be sent to a target in bulk — e.g. a bulk insert of 100 records."
+  },
+  {
+   "id": "m1-062",
+   "section": "s10",
+   "q": "By default (maxFailedRecords = 0), what happens when a record fails inside a Batch Job's Process phase?",
+   "options": [
+    "The record is retried until it succeeds",
+    "The job stops processing further records and moves to On Complete",
+    "The failure is silently ignored",
+    "The whole application shuts down"
+   ],
+   "answer": 1,
+   "explanation": "With maxFailedRecords = 0, the first failed record halts the job. Setting it to -1 allows the job to continue regardless of failures; subsequent steps can filter on failed records with accept policies."
+  },
+  {
+   "id": "m1-063",
+   "section": "s10",
+   "q": "A flow synchronizes new database rows every hour and must not re-process rows it has already seen, based on their incrementing ID. Which built-in mechanism fits best?",
+   "options": [
+    "A Choice router comparing IDs",
+    "Automatic watermarking on the On Table Row listener using the ID as the watermark column",
+    "Storing the whole table in a variable",
+    "The Cache scope"
+   ],
+   "answer": 1,
+   "explanation": "The Database connector's On Table Row source supports automatic watermarking: it stores the highest seen value of the watermark column and only returns newer rows on each poll."
+  },
+  {
+   "id": "m1-064",
+   "section": "s10",
+   "q": "When is MANUAL watermarking (using an Object Store) required instead of automatic watermarking?",
+   "options": [
+    "Whenever a Scheduler is used, because Schedulers reset automatic watermarks",
+    "When the synchronization logic needs a custom marker the source doesn't manage, e.g. comparing a max updated-at value retrieved and stored explicitly each run",
+    "Manual watermarking is never required in Mule 4",
+    "Only when using the File connector"
+   ],
+   "answer": 1,
+   "explanation": "Automatic watermarking exists only on certain listener sources. When polling with a Scheduler or using custom criteria, you store/retrieve the watermark yourself with Object Store operations."
+  },
+  {
+   "id": "m1-065",
+   "section": "s11",
+   "q": "While debugging in Anypoint Studio with a breakpoint on a processor, what can the developer inspect when execution pauses?",
+   "options": [
+    "Only the payload",
+    "The full Mule event before that processor executes: payload, attributes, and variables — and evaluate DataWeave expressions",
+    "Only variables set in the current flow",
+    "The compiled Java bytecode"
+   ],
+   "answer": 1,
+   "explanation": "The Mule debugger shows the entire event as it arrives at the breakpointed processor and includes an expression evaluator for ad-hoc DataWeave."
+  },
+  {
+   "id": "m1-066",
+   "section": "s11",
+   "q": "A Mule project fails to build with 'Could not resolve dependencies ... mysql-connector-java'. What is the appropriate fix?",
+   "options": [
+    "Reinstall Anypoint Studio",
+    "Add (or correct) the JDBC driver dependency in the project's pom.xml so Maven can resolve it",
+    "Copy the JAR into src/main/mule",
+    "Disable Maven in project preferences"
+   ],
+   "answer": 1,
+   "explanation": "Mule apps are Maven projects; external libraries like database drivers must be declared as dependencies in pom.xml (Studio can add them via the connector config UI)."
+  },
+  {
+   "id": "m1-067",
+   "section": "s11",
+   "q": "A log shows: 'ERROR ... Message: HTTP GET on resource http://acme/api/flights failed: not found (404). Error type: HTTP:NOT_FOUND'. What is the most direct conclusion?",
+   "options": [
+    "The Mule application failed to start",
+    "An outbound HTTP Request in the flow received a 404 from the remote service",
+    "The HTTP Listener rejected an incoming request",
+    "DataWeave failed to transform the payload"
+   ],
+   "answer": 1,
+   "explanation": "The error type HTTP:NOT_FOUND with an outbound URL indicates the app's own HTTP Request call got a 404 from the remote endpoint — start troubleshooting at that request's URL/path."
+  },
+  {
+   "id": "m1-068",
+   "section": "s11",
+   "q": "On which port does the Anypoint Studio embedded Mule debugger listen by default?",
+   "options": [
+    "8081",
+    "6666",
+    "8080",
+    "1521"
+   ],
+   "answer": 1,
+   "explanation": "The Mule debugger uses port 6666 by default (configurable in the run configuration). 8081 is the conventional HTTP Listener port."
+  },
+  {
+   "id": "m1-069",
+   "section": "s11",
+   "q": "A Logger set to #[payload] prints something like 'org.mule.runtime...ManagedCursorStreamProvider'. Why?",
+   "options": [
+    "The payload is null",
+    "The payload is a stream; logging shows the stream object unless it is consumed/converted (e.g. write it as a String)",
+    "The Logger is misconfigured to DEBUG level",
+    "The payload is encrypted"
+   ],
+   "answer": 1,
+   "explanation": "Many connectors return streaming payloads. Logging the raw stream shows the cursor provider object; convert first (e.g. #[payload as String] or output application/json in a transform) to log content."
+  },
+  {
+   "id": "m1-070",
+   "section": "s12",
+   "q": "What artifact is produced when a Mule 4 application is packaged for deployment?",
+   "options": [
+    "A WAR file",
+    "A deployable JAR file containing the application and its dependencies",
+    "A ZIP of the Studio workspace",
+    "A Docker image (always)"
+   ],
+   "answer": 1,
+   "explanation": "Mule 4 apps package as deployable JARs (mvn package or Studio export). The same artifact can be deployed to CloudHub, Runtime Fabric, or customer-hosted runtimes."
+  },
+  {
+   "id": "m1-071",
+   "section": "s12",
+   "q": "Which statement about CloudHub workers is correct?",
+   "options": [
+    "All applications in an organization share one worker",
+    "A worker is a dedicated instance of Mule hosting one application; you can scale worker size (vCores) or the number of workers",
+    "Workers are only available for APIs managed with autodiscovery",
+    "Worker size cannot be changed after deployment"
+   ],
+   "answer": 1,
+   "explanation": "Each CloudHub app runs on one or more dedicated workers. Vertical scaling changes worker size; horizontal scaling adds workers (with built-in load balancing)."
+  },
+  {
+   "id": "m1-072",
+   "section": "s12",
+   "q": "What is required for API Manager policies to be enforced INSIDE a Mule application (without a separate proxy)?",
+   "options": [
+    "Nothing; policies always apply automatically",
+    "An API Autodiscovery global element in the app whose API ID matches the API instance in API Manager, plus platform client credentials",
+    "A CloudHub dedicated load balancer",
+    "The APIkit Console must be enabled"
+   ],
+   "answer": 1,
+   "explanation": "Autodiscovery pairs the running app with the API instance in API Manager (api id + environment client id/secret). The app then downloads and enforces the policies itself."
+  },
+  {
+   "id": "m1-073",
+   "section": "s12",
+   "q": "A team wants to enforce rate limiting per consumer with different limits for Gold and Silver customers. What must be configured?",
+   "options": [
+    "A rate limiting policy only",
+    "SLA tiers in API Manager plus an SLA-based rate limiting policy, which requires client ID enforcement so each consumer is identified",
+    "A spike control policy on the load balancer",
+    "One API instance per customer"
+   ],
+   "answer": 1,
+   "explanation": "SLA-based rate limiting applies per-tier limits. Consumers register client applications, request access at a tier, and send client_id/client_secret so the policy can identify their tier."
+  },
+  {
+   "id": "m1-074",
+   "section": "s12",
+   "q": "What is an API proxy in Anypoint Platform?",
+   "options": [
+    "A DNS alias for the implementation URL",
+    "A separate application deployed by API Manager that sits in front of the implementation and enforces policies",
+    "A mock service generated from RAML",
+    "A CloudHub VPN"
+   ],
+   "answer": 1,
+   "explanation": "A proxy is an auto-generated app that receives consumer traffic, applies policies (rate limiting, client enforcement...), and forwards allowed requests to the implementation — governance without touching implementation code."
+  },
+  {
+   "id": "m1-075",
+   "section": "s12",
+   "q": "After a client ID enforcement policy is applied, what must consumers do to call the API successfully?",
+   "options": [
+    "Nothing; the policy only logs usage",
+    "Request access to the API in Exchange to obtain client credentials, then send client_id/client_secret with each request as specified by the policy",
+    "Install a certificate on their machine",
+    "Use the mocking service endpoint instead"
+   ],
+   "answer": 1,
+   "explanation": "Client ID enforcement rejects requests without valid credentials. Consumers register a client application (request access in Exchange), get approved, and pass the credentials in headers or query params per the policy configuration."
+  }
+ ],
+ "sections": [
+  {
+   "id": "s1",
+   "title": "Explaining Application Network Basics",
+   "weight": 7,
+   "topicDocs": {
+    "The IT delivery gap": "https://docs.mulesoft.com/general/api-led-overview",
+    "API-led connectivity — the three layers": "https://docs.mulesoft.com/general/api-led-overview",
+    "Modern APIs": "https://docs.mulesoft.com/general/api-led-overview",
+    "Center for Enablement (C4E)": "https://docs.mulesoft.com/general/",
+    "HTTP fundamentals": "https://docs.mulesoft.com/http-connector/latest/",
+    "Anypoint Platform components": "https://docs.mulesoft.com/general/"
+   },
+   "docs": [
+    {
+     "label": "API-led connectivity overview",
+     "url": "https://docs.mulesoft.com/general/api-led-overview"
+    },
+    {
+     "label": "Anypoint Platform docs",
+     "url": "https://docs.mulesoft.com/general/"
+    }
+   ],
+   "objectives": [
+    "Explain MuleSoft's proposal for closing the IT delivery gap",
+    "Describe the characteristics and benefits of modern APIs and API-led connectivity",
+    "Describe the role of a Center for Enablement (C4E)",
+    "Define the basic elements of HTTP requests and responses",
+    "Describe the capabilities and high-level components of Anypoint Platform"
+   ],
+   "notes": "\n<h3>The IT delivery gap</h3>\n<p>Business demand on IT grows every year (new channels, SaaS apps, mobile, IoT), but IT delivery capacity stays roughly flat when every project is a custom <strong>point-to-point integration</strong>. Point-to-point creates tight coupling: every new connection is bespoke code, changes ripple unpredictably, and nothing is reusable. The gap between what the business asks for and what IT can deliver keeps widening.</p>\n<p><strong>MuleSoft's proposal:</strong> build an <strong>application network</strong> — a network of applications, data, and devices connected with <em>reusable, discoverable, self-serve APIs</em>. Key properties of an application network:</p>\n<ul>\n<li>It is <strong>built incrementally</strong>, project by project (\"bendable, not breakable\"). Each project consumes existing APIs and contributes new ones, so delivery gets <em>faster</em> over time.</li>\n<li>Nodes are <strong>loosely coupled</strong>: consumers depend on API contracts, not implementations, so implementations can change without breaking consumers.</li>\n<li>Assets are <strong>discoverable and self-serve</strong> through Anypoint Exchange — teams find and reuse instead of rebuilding.</li>\n<li>It is <strong>recomposable</strong>: existing APIs are rewired into new products and channels quickly.</li>\n</ul>\n\n<h3>API-led connectivity — the three layers</h3>\n<svg viewBox=\"0 0 620 300\" style=\"max-width:620px;width:100%\" role=\"img\" aria-label=\"API-led connectivity layers\">\n  <style>.al-box{fill:none;stroke:currentColor;stroke-width:1.5;rx:8}.al-t{font:600 14px sans-serif;fill:currentColor}.al-s{font:12px sans-serif;fill:currentColor;opacity:.75}.al-a{stroke:currentColor;stroke-width:1.2;marker-end:url(#alArr)}</style>\n  <defs><marker id=\"alArr\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L6,3 L0,6 z\" fill=\"currentColor\"/></marker></defs>\n  <rect x=\"10\" y=\"10\" width=\"600\" height=\"80\" class=\"al-box\" style=\"fill:rgba(14,111,190,.10)\"/>\n  <text x=\"24\" y=\"38\" class=\"al-t\">Experience APIs</text>\n  <text x=\"24\" y=\"60\" class=\"al-s\">Reconfigure data for a specific channel: mobile app, web storefront, partner portal</text>\n  <rect x=\"10\" y=\"110\" width=\"600\" height=\"80\" class=\"al-box\" style=\"fill:rgba(0,162,223,.10)\"/>\n  <text x=\"24\" y=\"138\" class=\"al-t\">Process APIs</text>\n  <text x=\"24\" y=\"160\" class=\"al-s\">Orchestrate and shape data; business logic independent of source systems and channels</text>\n  <rect x=\"10\" y=\"210\" width=\"600\" height=\"80\" class=\"al-box\" style=\"fill:rgba(30,142,78,.10)\"/>\n  <text x=\"24\" y=\"238\" class=\"al-t\">System APIs</text>\n  <text x=\"24\" y=\"260\" class=\"al-s\">Unlock core systems of record (DBs, SaaS, legacy) and insulate consumers from change</text>\n  <line x1=\"310\" y1=\"90\" x2=\"310\" y2=\"108\" class=\"al-a\"/><line x1=\"310\" y1=\"190\" x2=\"310\" y2=\"208\" class=\"al-a\"/>\n</svg>\n<ul>\n<li><strong>System APIs</strong> — mediate access to a core system (one system, canonical data model). They hide complexity (SOAP, JDBC, proprietary formats) and shield consumers from system changes/migrations.</li>\n<li><strong>Process APIs</strong> — encapsulate business processes that interact with and shape data across systems (e.g. \"create order\" touching CRM + ERP). They are independent of both the source systems and the delivery channels.</li>\n<li><strong>Experience APIs</strong> — reconfigure data so it is easily consumed by its intended audience/channel, without duplicating process logic per channel.</li>\n</ul>\n<p class=\"tip\"><strong>Exam tip:</strong> given a scenario (\"an API that aggregates customer data from three systems for a mobile app\"), be able to place each API in the correct layer. Aggregation/orchestration → Process; channel-specific shaping → Experience; direct system unlock → System.</p>\n\n<h3>Modern APIs</h3>\n<p>MuleSoft describes <em>modern APIs</em> as having three characteristics: they are treated as <strong>products</strong> (designed for and marketed to consumers, with a lifecycle), they are <strong>discoverable and self-describing</strong> (documentation, specs, examples in Exchange), and they are <strong>managed</strong> (secured, monitored, governed with policies and SLAs).</p>\n\n<h3>Center for Enablement (C4E)</h3>\n<p>A <strong>C4E</strong> is a cross-functional team (IT + line-of-business members) that <em>enables</em> the rest of the organization instead of delivering everything itself:</p>\n<ul>\n<li>Builds and publishes reusable assets (APIs, templates, examples, best-practice guides) as <strong>products</strong>.</li>\n<li>Establishes and evangelizes best practices; supports and trains project teams.</li>\n<li><strong>Measures consumption</strong> of assets (KPIs like reuse rate) — the network's value grows with reuse.</li>\n</ul>\n<p>Contrast with a traditional <strong>Center of Excellence (CoE)</strong>: a CoE centralizes delivery (\"do it for the teams\"), which becomes a bottleneck; a C4E decentralizes delivery and centralizes enablement.</p>\n\n<h3>HTTP fundamentals</h3>\n<table>\n<tr><th>Method</th><th>Purpose</th><th>Has body?</th><th>Idempotent?</th></tr>\n<tr><td>GET</td><td>Retrieve a resource/collection</td><td>No</td><td>Yes (safe)</td></tr>\n<tr><td>POST</td><td>Create a resource / process data</td><td>Yes</td><td>No</td></tr>\n<tr><td>PUT</td><td>Replace a resource at a known URI (create-or-replace)</td><td>Yes</td><td>Yes</td></tr>\n<tr><td>PATCH</td><td>Partially update a resource</td><td>Yes</td><td>No (in general)</td></tr>\n<tr><td>DELETE</td><td>Remove a resource</td><td>No</td><td>Yes</td></tr>\n</table>\n<p>An HTTP <strong>request</strong> = method + URI (+ query string) + protocol version + headers + optional body. An HTTP <strong>response</strong> = status line + headers + optional body. Common status codes:</p>\n<table>\n<tr><th>Code</th><th>Meaning</th></tr>\n<tr><td>200 / 201 / 202 / 204</td><td>OK / Created / Accepted (async) / No Content</td></tr>\n<tr><td>301 / 304</td><td>Moved Permanently / Not Modified</td></tr>\n<tr><td>400 / 401 / 403 / 404 / 405 / 415 / 429</td><td>Bad Request / Unauthorized (not authenticated) / Forbidden (not authorized) / Not Found / Method Not Allowed / Unsupported Media Type / Too Many Requests (rate limit)</td></tr>\n<tr><td>500 / 502 / 503 / 504</td><td>Internal Server Error / Bad Gateway / Service Unavailable / Gateway Timeout</td></tr>\n</table>\n\n<h3>Anypoint Platform components</h3>\n<table>\n<tr><th>Area</th><th>Component</th><th>What it does</th></tr>\n<tr><td rowspan=\"2\">Design</td><td>Design Center (API Designer)</td><td>Web tool to write API specifications (RAML/OAS) and build fragments; includes the mocking service</td></tr>\n<tr><td>Anypoint Studio / Code Builder</td><td>Desktop/cloud IDEs to implement, test, and debug Mule applications</td></tr>\n<tr><td>Share &amp; discover</td><td>Anypoint Exchange</td><td>Catalog of reusable assets: specs, fragments, connectors, templates, examples, custom policies; generates API portals and REST Connect connectors</td></tr>\n<tr><td rowspan=\"4\">Manage (control plane)</td><td>API Manager</td><td>Create/manage API instances, apply policies, SLA tiers, contracts, alerts, proxies</td></tr>\n<tr><td>Runtime Manager</td><td>Deploy, manage, scale, and monitor applications on any deployment target</td></tr>\n<tr><td>Access Management</td><td>Users, roles, permissions, business groups, environments, connected apps</td></tr>\n<tr><td>Anypoint Monitoring / Visualizer</td><td>Dashboards, logs, alerts / real-time visualization of the application network</td></tr>\n<tr><td>Run (runtime plane)</td><td>Mule runtime</td><td>Runs apps on CloudHub (MuleSoft-hosted), Runtime Fabric (containers), or customer-hosted servers</td></tr>\n</table>\n<p class=\"tip\"><strong>Exam tip:</strong> know which component does what. \"Where do consumers discover and request access to an API?\" → Exchange. \"Where are policies applied?\" → API Manager. \"Where do you scale workers?\" → Runtime Manager.</p>"
+  },
+  {
+   "id": "s2",
+   "title": "Designing and Consuming APIs",
+   "weight": 8,
+   "topicDocs": {
+    "The design-first API lifecycle": "https://docs.mulesoft.com/design-center/design-create-publish-api-specs",
+    "RAML essentials": "https://github.com/raml-org/raml-spec/blob/master/versions/raml-10/raml-10.md",
+    "Reuse in RAML": "https://docs.mulesoft.com/exchange/asset-types",
+    "Consuming APIs": "https://docs.mulesoft.com/exchange/"
+   },
+   "docs": [
+    {
+     "label": "Design an API spec (Design Center)",
+     "url": "https://docs.mulesoft.com/design-center/design-create-publish-api-specs"
+    },
+    {
+     "label": "RAML 1.0 specification",
+     "url": "https://github.com/raml-org/raml-spec/blob/master/versions/raml-10/raml-10.md"
+    }
+   ],
+   "objectives": [
+    "Describe the lifecycle of the modern API (design, simulate, feedback, validate)",
+    "Use RAML to define API resources, nested resources, and methods",
+    "Identify when to use query parameters vs URI parameters",
+    "Use RAML to define request/response bodies, headers, and status codes",
+    "Use RAML to define reusable data types and format-independent examples",
+    "Formulate RESTful requests from a RAML API specification"
+   ],
+   "notes": "\n<h3>The design-first API lifecycle</h3>\n<p>Modern APIs are designed <em>before</em> they are implemented: <strong>design → simulate → get feedback → validate</strong>, iterating until consumers agree the contract is right. Only then is the API implemented, tested, deployed, and managed. Tools per stage:</p>\n<ul>\n<li><strong>Design</strong> — API Designer (Design Center) writing RAML or OAS.</li>\n<li><strong>Simulate</strong> — the <strong>mocking service</strong> serves responses straight from the spec's <code>examples</code>, giving consumers a live endpoint before any code exists.</li>\n<li><strong>Feedback</strong> — publish to <strong>Exchange</strong>; consumers explore the auto-generated API console/portal and comment.</li>\n<li><strong>Validate</strong> — refine the spec until it is stable; it becomes the contract that APIkit later enforces.</li>\n</ul>\n\n<h3>RAML essentials</h3>\n<pre><code>#%RAML 1.0\ntitle: American Flights API\nversion: v1\nbaseUri: http://localhost:8081/api\n\ntypes:\n  AmericanFlight: !include dataTypes/american-flight.raml\n\n/flights:\n  get:\n    queryParameters:\n      destination:\n        required: false\n        enum: [SFO, LAX, CLE]\n    responses:\n      200:\n        body:\n          application/json:\n            type: AmericanFlight[]\n            examples: !include examples/AmericanFlightsExample.raml\n  post:\n    body:\n      application/json:\n        type: AmericanFlight\n    responses:\n      201:\n        body:\n          application/json:\n            example: {\"message\": \"Flight added\"}\n  /{ID}:\n    get:\n      responses:\n        200:\n          body:\n            application/json:\n              type: AmericanFlight\n    put:\n    delete:</code></pre>\n<ul>\n<li>RAML is <strong>YAML-based</strong>: indentation defines nesting, and it is case-sensitive.</li>\n<li><strong>Resources</strong> begin with <code>/</code>; nesting a resource under another creates a sub-path (<code>/flights/{ID}</code>).</li>\n<li><strong>URI parameters</strong> use <code>{curlyBraces}</code> and identify a <em>specific resource</em>. <strong>Query parameters</strong> are declared under a method's <code>queryParameters:</code> and <em>filter/sort/paginate</em> collections. Rule of thumb: identity → URI parameter; refinement of a result set → query parameter.</li>\n<li>Each method can declare <code>headers:</code>, <code>body:</code> (per media type), and <code>responses:</code> (per status code, each with its own body/type/example).</li>\n</ul>\n\n<h3>Reuse in RAML</h3>\n<table>\n<tr><th>Mechanism</th><th>Scope</th><th>Example use</th></tr>\n<tr><td><code>types:</code> / DataType fragment</td><td>Data structures</td><td><code>type: AmericanFlight</code> shared by requests and responses</td></tr>\n<tr><td>NamedExample fragment</td><td>Example instances</td><td>One example file reused by several methods (format-independent)</td></tr>\n<tr><td><code>traits:</code> (applied with <code>is:</code>)</td><td>Method-level patterns</td><td>Pagination query params, standard error responses, auth headers</td></tr>\n<tr><td><code>resourceTypes:</code> (applied with <code>type:</code>)</td><td>Resource-level patterns</td><td>Standard \"collection\" and \"member\" resource shapes</td></tr>\n<tr><td>Library (<code>uses:</code>)</td><td>Bundle of types/traits/etc.</td><td>Common enterprise definitions shared across specs</td></tr>\n<tr><td>Overlay / Extension</td><td>Whole spec</td><td>Add annotations/translations (overlay) or environment additions (extension) without touching the master spec</td></tr>\n</table>\n<p>Fragments (<code>#%RAML 1.0 DataType</code>, <code>Trait</code>, <code>NamedExample</code>…) can live in separate files included with <code>!include</code>, or be published to <strong>Exchange as reusable assets</strong> and imported into many API specs as dependencies.</p>\n<p>A RAML <strong>data type</strong> defines fields, types, and constraints:</p>\n<pre><code>#%RAML 1.0 DataType\ntype: object\nproperties:\n  ID: integer\n  code:\n    type: string\n    pattern: \"[A-Z]{3}\\\\d{3}\"\n  price:\n    type: number\n    required: false</code></pre>\n\n<h3>Consuming APIs</h3>\n<ul>\n<li>To call an API from a spec: match method + full path (baseUri + resource) + required parameters/headers/body. E.g. from the spec above: <code>GET http://localhost:8081/api/flights?destination=SFO</code> or <code>POST /api/flights</code> with a JSON AmericanFlight body.</li>\n<li>When a spec is published to Exchange, <strong>REST Connect</strong> automatically generates a <strong>REST Connector</strong> (one operation per method) that can be dragged into a Mule flow — an alternative to configuring raw HTTP Request operations.</li>\n<li>The <strong>API console</strong> (in Design Center or Exchange) and the <strong>mocking service</strong> let anyone try requests without an implementation.</li>\n</ul>\n<p class=\"tip\"><strong>Exam tip:</strong> expect questions that show a RAML snippet and ask which request is valid (correct path nesting, query vs URI parameter, required vs optional). Read the indentation carefully — it defines what belongs to what.</p>"
+  },
+  {
+   "id": "s3",
+   "title": "Accessing and Modifying Mule Events",
+   "weight": 10,
+   "topicDocs": {
+    "Anatomy of a Mule event": "https://docs.mulesoft.com/mule-runtime/latest/about-mule-event",
+    "The golden rule of attributes": "https://docs.mulesoft.com/mule-runtime/latest/about-mule-event",
+    "Accessing event data with DataWeave": "https://docs.mulesoft.com/dataweave/latest/dataweave-selectors",
+    "Setting event data": "https://docs.mulesoft.com/mule-runtime/latest/dataweave",
+    "Enrichment with target parameters": "https://docs.mulesoft.com/mule-runtime/latest/target-variables"
+   },
+   "docs": [
+    {
+     "label": "Mule events",
+     "url": "https://docs.mulesoft.com/mule-runtime/latest/about-mule-event"
+    },
+    {
+     "label": "DataWeave selectors",
+     "url": "https://docs.mulesoft.com/dataweave/latest/dataweave-selectors"
+    }
+   ],
+   "objectives": [
+    "Describe the Mule event data structure (message payload, attributes, variables)",
+    "Use transformers to set the payload, attributes, and variables",
+    "Write DataWeave expressions to access and modify payload, attributes, and variables",
+    "Enrich Mule events using target parameters"
+   ],
+   "notes": "\n<h3>Anatomy of a Mule event</h3>\n<figure><img src=\"images/mule-concepts-d46f9.png\" alt=\"Mule event structure: a Mule event contains a Mule message (attributes + payload) and variables\"><figcaption>The Mule event: a <strong>Mule message</strong> (payload + attributes) plus <strong>variables</strong> <em>(source: docs.mulesoft.com)</em></figcaption></figure>\n<ul>\n<li><strong>Payload</strong> — the body/data being processed. Can be any type: JSON, XML, Java object, stream…</li>\n<li><strong>Attributes</strong> — metadata that arrived with the message. For an HTTP Listener: <code>attributes.queryParams</code>, <code>attributes.uriParams</code>, <code>attributes.headers</code>, <code>attributes.method</code>, <code>attributes.requestPath</code>. For a File listener: file name, size, timestamps.</li>\n<li><strong>Variables (vars)</strong> — data <em>you</em> attach to the event; they live for the rest of the flow and travel through Flow References.</li>\n</ul>\n<p>The Mule event is <strong>immutable</strong> — every change creates a new event instance behind the scenes. Practically, this means each processor receives the event produced by the previous one.</p>\n<figure><img src=\"images/about-mule-event-2724e.png\" alt=\"An event source triggers a flow; the Mule event travels through each event processor in order\"><figcaption>An <strong>event source</strong> (HTTP Listener, Scheduler, On New or Updated File…) creates the event; it then travels through each <strong>event processor</strong> in order <em>(source: docs.mulesoft.com)</em></figcaption></figure>\n\n<h3>The golden rule of attributes</h3>\n<p>Every time the event passes through a <strong>connector operation</strong> (HTTP Request, Database Select, File Read…), the message is <em>replaced</em>: the payload becomes the operation's result AND the <strong>attributes are replaced</strong> with metadata about that result (e.g. HTTP response status and headers). If you need the original query params later, <strong>save them to a variable first</strong>.</p>\n\n<h3>Accessing event data with DataWeave</h3>\n<pre><code>payload                              // whole payload\npayload.customer.lastName            // field navigation\npayload[0].price                     // array index\nattributes.queryParams.destination   // ?destination=SFO\nattributes.uriParams.ID              // /flights/{ID}\nattributes.headers.'client_id'       // request header\nvars.myVar                           // a variable\nvars.order.items[0]                  // variables hold any structure\ncorrelationId                        // event correlation ID\nmessage                              // the whole message (payload+attributes)</code></pre>\n<p>Inline expressions inside component fields use <code>#[ ... ]</code>, e.g. a Logger message of <code>#['Got flight ' ++ attributes.uriParams.ID]</code>. Property placeholders (<code>${http.port}</code>) are resolved at startup and are NOT DataWeave.</p>\n\n<h3>Setting event data</h3>\n<table>\n<tr><th>Component</th><th>Sets</th><th>Notes</th></tr>\n<tr><td>Transform Message</td><td>payload, any variable, attributes</td><td>Full DataWeave script per output; the primary transformation tool</td></tr>\n<tr><td>Set Payload</td><td>payload</td><td>Value field accepts literals or <code>#[expressions]</code>; can set MIME type</td></tr>\n<tr><td>Set Variable</td><td>one variable</td><td>Name + value (literal or expression)</td></tr>\n<tr><td>Remove Variable</td><td>—</td><td>Deletes a variable from the event</td></tr>\n</table>\n\n<h3>Enrichment with target parameters</h3>\n<p>Most connector operations expose <strong>target</strong> and <strong>target value</strong> parameters. Setting <code>target = flightData</code> (and optionally <code>targetValue = #[payload.data]</code>) stores the operation's result in <code>vars.flightData</code> and <strong>leaves the current payload untouched</strong> — the Mule 4 replacement for Mule 3's message enricher. Use it whenever you must combine \"what I have\" with \"what another system returns\".</p>\n<p class=\"tip\"><strong>Exam tip:</strong> after an HTTP Request with <code>target=response</code>, the payload is <em>unchanged</em> and <code>vars.response</code> holds the response body. Without a target, payload = response body and attributes = response metadata. Both facts are heavily tested.</p>"
+  },
+  {
+   "id": "s4",
+   "title": "Structuring Mule Applications",
+   "weight": 10,
+   "topicDocs": {
+    "Project structure": "https://docs.mulesoft.com/mule-runtime/latest/package-a-mule-application",
+    "Property placeholders": "https://docs.mulesoft.com/mule-runtime/latest/configuring-properties",
+    "Global configurations": "https://docs.mulesoft.com/mule-runtime/latest/global-elements",
+    "Flows, private flows, subflows": "https://docs.mulesoft.com/mule-runtime/latest/about-flows",
+    "Async scope": "https://docs.mulesoft.com/mule-runtime/latest/async-scope-reference",
+    "Domain projects": "https://docs.mulesoft.com/mule-runtime/latest/shared-resources"
+   },
+   "docs": [
+    {
+     "label": "Flows and subflows",
+     "url": "https://docs.mulesoft.com/mule-runtime/latest/about-flows"
+    },
+    {
+     "label": "Configuring properties",
+     "url": "https://docs.mulesoft.com/mule-runtime/latest/configuring-properties"
+    },
+    {
+     "label": "Shared resources (domains)",
+     "url": "https://docs.mulesoft.com/mule-runtime/latest/shared-resources"
+    }
+   ],
+   "objectives": [
+    "Parameterize an application using property placeholders",
+    "Define and reuse global configurations in an application",
+    "Break an application into multiple flows using flow references, private flows, and subflows",
+    "Specify what data is persisted between flows and across a flow reference",
+    "Describe the purpose of domain projects"
+   ],
+   "notes": "\n<h3>Project structure</h3>\n<pre><code>my-app/\n├── pom.xml                     &lt;- Maven build (dependencies, plugins)\n├── mule-artifact.json          &lt;- app descriptor (minMuleVersion, secureProperties)\n└── src/\n    ├── main/\n    │   ├── mule/               &lt;- Mule configuration XMLs (flows, global elements)\n    │   └── resources/          &lt;- properties files, DW modules, examples, log4j2.xml\n    └── test/\n        ├── munit/              &lt;- MUnit test suites\n        └── resources/</code></pre>\n\n<h3>Property placeholders</h3>\n<p>Externalize anything environment-specific (hosts, ports, credentials, paths):</p>\n<pre><code># src/main/resources/config/dev.yaml\ndb:\n  host: \"dev-db.acme.com\"\n  port: \"3306\"\nhttp:\n  listener:\n    port: \"8081\"</code></pre>\n<ul>\n<li>Register the file with a <strong>Configuration properties</strong> global element. Parameterize the file name itself to switch environments: <code>config/${env}.yaml</code>, then run with <code>-Denv=dev</code> (in Studio: Run Configuration → VM arguments <code>-Denv=dev -M-Denv=dev</code> pattern for Maven).</li>\n<li>Reference values as <code>${db.host}</code> in any configuration field, or <code>p('db.host')</code> inside DataWeave.</li>\n<li>Precedence: deployment/system properties (<code>-D</code>, Runtime Manager properties) <strong>override</strong> file values — this is how the same JAR runs in every environment.</li>\n<li>Secrets should use <em>secure</em> configuration properties (encrypted) — covered in depth in MCD L2, but know they exist and use the <code>secure::</code> prefix.</li>\n</ul>\n\n<h3>Global configurations</h3>\n<p>Connector configurations (HTTP Listener config, HTTP Request config, Database config…) are <strong>global elements</strong>: defined once, referenced by any number of operations. Best practice is to keep them in a dedicated config file (e.g. <code>global.xml</code>) so they're easy to find and reuse across the app's XML files — all files are combined at deployment.</p>\n\n<h3>Flows, private flows, subflows</h3>\n<table>\n<tr><th></th><th>Flow</th><th>Private flow</th><th>Subflow</th></tr>\n<tr><td>Event source</td><td>Yes (optional but typical)</td><td>No</td><td>No</td></tr>\n<tr><td>Own error handling</td><td>Yes</td><td>Yes</td><td><strong>No</strong> — inherits caller's</td></tr>\n<tr><td>Invoked by</td><td>Source or Flow Reference</td><td>Flow Reference</td><td>Flow Reference</td></tr>\n<tr><td>Performance</td><td>—</td><td>—</td><td>Slightly faster (no extra context)</td></tr>\n<tr><td>Callable from DataWeave <code>lookup()</code></td><td>Yes</td><td>Yes</td><td><strong>No</strong></td></tr>\n</table>\n<p>A <strong>Flow Reference</strong> passes the <em>entire event</em> (payload + attributes + variables) into the referenced flow synchronously. Changes made there (payload, new variables) <strong>return to the caller</strong>. This is fundamentally different from crossing a <strong>transport boundary</strong>:</p>\n<ul>\n<li>App A calls App B over HTTP → only the payload (and headers you set) cross; <strong>variables and attributes do NOT</strong>.</li>\n<li>App B receives a brand-new event with its own attributes (from B's HTTP Listener) and empty vars.</li>\n</ul>\n<p class=\"tip\"><strong>Exam tip:</strong> \"A flow sets var X then calls another flow in the same app via Flow Reference — is X visible?\" YES. \"…calls another Mule app via HTTP Request — is X visible there?\" NO.</p>\n\n<h3>Async scope</h3>\n<p>The <strong>Async scope</strong> runs its processors in a separate thread and the flow continues immediately — use it for fire-and-forget work (audit logging, notifications) that shouldn't delay the response. The async branch gets a <em>copy</em> of the event; its changes don't come back.</p>\n\n<h3>Domain projects</h3>\n<p>A <strong>Mule domain</strong> is a special project that holds shared global configurations. Applications deployed to the <em>same customer-hosted runtime</em> can reference one domain and share, e.g., a single HTTP Listener config — meaning several apps share one port. Domains reduce duplicated config and resource usage, but: <strong>not supported on CloudHub</strong> (each CloudHub app runs isolated on its own worker), all apps must be deployed alongside the domain, and redeploying the domain restarts its apps.</p>"
+  },
+  {
+   "id": "s5",
+   "title": "Building API Implementation Interfaces",
+   "weight": 7,
+   "topicDocs": {
+    "Manual RESTful interfaces": "https://docs.mulesoft.com/http-connector/latest/",
+    "APIkit": "https://docs.mulesoft.com/apikit/latest/",
+    "How the APIkit Router works": "https://docs.mulesoft.com/apikit/latest/",
+    "Keeping spec and implementation in sync": "https://docs.mulesoft.com/apikit/latest/",
+    "REST Connect connectors": "https://docs.mulesoft.com/exchange/"
+   },
+   "docs": [
+    {
+     "label": "APIkit",
+     "url": "https://docs.mulesoft.com/apikit/latest/"
+    }
+   ],
+   "objectives": [
+    "Manually create a RESTful interface for a Mule application",
+    "Generate a REST Connector from a RAML specification",
+    "Describe the features and benefits of APIkit",
+    "Use APIkit to create implementation flows from a RAML file",
+    "Describe how requests are routed through flows generated by APIkit"
+   ],
+   "notes": "\n<h3>Manual RESTful interfaces</h3>\n<p>You can hand-build an interface: one HTTP Listener per resource/method (paths like <code>/flights/{ID}</code>, listener metadata gives <code>attributes.uriParams</code>), or one listener with wildcard path (<code>/*</code>) plus Choice routers on <code>attributes.requestPath</code> and <code>attributes.method</code>. It works, but you must implement validation, error responses, and routing yourself — and nothing guarantees you stay in sync with the API specification. That is the problem <strong>APIkit</strong> solves.</p>\n\n<h3>APIkit</h3>\n<p>APIkit is an open-source toolkit that <strong>scaffolds a Mule application from an API specification</strong> (RAML or OAS; newer versions also support AsyncAPI, GraphQL, OData, SOAP via APIkit for SOAP). Import the spec from Exchange or the filesystem into a Mule project, and scaffolding generates:</p>\n<ul>\n<li>The <strong>main flow</strong>: HTTP Listener (default path <code>/api/*</code>) → <strong>APIkit Router</strong>, plus an error handler with mappings for the standard APIkit errors.</li>\n<li><strong>One implementation flow per resource/method pair</strong>, named by strict convention: <code>get:\\flights:american-flights-api-config</code>, <code>get:\\flights\\(ID):american-flights-api-config</code>, <code>post:\\flights:application\\json:american-flights-api-config</code> (the media type appears when a request body is declared). <strong>The flow name is the routing contract — never rename it.</strong></li>\n<li>A <strong>console flow</strong> exposing the interactive API console (default path <code>/console/*</code>).</li>\n</ul>\n\n<h3>How the APIkit Router works</h3>\n<ol>\n<li><strong>Validates</strong> each incoming request against the specification: path exists, method allowed, required query params/headers present, body matches the declared type.</li>\n<li><strong>Routes</strong> valid requests to the implementation flow whose <em>name</em> matches the method + resource (+ media type) + router config name.</li>\n<li>Populates <code>attributes.uriParams</code> and <code>attributes.queryParams</code>.</li>\n<li><strong>Serializes</strong> the flow's output as the HTTP response; sets the status code (200 by default, or whatever the flow sets in <code>attributes</code> / the listener's response builder).</li>\n</ol>\n<p>Validation failures raise typed errors mapped by the generated error handler:</p>\n<table>\n<tr><th>APIkit error</th><th>HTTP status</th></tr>\n<tr><td>APIKIT:BAD_REQUEST</td><td>400</td></tr>\n<tr><td>APIKIT:NOT_FOUND</td><td>404</td></tr>\n<tr><td>APIKIT:METHOD_NOT_ALLOWED</td><td>405</td></tr>\n<tr><td>APIKIT:NOT_ACCEPTABLE</td><td>406</td></tr>\n<tr><td>APIKIT:UNSUPPORTED_MEDIA_TYPE</td><td>415</td></tr>\n<tr><td>APIKIT:NOT_IMPLEMENTED</td><td>501</td></tr>\n</table>\n<p class=\"tip\"><strong>Exam tip:</strong> a request for a resource that exists in the spec but has no implementation flow yet → the scaffolded flow returns the spec's example (if scaffolded with examples) — while a path that isn't in the spec at all → <code>APIKIT:NOT_FOUND</code> → 404. A missing required query param → <code>APIKIT:BAD_REQUEST</code> → 400.</p>\n\n<h3>Keeping spec and implementation in sync</h3>\n<ul>\n<li>Update the RAML → right-click the API in Studio → <em>Scaffold flows from these API specifications</em>: new resource/method pairs get new flows; existing implementation flows are preserved.</li>\n<li>The spec can be kept as a <strong>design library dependency from Exchange</strong>, so implementation always tracks the published contract version.</li>\n</ul>\n\n<h3>REST Connect connectors</h3>\n<p>When an API specification is published to <strong>Exchange</strong>, the platform auto-generates a <strong>REST Connector</strong> (REST Connect). Consumers add it from Exchange to their Mule project and get one typed operation per method — with fields for parameters and metadata for DataSense — instead of hand-configuring HTTP Request URLs. If the connector can't be generated, consumers can still download the spec or call the API with plain HTTP Request.</p>"
+  },
+  {
+   "id": "s6",
+   "title": "Routing Events",
+   "weight": 8,
+   "topicDocs": {
+    "Choice router — conditional, exactly one route": "https://docs.mulesoft.com/mule-runtime/latest/choice-router-concept",
+    "Scatter-Gather — concurrent multicast": "https://docs.mulesoft.com/mule-runtime/latest/scatter-gather-concept",
+    "Other routers (know they exist)": "https://docs.mulesoft.com/mule-runtime/latest/choice-router-concept",
+    "Validation module": "https://docs.mulesoft.com/validation-connector/latest/"
+   },
+   "docs": [
+    {
+     "label": "Choice router",
+     "url": "https://docs.mulesoft.com/mule-runtime/latest/choice-router-concept"
+    },
+    {
+     "label": "Scatter-Gather",
+     "url": "https://docs.mulesoft.com/mule-runtime/latest/scatter-gather-concept"
+    },
+    {
+     "label": "Validation module",
+     "url": "https://docs.mulesoft.com/validation-connector/latest/"
+    }
+   ],
+   "objectives": [
+    "Use the Choice router to route events based on conditional logic",
+    "Use the Scatter-Gather router to multicast events",
+    "Validate data using the Validation module"
+   ],
+   "notes": "\n<h3>Choice router — conditional, exactly one route</h3>\n<pre><code>&lt;choice&gt;\n  &lt;when expression=\"#[payload.destination == 'SFO']\"&gt;\n    ... route 1 ...\n  &lt;/when&gt;\n  &lt;when expression=\"#[payload.destination == 'LAX']\"&gt;\n    ... route 2 ...\n  &lt;/when&gt;\n  &lt;otherwise&gt;\n    ... default route ...\n  &lt;/otherwise&gt;\n&lt;/choice&gt;</code></pre>\n<ul>\n<li>Routes are evaluated <strong>top to bottom</strong>; the <strong>first</strong> expression returning <code>true</code> wins — order your conditions from most to least specific.</li>\n<li>If nothing matches and there is no <code>otherwise</code>, the event continues unchanged past the router.</li>\n<li>Equivalent to if / else-if / else. For value-based transformation, a DataWeave <code>if/else</code> or <code>match</code> inside a Transform is often cleaner than a Choice.</li>\n</ul>\n\n<h3>Scatter-Gather — concurrent multicast</h3>\n<ul>\n<li>Sends a <strong>copy of the event to every route concurrently</strong> (minimum two routes) and <strong>waits for all</strong> to finish (configurable <code>timeout</code>).</li>\n<li>The result is a new payload: an <strong>object keyed by route index</strong>, each entry holding that route's full Mule message:</li>\n</ul>\n<pre><code>{\n  \"0\": { \"attributes\": {...}, \"payload\": [ ...route 0 result... ] },\n  \"1\": { \"attributes\": {...}, \"payload\": [ ...route 1 result... ] }\n}</code></pre>\n<p>Typical aggregation after the router:</p>\n<pre><code>%dw 2.0\noutput application/json\n---\nflatten(payload pluck $.payload)   // merge all route payloads into one array</code></pre>\n<ul>\n<li><strong>Error behavior:</strong> all routes still run; if any fail, the router raises <code>MULE:COMPOSITE_ROUTING</code> aggregating each route's error. To tolerate partial failure, put a Try scope (with On Error Continue) <em>inside</em> the failing-prone routes.</li>\n<li>Use when independent calls can run in parallel (e.g. query three airline systems and combine results) — total time ≈ slowest route, not the sum.</li>\n</ul>\n\n<h3>Other routers (know they exist)</h3>\n<table>\n<tr><th>Router</th><th>Behavior</th></tr>\n<tr><td>First Successful</td><td>Tries routes in order until one completes without error (failover pattern)</td></tr>\n<tr><td>Round Robin</td><td>One route per event, rotating through routes (simple load distribution)</td></tr>\n</table>\n\n<h3>Validation module</h3>\n<p>Validators check a condition and, on failure, <strong>throw a Mule error in the <code>VALIDATION</code> namespace</strong> (they don't return booleans). This \"fail fast with a typed error\" style pairs naturally with error handlers and APIkit (map to 400 responses).</p>\n<ul>\n<li>Common validators: <em>Is true / Is false, Is not blank string / Is blank string, Is not null / Is null, Is number, Is email, Is IP, Matches regex, Is elapsed, Is not elapsed</em>.</li>\n<li>Each validator lets you customize the error message; the raised type is specific, e.g. <code>VALIDATION:INVALID_BOOLEAN</code>, <code>VALIDATION:BLANK_STRING</code>, <code>VALIDATION:INVALID_EMAIL</code>.</li>\n<li><em>All / Any</em> validators combine several validations into one result.</li>\n</ul>\n<p class=\"tip\"><strong>Exam tip:</strong> \"Route a copy of the message to ALL of these systems\" → Scatter-Gather. \"Route to ONE system depending on a field\" → Choice. \"Reject requests with an invalid email, returning a clear error\" → Validation + error handler. Also remember Scatter-Gather's output shape — questions love asking what the payload looks like afterwards.</p>"
+  },
+  {
+   "id": "s7",
+   "title": "Handling Errors",
+   "weight": 8,
+   "topicDocs": {
+    "Two kinds of errors": "https://docs.mulesoft.com/mule-runtime/latest/error-handling",
+    "The Mule Error object": "https://docs.mulesoft.com/mule-runtime/latest/mule-error-concept",
+    "Default behavior (no error handler anywhere)": "https://docs.mulesoft.com/mule-runtime/latest/error-handling",
+    "On Error Propagate vs On Error Continue": "https://docs.mulesoft.com/mule-runtime/latest/on-error-scope-concept",
+    "Three levels of handling": "https://docs.mulesoft.com/mule-runtime/latest/try-scope-concept",
+    "Raising and mapping errors": "https://docs.mulesoft.com/mule-runtime/latest/raise-error-component-reference"
+   },
+   "docs": [
+    {
+     "label": "Error handling",
+     "url": "https://docs.mulesoft.com/mule-runtime/latest/error-handling"
+    },
+    {
+     "label": "Try scope",
+     "url": "https://docs.mulesoft.com/mule-runtime/latest/try-scope-concept"
+    }
+   ],
+   "objectives": [
+    "Describe the default error handling in a Mule application",
+    "Define a custom global default error handler and identify when it is used",
+    "Compare and contrast On Error Continue and On Error Propagate scopes",
+    "Handle errors at the application, flow, and processor level",
+    "Describe the data structure of the Mule Error object",
+    "Map errors to custom application errors"
+   ],
+   "notes": "\n<h3>Two kinds of errors</h3>\n<ul>\n<li><strong>System errors</strong> — occur outside event processing (app startup failure, a connection lost while idle). No Mule event is involved, so <em>no error handler can catch them</em>; Mule logs them and applies reconnection strategies.</li>\n<li><strong>Messaging errors</strong> — thrown while an event is processed in a flow. These are what you handle with error handlers.</li>\n</ul>\n\n<h3>The Mule Error object</h3>\n<p>When a processor fails, execution jumps to error handling and the event gains an <code>error</code> object:</p>\n<table>\n<tr><th>Field</th><th>Contents</th></tr>\n<tr><td><code>error.errorType</code></td><td>Namespace + identifier, e.g. <code>HTTP:NOT_FOUND</code>, <code>VALIDATION:INVALID_EMAIL</code></td></tr>\n<tr><td><code>error.description</code></td><td>Human-readable description of what failed</td></tr>\n<tr><td><code>error.cause</code></td><td>The underlying Java exception</td></tr>\n<tr><td><code>error.errorMessage</code></td><td>For some connectors, a Mule message describing the failing response (e.g. the HTTP error body)</td></tr>\n<tr><td><code>error.childErrors</code></td><td>Aggregated errors (e.g. from Scatter-Gather composite routing)</td></tr>\n</table>\n<p><strong>Error types form a hierarchy.</strong> Every error extends <code>MULE:ANY</code>. Examples: <code>HTTP:NOT_FOUND</code> and <code>HTTP:CONNECTIVITY</code> are HTTP-namespace types; <code>HTTP:CONNECTIVITY</code> also extends <code>MULE:CONNECTIVITY</code>. Handling a parent type catches all of its children. Special types: <code>MULE:UNKNOWN</code> (unmatchable except by ANY), <code>MULE:CRITICAL</code> (not handleable at all).</p>\n<figure><img src=\"images/error-handling-39be7.png\" alt=\"When a processor fails, the event is routed to the matching On Error scope inside the flow's error handler\"><figcaption>A failing processor routes the event into the flow's Error Handler; the rest of the flow is skipped <em>(source: docs.mulesoft.com)</em></figcaption></figure>\n\n<h3>Default behavior (no error handler anywhere)</h3>\n<p>Mule applies the built-in default error handler, which <strong>propagates</strong> the error: it is logged, the flow stops, and the source gets the error response — an HTTP Listener returns <strong>500</strong> with the error description.</p>\n\n<h3>On Error Propagate vs On Error Continue</h3>\n<table>\n<tr><th></th><th>On Error Propagate</th><th>On Error Continue</th></tr>\n<tr><td>After handler runs</td><td><strong>Re-throws</strong> the error up</td><td>Continues as if the flow <strong>succeeded</strong></td></tr>\n<tr><td>Rest of the flow</td><td>Skipped</td><td>Skipped (handler output becomes the flow result)</td></tr>\n<tr><td>HTTP Listener returns</td><td><strong>Error response (500 by default)</strong> — body can be customized in the handler</td><td><strong>Success response (200)</strong> with the handler's payload</td></tr>\n<tr><td>When called via Flow Reference</td><td>Error surfaces in the calling flow at the Flow Reference</td><td>Caller continues normally after the Flow Reference</td></tr>\n</table>\n<figure><img src=\"images/mruntime-on-error-continue.png\" alt=\"On Error Continue: the error handler executes and the flow returns a success response to the source\"><figcaption>On Error Continue: the handler's result is returned as a <em>success</em> response <em>(source: docs.mulesoft.com)</em></figcaption></figure>\n<p>Each On Error scope can match on: <code>type</code> (one or more error types, comma-separated) and/or <code>when</code> (a DataWeave boolean, e.g. <code>#[error.errorType.identifier == 'NOT_FOUND']</code>). Within an error handler, scopes are checked <strong>in order; first match wins</strong> — put specific types before general ones. An unmatched error behaves as if the handler didn't exist (bubbles to the next level).</p>\n\n<h3>Three levels of handling</h3>\n<ol>\n<li><strong>Processor level — Try scope.</strong> Wrap one or more processors; attach its own error handler. Classic use: let one optional call fail (On Error Continue in the Try) while the rest of the flow proceeds.</li>\n<li><strong>Flow level.</strong> Each flow (and private flow) has an error handling section with its own On Error scopes.</li>\n<li><strong>Application level — global default error handler.</strong> Define a global <code>error-handler</code> element and set it as the app's default in the configuration (Global Elements → Configuration → Default Error Handler). It applies <em>only</em> to flows that define <strong>no</strong> error handling of their own — it's a fallback, never an addition. Subflows never have their own handling; they always use the caller's context.</li>\n</ol>\n\n<h3>Raising and mapping errors</h3>\n<ul>\n<li><strong>Raise Error</strong> component throws a custom error explicitly: type like <code>APP:ORDER_INVALID</code> plus a description — useful after a business rule check.</li>\n<li><strong>Error mapping</strong> (on any connector operation, \"Error Mapping\" tab) converts a source type into a custom one: e.g. map <code>HTTP:NOT_FOUND</code> from a customer-service call to <code>APP:CUSTOMER_NOT_FOUND</code>. Handlers can then react to business-meaningful types, and two different calls that both might 404 become distinguishable.</li>\n</ul>\n<p class=\"tip\"><strong>Exam tip:</strong> the most-tested scenarios: (1) which HTTP status the client sees for Continue vs Propagate; (2) what happens in the CALLING flow when a referenced flow's handler is Continue vs Propagate; (3) first-match-wins ordering with <code>MULE:ANY</code> placed first (it swallows everything). Trace them slowly — they're free points once you know the rules.</p>"
+  },
+  {
+   "id": "s8",
+   "title": "Transforming Data with DataWeave",
+   "weight": 10,
+   "topicDocs": {
+    "Script anatomy": "https://docs.mulesoft.com/dataweave/latest/dataweave-language-introduction",
+    "Selectors": "https://docs.mulesoft.com/dataweave/latest/dataweave-selectors",
+    "Core functions (dw::Core is auto-imported)": "https://docs.mulesoft.com/dataweave/latest/dw-core",
+    "Working with XML": "https://docs.mulesoft.com/dataweave/latest/dataweave-formats-xml",
+    "Type coercion and formatting": "https://docs.mulesoft.com/dataweave/latest/dataweave-types",
+    "Variables, functions, modules, lookup": "https://docs.mulesoft.com/dataweave/latest/dataweave-variables"
+   },
+   "docs": [
+    {
+     "label": "DataWeave language",
+     "url": "https://docs.mulesoft.com/dataweave/latest/"
+    },
+    {
+     "label": "dw::Core functions",
+     "url": "https://docs.mulesoft.com/dataweave/latest/dw-core"
+    }
+   ],
+   "objectives": [
+    "Write DataWeave scripts to convert JSON, XML, and Java data structures",
+    "Use DataWeave functions (including map, filter, orderBy, groupBy)",
+    "Define and use DataWeave variables, functions, and custom data types",
+    "Use DataWeave modules and coerce/format strings, numbers, and dates",
+    "Call Mule flows from DataWeave scripts (lookup)"
+   ],
+   "notes": "\n<h3>Script anatomy</h3>\n<pre><code>%dw 2.0                          // header: version\noutput application/json          // header: output format\nimport * from dw::core::Strings // header: imports\nvar taxRate = 1.23               // header: variables\nfun withTax(n: Number) = n * taxRate   // header: functions\ntype Money = Number { format: \"#,##0.00\" } // header: custom types\n---\npayload map (item, index) -> {   // body: ONE expression\n  id: index,\n  total: withTax(item.price) as Money\n}</code></pre>\n<p>Output formats: <code>application/json</code>, <code>application/xml</code>, <code>application/java</code>, <code>application/csv</code>, <code>text/plain</code>… The body is a single expression; everything reusable goes in the header.</p>\n\n<h3>Selectors</h3>\n<table>\n<tr><th>Selector</th><th>Example</th><th>Returns</th></tr>\n<tr><td>Single value</td><td><code>payload.flight.price</code></td><td>Value of the key</td></tr>\n<tr><td>Index / range</td><td><code>payload[0]</code>, <code>payload[1 to 3]</code>, <code>payload[-1]</code></td><td>Element(s); -1 is the last</td></tr>\n<tr><td>Multi-value</td><td><code>payload.*flight</code></td><td>Array of ALL matching keys (essential for repeated XML elements)</td></tr>\n<tr><td>Descendants</td><td><code>payload..price</code></td><td>All 'price' values at any depth</td></tr>\n<tr><td>XML attribute</td><td><code>payload.flight.@code</code></td><td>Attribute value</td></tr>\n<tr><td>Key existence</td><td><code>payload.customer?</code></td><td>true/false</td></tr>\n</table>\n\n<h3>Core functions (dw::Core is auto-imported)</h3>\n<pre><code>payload map (f) -> { code: f.code }        // transform each array element ($, $$ = value, index)\npayload filter ($.price &lt; 500)             // keep matching elements\npayload orderBy $.price                    // ascending sort\n(payload orderBy $.price)[-1 to 0]         // descending (reverse)\npayload groupBy $.destination              // object of arrays keyed by criteria\npayload distinctBy $.code                  // remove duplicates\npayload reduce ((item, acc = 0) -> acc + item.price)   // fold to a single value\nflatten([[1,2],[3]])                       // [1,2,3]\npayload.book mapObject (v, k) -> { (upper(k)): v }     // transform object entries\npayload pluck (v, k) -> { key: k, value: v }           // object -> array\n\"a,b,c\" splitBy \",\"    /  [\"a\",\"b\"] joinBy \"-\"\nsizeOf(payload)  /  isEmpty(payload)  /  payload contains \"SFO\"\nif (payload.price > 100) \"expensive\" else \"cheap\"\npayload.customer.name default \"Anonymous\"  // fallback for null</code></pre>\n<p>Concatenate with <code>++</code> (strings, arrays, objects). String helpers live in <code>dw::core::Strings</code> (<code>capitalize</code>, <code>camelize</code>…), array helpers in <code>dw::core::Arrays</code>.</p>\n\n<h3>Working with XML</h3>\n<ul>\n<li>XML output requires a <strong>single root element</strong>; multiple top-level keys fail.</li>\n<li>Repeated elements: reading — use <code>*</code> (<code>payload.flights.*flight</code>); writing from an array inside an object, wrap with <code>{( ... )}</code>:</li>\n</ul>\n<pre><code>%dw 2.0\noutput application/xml\n---\nflights: {\n  (payload map (f) -> flight @(code: f.code): { price: f.price })\n}</code></pre>\n<ul>\n<li><code>@(name: value)</code> writes XML attributes; <code>payload.el.@name</code> reads them. Namespaces are declared in the header with <code>ns</code>.</li>\n<li>CSV: reader/writer properties like <code>header=false</code>, <code>separator='|'</code> are set on the format line: <code>output application/csv separator=\"|\"</code>.</li>\n</ul>\n\n<h3>Type coercion and formatting</h3>\n<pre><code>\"123\" as Number                          // 123\nprice as String {format: \"###.00\"}       // \"1250.00\"\n\"2024-03-15\" as Date                     // Date object\nnow() as String {format: \"yyyy-MM-dd\"}   // formatted timestamp\n\"15/03/2024\" as Date {format: \"dd/MM/yyyy\"}  // parse a non-ISO date\nnow() + |P1D|                            // date arithmetic with periods\n|2024-03-15| as String {format: \"MMM d\"} // date literal</code></pre>\n<p>Common coercion chain for reformatting a date string: <em>parse</em> with one format (<code>as Date {format: ...}</code>) then <em>output</em> with another (<code>as String {format: ...}</code>).</p>\n\n<h3>Variables, functions, modules, lookup</h3>\n<ul>\n<li><code>var</code>/<code>fun</code> in the header; <code>do { ... }</code> creates local scopes inside the body.</li>\n<li>Reusable libraries: a <code>.dwl</code> file in <code>src/main/resources</code> (e.g. <code>modules/Utils.dwl</code>) → <code>import modules::Utils</code> then <code>Utils::myFun(x)</code>, or <code>import * from modules::Utils</code> for unqualified use.</li>\n<li><code>lookup(\"flowName\", payload)</code> invokes a <strong>flow</strong> (not a subflow) and returns its payload — handy but use sparingly (harder error handling, hidden coupling).</li>\n</ul>\n<p class=\"tip\"><strong>Exam tip:</strong> practice reading scripts and predicting output shape: <code>map</code> → array, <code>groupBy</code> → object of arrays, <code>pluck</code> → array, <code>mapObject</code> → object, <code>reduce</code> → single value. And remember <code>$</code>=value, <code>$$</code>=key/index.</p>"
+  },
+  {
+   "id": "s9",
+   "title": "Using Connectors",
+   "weight": 12,
+   "topicDocs": {
+    "Database connector": "https://docs.mulesoft.com/db-connector/latest/",
+    "HTTP Request & REST connectors": "https://docs.mulesoft.com/http-connector/latest/",
+    "Web Service Consumer (SOAP)": "https://docs.mulesoft.com/web-service-consumer-connector/latest/",
+    "File / FTP / SFTP connectors": "https://docs.mulesoft.com/file-connector/latest/",
+    "JMS connector": "https://docs.mulesoft.com/jms-connector/latest/"
+   },
+   "docs": [
+    {
+     "label": "All connectors",
+     "url": "https://docs.mulesoft.com/connectors/"
+    },
+    {
+     "label": "Database connector",
+     "url": "https://docs.mulesoft.com/db-connector/latest/"
+    },
+    {
+     "label": "HTTP connector",
+     "url": "https://docs.mulesoft.com/http-connector/latest/"
+    }
+   ],
+   "objectives": [
+    "Retrieve data from a database with the Database connector, including parameterized queries",
+    "Retrieve data from a REST service using HTTP Request or a REST Connector",
+    "Use a Web Service Consumer to consume SOAP web services",
+    "Use the Transform Message component to pass parameters to a SOAP web service",
+    "List, read, and write files with the File and FTP connectors",
+    "Publish and consume JMS messages"
+   ],
+   "notes": "\n<h3>Database connector</h3>\n<ul>\n<li>Operations: <strong>Select, Insert, Update, Delete, Bulk insert/update/delete, Stored procedure, Execute DDL</strong>; sources: <strong>On Table Row</strong> (polling with watermark).</li>\n<li>The JDBC driver is a Maven dependency (Studio adds it via the config's \"Configure\" button). Connection can be generic (URL + driver class) or vendor-specific; supports connection pooling.</li>\n<li><strong>Always parameterize queries</strong> — input parameters prevent SQL injection and handle escaping/typing:</li>\n</ul>\n<pre><code>SELECT * FROM american\nWHERE toAirport = :destination AND price &lt; :maxPrice\n-- Input parameters:\n#[{ destination: attributes.queryParams.destination,\n    maxPrice: 500 }]</code></pre>\n<ul>\n<li>Select returns an array of objects (one per row) — typically followed by a Transform. Insert/Update return affected-row counts and generated keys in the payload/attributes.</li>\n</ul>\n\n<h3>HTTP Request &amp; REST connectors</h3>\n<ul>\n<li>Config holds base host/port/protocol (parameterize with properties); the operation sets method, path, headers, query params (fields or a DataWeave map), and body (current payload by default).</li>\n<li><strong>Response validation:</strong> only 2xx (and 3xx per config) count as success; a 404 raises <code>HTTP:NOT_FOUND</code>, a 500 raises <code>HTTP:INTERNAL_SERVER_ERROR</code>, connection failures raise <code>HTTP:CONNECTIVITY</code>. The \"success status codes\" setting can widen what's accepted (e.g. <code>200..404</code> to handle 404 without errors).</li>\n<li>After the call: payload = response body, attributes = status code + reason + headers (the previous attributes are gone!).</li>\n<li>A <strong>REST Connector</strong> from Exchange (REST Connect) is the typed alternative: one operation per method with DataSense metadata. Authentication schemes (basic, OAuth, client id enforcement headers) configured on the connector config.</li>\n</ul>\n\n<h3>Web Service Consumer (SOAP)</h3>\n<ul>\n<li>Configure with the <strong>WSDL</strong> (location, service, port, address) — the connector exposes each SOAP operation.</li>\n<li>The payload sent must be the <strong>SOAP body XML</strong> for the operation. Because the connector publishes metadata from the WSDL, a <strong>Transform Message placed before the Consume operation</strong> shows the expected XML structure as output metadata — map your data to it (namespaces included).</li>\n<li>SOAP faults raise errors (<code>WSC:SOAP_FAULT</code>); headers can be set via the operation's \"headers\" DataWeave.</li>\n</ul>\n\n<h3>File / FTP / SFTP connectors</h3>\n<ul>\n<li>Operations: <strong>List, Read, Write, Copy, Move, Delete, Create directory</strong>; source: <strong>On New or Updated File</strong> (polls a directory).</li>\n<li>Listener best practices: set <em>post-processing</em> — <strong>Move to another directory</strong> and/or <strong>rename</strong>, or auto-delete — so the same file isn't reprocessed; use matching rules (filename pattern) to select files. <em>Watermark</em> mode (file timestamps) can restrict to new/updated files.</li>\n<li>Write operation: path + content (defaults to payload); modes: OVERWRITE, APPEND, CREATE_NEW. List returns an array of file messages; each message's attributes carry file name/size/timestamps.</li>\n<li>FTP/SFTP mirror the File operations over remote protocols (SFTP = SSH; FTPS = TLS).</li>\n</ul>\n\n<h3>JMS connector</h3>\n<ul>\n<li>Messaging styles: <strong>queues = point-to-point</strong> (one consumer receives each message), <strong>topics = publish/subscribe</strong> (every subscriber gets a copy).</li>\n<li>Operations: <strong>Publish</strong>, <strong>Consume</strong> (one message, on demand), <strong>Publish-Consume</strong> (request-reply over queues); source: <strong>On New Message</strong> (listener).</li>\n<li>Why messaging: decouples producer from consumer in time and availability, buffers load spikes, enables async processing and reliable delivery (acknowledgements, persistent messages, transactions).</li>\n<li>Message = body + properties (custom headers) + JMS headers (correlation id, reply-to). Attributes after Consume/On New Message expose these.</li>\n</ul>\n<p class=\"tip\"><strong>Exam tip:</strong> match the connector to the scenario: database table sync → Database + On Table Row; existing SOAP service → Web Service Consumer (never HTTP Request); nightly CSV drop in a folder → File listener with move-after-processing; decouple two flows/apps with buffering → JMS (or VM within one app).</p>"
+  },
+  {
+   "id": "s10",
+   "title": "Processing Records",
+   "weight": 10,
+   "topicDocs": {
+    "Choosing a record-processing tool": "https://docs.mulesoft.com/mule-runtime/latest/for-each-scope-concept",
+    "Batch Job — three phases": "https://docs.mulesoft.com/mule-runtime/latest/batch-processing-concept",
+    "Triggering flows": "https://docs.mulesoft.com/mule-runtime/latest/scheduler-concept",
+    "Watermarking — sync only what's new": "https://docs.mulesoft.com/object-store-connector/latest/",
+    "Object Store": "https://docs.mulesoft.com/object-store-connector/latest/"
+   },
+   "docs": [
+    {
+     "label": "Batch processing",
+     "url": "https://docs.mulesoft.com/mule-runtime/latest/batch-processing-concept"
+    },
+    {
+     "label": "For Each scope",
+     "url": "https://docs.mulesoft.com/mule-runtime/latest/for-each-scope-concept"
+    },
+    {
+     "label": "Object Store connector",
+     "url": "https://docs.mulesoft.com/object-store-connector/latest/"
+    }
+   ],
+   "objectives": [
+    "List and compare the methods for processing individual records in a collection",
+    "Use the For Each scope to process records",
+    "Use the Batch Job scope (with Batch Steps and Batch Aggregator) to process records",
+    "Use the Scheduler component and connector listeners to trigger flows",
+    "Use watermarking (automatic and manual) to synchronize data",
+    "Persist and share data using the Object Store"
+   ],
+   "notes": "\n<h3>Choosing a record-processing tool</h3>\n<table>\n<tr><th></th><th>For Each</th><th>Parallel For Each</th><th>Batch Job</th></tr>\n<tr><td>Execution</td><td>Sequential, one at a time</td><td>Concurrent</td><td>Parallel, queued, async</td></tr>\n<tr><td>Output</td><td><strong>Original payload</strong> (changes inside discarded)</td><td>Array of each iteration's result</td><td>BatchJobResult (in On Complete)</td></tr>\n<tr><td>On record error</td><td>Stops processing (unless handled)</td><td>Collects failures; composite error</td><td>Configurable (maxFailedRecords); record-level tolerance</td></tr>\n<tr><td>Persistence / restart</td><td>No</td><td>No</td><td>Yes — records go to persistent queues; job resumes after crash</td></tr>\n<tr><td>Best for</td><td>Small collections, side effects in order</td><td>Independent medium workloads</td><td>Very large datasets, near-real-time sync, reliability (EE only)</td></tr>\n</table>\n<p>For Each notes: splits on <code>#[payload]</code> by default (configurable collection expression); batch size option groups elements; <strong>variables set inside persist</strong> after the scope, payload changes do not.</p>\n\n<h3>Batch Job — three phases</h3>\n<figure><img src=\"images/mruntime-batch-job-overview.png\" alt=\"Batch job phases: Load and Dispatch, Process, On Complete\"><figcaption>Load and Dispatch → Process (batch steps) → On Complete <em>(source: docs.mulesoft.com)</em></figcaption></figure>\n<ol>\n<li><strong>Load and Dispatch</strong> (implicit): splits the input (Java Iterables/Iterators/Arrays, JSON or XML arrays) into <strong>records</strong> and queues them into a persistent batch queue, creating the <em>batch job instance</em>. The flow that triggered the job <strong>continues immediately</strong> (the original payload moves on; the job runs asynchronously).</li>\n<li><strong>Process</strong>: each record moves through the <strong>Batch Steps</strong> in parallel (block size defaults to 100 records per thread batch). Per step:\n  <ul>\n  <li><strong>Accept Expression</strong> — DataWeave condition a record must satisfy to enter the step.</li>\n  <li><strong>Accept Policy</strong> — <code>ALL</code>, <code>NO_FAILURES</code> (default), <code>ONLY_FAILURES</code> — a final step with ONLY_FAILURES implements per-record error reporting.</li>\n  <li><strong>Batch Aggregator</strong> (optional, inside a step) — accumulates records into arrays of fixed <code>size</code> (e.g. bulk upsert 100 at a time) or <code>streaming</code> (all records, one pass).</li>\n  <li>Record-level <strong>variables</strong> set in one step are visible for the same record in later steps; variables from the Process phase do <em>not</em> reach On Complete.</li>\n  </ul></li>\n<li><strong>On Complete</strong>: runs once; payload is a <strong>BatchJobResult</strong> — <code>totalRecords, processedRecords, successfulRecords, failedRecords, loadedRecords</code>… Use it to log/report. The original payload is NOT available here.</li>\n</ol>\n<p><strong>Error tolerance:</strong> <code>maxFailedRecords = 0</code> (default) stops the job at the first failed record; <code>-1</code> tolerates unlimited failures; <code>N</code> stops after N. Failed records skip remaining steps unless a step's accept policy includes failures.</p>\n\n<h3>Triggering flows</h3>\n<ul>\n<li><strong>Scheduler</strong>: <em>Fixed frequency</em> (every N ms/sec/min, with start delay) or <em>Cron expression</em> (e.g. <code>0 0 2 * * ?</code> = 02:00 daily). If a run is still executing when the next tick fires, the new one is skipped for that flow instance.</li>\n<li><strong>Connector listeners</strong>: On New or Updated File, On New Message (JMS/VM/Anypoint MQ), On Table Row (Database) — event-driven alternatives to polling with a Scheduler.</li>\n</ul>\n\n<h3>Watermarking — sync only what's new</h3>\n<ul>\n<li><strong>Automatic:</strong> built into some sources. <em>On Table Row</em>: choose a <strong>watermark column</strong> (incrementing id or timestamp) — the connector persists the max seen value and adds it to the query filter each poll. <em>On New or Updated File</em>: timestamp-based watermark option.</li>\n<li><strong>Manual:</strong> when logic is custom (e.g. Scheduler + HTTP \"get changes since X\"): read the stored watermark from an <strong>Object Store</strong>, query with it, then store the new max. Components: <code>os:retrieve</code> (with defaultValue), <code>os:store</code>.</li>\n</ul>\n\n<h3>Object Store</h3>\n<ul>\n<li>Key/value persistence per app: operations <strong>Store, Retrieve (with default), Contains, Remove, Clear</strong>; entries can have TTL. Backing: in-memory or persistent; on CloudHub, Object Store v2.</li>\n<li>Used by: manual watermarks, Cache scope, Idempotent Message Validator, custom state (counters, tokens).</li>\n</ul>\n<p class=\"tip\"><strong>Exam tip:</strong> classic questions — \"what is the payload after For Each?\" (the original), \"where do you see failed record counts?\" (On Complete's BatchJobResult), \"how do you process only failed records in the last step?\" (accept policy ONLY_FAILURES), and \"sync new records hourly without duplicates\" (watermarking).</p>"
+  },
+  {
+   "id": "s11",
+   "title": "Debugging and Troubleshooting Mule Applications",
+   "weight": 5,
+   "topicDocs": {
+    "The Mule debugger": "https://docs.mulesoft.com/anypoint-studio/latest/index",
+    "Maven dependency problems": "https://docs.mulesoft.com/anypoint-studio/latest/index",
+    "Reading Mule logs": "https://docs.mulesoft.com/mule-runtime/latest/logging-in-mule"
+   },
+   "docs": [
+    {
+     "label": "Anypoint Studio docs (debugger)",
+     "url": "https://docs.mulesoft.com/anypoint-studio/latest/"
+    },
+    {
+     "label": "Logging in Mule",
+     "url": "https://docs.mulesoft.com/mule-runtime/latest/logging-in-mule"
+    }
+   ],
+   "objectives": [
+    "Use breakpoints to inspect a Mule event at runtime",
+    "Install missing Maven dependencies",
+    "Read and decipher Mule log error messages"
+   ],
+   "notes": "\n<h3>The Mule debugger</h3>\n<ul>\n<li>Right-click a processor → <em>Add breakpoint</em>, then <strong>Debug As → Mule Application</strong>. The debugger connects on port <strong>6666</strong> by default (changeable in the debug configuration).</li>\n<li>When paused, the <strong>Mule Debugger view</strong> shows the event <em>as it arrives at</em> the breakpointed processor: payload, attributes, variables, error (if any).</li>\n<li>The <strong>expression evaluator</strong> runs arbitrary DataWeave against the paused event (e.g. test <code>payload.items filter $.qty > 0</code> before writing it into a transform).</li>\n<li>Step controls: step over / step into (e.g. into a referenced flow) / resume. <em>Careful with streams:</em> viewing a streamed payload in the debugger can consume it.</li>\n<li>Breakpoints can be <strong>conditional</strong> (a DataWeave expression) and can be set on exception (break when an error is raised).</li>\n</ul>\n\n<h3>Maven dependency problems</h3>\n<ul>\n<li>Symptoms: build fails with <code>Could not resolve dependencies</code> / <code>ClassNotFoundException</code> at runtime / Studio error markers on connector operations.</li>\n<li>Fixes: declare the missing artifact in <code>pom.xml</code> (for JDBC drivers, Studio's Database config UI offers to add it); check the version exists; verify the repository is reachable and credentials in <code>settings.xml</code> are valid (needed for Exchange-hosted assets); force a refresh with <code>mvn clean install -U</code> or Studio → right-click project → Mule → Update project dependencies.</li>\n<li>Connector dependencies from Exchange are added automatically when dragged from the Mule Palette (\"Search in Exchange\").</li>\n</ul>\n\n<h3>Reading Mule logs</h3>\n<p>Logging is <strong>Log4j 2</strong> (<code>src/main/resources/log4j2.xml</code>); Studio console shows the same output as <code>logs/mule_ee.log</code> style files. A log line contains: timestamp, <strong>level</strong> (ERROR/WARN/INFO/DEBUG/TRACE), thread, logger category, event correlation id, and message. A typical error block:</p>\n<pre><code>ERROR 2026-05-01 10:15:32,481 [[MuleRuntime].uber.04: [training-app].get:\\flights:api-config...]\n********************************************************************\nMessage               : HTTP GET on resource 'http://acme:8081/api/flights' failed: not found (404)\nError type            : HTTP:NOT_FOUND\nElement               : get:\\flights:api-config/processors/1 @ training-app\n...(stack trace)...</code></pre>\n<ul>\n<li><strong>Message</strong> + <strong>Error type</strong> tell you <em>what</em>; <strong>Element</strong> tells you <em>which processor in which flow</em>. Read these before the stack trace.</li>\n<li>The thread name reveals the flow; the correlation id groups all lines of one event's journey.</li>\n<li><strong>Logger component:</strong> set message (<code>#[...]</code> expressions), level, and category (e.g. <code>com.acme.flights</code>) — categories are filtered/leveled in log4j2.xml. Logging a streamed payload prints a cursor object (e.g. <code>ManagedCursorStreamProvider</code>) unless converted: <code>#[payload as String]</code> or transform first — and beware that doing so consumes/loads the stream.</li>\n<li>Common startup errors: port already in use (another app on 8081), invalid listener path, unresolved property placeholder (<code>Couldn't find configuration property value for key</code>).</li>\n</ul>\n<p class=\"tip\"><strong>Exam tip:</strong> given a log excerpt, identify the failing component and error type. Remember: the debugger shows the event BEFORE the selected processor runs, and the default debugger port is 6666.</p>"
+  },
+  {
+   "id": "s12",
+   "title": "Deploying and Managing APIs",
+   "weight": 5,
+   "topicDocs": {
+    "Packaging": "https://docs.mulesoft.com/mule-runtime/latest/package-a-mule-application",
+    "CloudHub deployment": "https://docs.mulesoft.com/cloudhub/deploying-to-cloudhub",
+    "Managing APIs — API Manager": "https://docs.mulesoft.com/api-manager/latest/latest-overview-concept",
+    "Policies": "https://docs.mulesoft.com/mule-gateway/policies-included-directory",
+    "Client ID enforcement, contracts and SLA tiers": "https://docs.mulesoft.com/api-manager/latest/create-instance-task"
+   },
+   "docs": [
+    {
+     "label": "Deploying to CloudHub",
+     "url": "https://docs.mulesoft.com/cloudhub/deploying-to-cloudhub"
+    },
+    {
+     "label": "API Manager",
+     "url": "https://docs.mulesoft.com/api-manager/latest/"
+    },
+    {
+     "label": "API autodiscovery",
+     "url": "https://docs.mulesoft.com/mule-gateway/mule-gateway-config-autodiscovery-mule4"
+    }
+   ],
+   "objectives": [
+    "Package Mule applications for deployment",
+    "Deploy applications to CloudHub",
+    "Use API Manager to create and deploy API proxies",
+    "Connect an API implementation to API Manager using autodiscovery",
+    "Restrict access with policies, client ID enforcement, and SLA tiers"
+   ],
+   "notes": "\n<h3>Packaging</h3>\n<ul>\n<li>A Mule 4 app packages as a <strong>deployable JAR</strong>: <code>mvn clean package</code> (or Studio → Export → Anypoint Studio Project to Mule Deployable Archive). It bundles the app XMLs, resources, and dependencies; <code>mule-artifact.json</code> declares <code>minMuleVersion</code> and secure properties.</li>\n<li>The <strong>same JAR</strong> deploys to any target: CloudHub, Runtime Fabric, or customer-hosted runtimes (hybrid). Configuration differences come from properties, not rebuilds.</li>\n</ul>\n\n<h3>CloudHub deployment</h3>\n<ul>\n<li>Deploy from Studio (Anypoint Platform → Deploy), <strong>Runtime Manager</strong> (upload JAR), Anypoint CLI, or Maven. Choose: region, runtime version, <strong>worker size</strong> (0.1 / 0.2 / 1 / 2 / 4 … vCores) and <strong>number of workers</strong>.</li>\n<li><strong>Vertical scaling</strong> = bigger workers; <strong>horizontal scaling</strong> = more workers with automatic load balancing across them. Multiple workers also give high availability.</li>\n<li>App URL: <code>&lt;appname&gt;.&lt;region&gt;.cloudhub.io</code>; app names are unique per region. Set/override <strong>properties</strong> in Runtime Manager (Settings → Properties) — values there beat the packaged files; mark sensitive ones as hidden.</li>\n<li>Runtime Manager also provides: logs, restart/stop, static IPs, schedules management (manage Scheduler-triggered flows), and alerts (app down, deployment failed…).</li>\n</ul>\n\n<h3>Managing APIs — API Manager</h3>\n<p>API Manager governs <strong>API instances</strong> (an API spec version deployed to an environment). Two ways to bring an implementation under management:</p>\n<table>\n<tr><th></th><th>API proxy</th><th>Autodiscovery (basic endpoint)</th></tr>\n<tr><td>What runs</td><td>A separate proxy app generated and deployed by API Manager in front of the implementation</td><td>The implementation itself registers with API Manager</td></tr>\n<tr><td>Where policies execute</td><td>In the proxy</td><td>Inside the implementation app</td></tr>\n<tr><td>Code changes</td><td>None</td><td>Add an <strong>API Autodiscovery</strong> global element</td></tr>\n<tr><td>Use when</td><td>Implementation can't be modified / non-Mule backend</td><td>Mule implementation you control (avoids extra hop)</td></tr>\n</table>\n<p><strong>Autodiscovery requirements:</strong> the app declares <code>&lt;api-gateway:autodiscovery apiId=\"${api.id}\" flowRef=\"main-flow\"/&gt;</code> where the <code>apiId</code> matches the API instance in API Manager for THAT environment, and the runtime has Anypoint Platform <strong>client credentials</strong> (client id/secret of the environment, set as properties <code>anypoint.platform.client_id</code>/<code>client_secret</code> — automatic on CloudHub deployments from the same org). Status turns green (\"Active\") in API Manager when paired; policies are then pulled and enforced by the app.</p>\n\n<h3>Policies</h3>\n<table>\n<tr><th>Policy</th><th>Purpose</th></tr>\n<tr><td>Rate limiting / Rate limiting SLA-based</td><td>Cap requests per window (globally, or per client tier)</td></tr>\n<tr><td>Spike control</td><td>Smooth bursts (queue/delay instead of hard reject)</td></tr>\n<tr><td>Client ID enforcement</td><td>Require client_id/client_secret from registered consumers</td></tr>\n<tr><td>OAuth 2.0 / JWT validation / Basic auth</td><td>Authentication and authorization</td></tr>\n<tr><td>IP allowlist / blocklist</td><td>Network-level restriction</td></tr>\n<tr><td>CORS, Header injection/removal</td><td>Cross-origin support, header manipulation</td></tr>\n</table>\n<ul>\n<li>Policies are applied per API instance in API Manager — <strong>no redeployment of the app</strong> is needed; gateways poll and apply them. Custom policies can be published to Exchange.</li>\n<li><strong>Resource-level policies</strong> can target specific methods/paths instead of the whole API.</li>\n</ul>\n\n<h3>Client ID enforcement, contracts and SLA tiers</h3>\n<ol>\n<li>Define <strong>SLA tiers</strong> on the API instance (e.g. Gold: 1000 req/min auto-approved; Silver: 100 req/min manual approval).</li>\n<li>A consumer finds the API in <strong>Exchange</strong> and <strong>requests access</strong> with (or creating) a <em>client application</em>, choosing a tier → this creates a <strong>contract</strong> once approved, and the client app gets <strong>client_id + client_secret</strong>.</li>\n<li>With <strong>client ID enforcement</strong> (or SLA-based rate limiting) applied, requests must carry the credentials (headers or query params per policy config, e.g. <code>client_id</code>/<code>client_secret</code> headers); the gateway identifies the consumer, checks the contract, and applies the tier's limits. Violations → <strong>401</strong> (invalid credentials) or <strong>429</strong> (over the limit).</li>\n</ol>\n<p class=\"tip\"><strong>Exam tip:</strong> know the request-access flow order (Exchange → client app → tier → contract → credentials) and that SLA-based rate limiting REQUIRES a client-identifying policy. Also: policies apply per environment-specific API instance, and changing policies never requires redeploying the Mule app.</p>"
+  }
+ ]
+}

@@ -4,50 +4,89 @@ A self-contained web app to study for integration certifications:
 **MuleSoft Certified Developer – Level 1**, **Level 2**, the
 **MuleSoft Platform Integration Architect**, and the
 **Confluent Certified Developer for Apache Kafka (CCDAK)**.
-No server, no build step — everything runs in your browser, and progress is saved in `localStorage`.
 
-## How to run
+No build step and no backend — a static site whose content lives in JSON files, with optional
+cross-device progress sync through a private GitHub Gist.
 
-Double-click `index.html` (or right-click → Open with → your browser). That's it.
+## Use it
+
+- **Hosted (any device):** https://nmcaodias.github.io/integration-study/
+- **Locally:** the app loads its data with `fetch()`, so it needs to be served over HTTP —
+  opening `index.html` straight from disk won't work. From the project folder run either:
+  ```
+  python -m http.server
+  ```
+  or `npx serve`, then open http://localhost:8000.
 
 ## Features
 
 - **Study notes** — in-depth notes and official exam objectives for every exam section
   (12 sections for L1, 5 weighted domains for L2, 10 weighted sections for the
-  Integration Architect, 6 weighted sections for CCDAK). Mark sections as read.
+  Integration Architect, 6 weighted sections for CCDAK), with diagrams from the official
+  MuleSoft and Apache Kafka documentation (stored locally in `images/`) and a 📖 link on
+  every sub-topic heading to its official documentation page.
 - **Practice quizzes** — pick a topic (or all) and a question count; instant feedback with
   explanations after every answer. Per-topic accuracy is tracked on the certification page.
-- **Exam simulation** — timed mock exam mirroring the real format (120-minute countdown,
-  70% to pass), question flagging, a navigator grid, auto-submit on timeout, a per-topic
-  score report, and a review of every incorrect answer. Attempts are saved to history.
+- **Exam simulation** — timed mock exam mirroring the real format, drawn according to the
+  official topic weightings: question flagging, a navigator grid, auto-submit on timeout,
+  a per-topic score report, and a review of every incorrect answer. Attempts are saved.
+- **Cross-device sync** — see below.
 - **Dark/light theme** — toggle with the 🌓 button.
 
-## Adding your own questions
+## Progress sync across devices
 
-Questions live in `data/mcd1-questions-*.js` and `data/mcd2-questions-*.js`.
-Each one is a plain object — copy the pattern:
+Progress is always saved in the browser (`localStorage`). To sync it across devices, the app
+can mirror it into a **private GitHub Gist** you own:
 
-```js
+1. Open **⚙ Sync & backup** in the app.
+2. Create a GitHub token with permission for **Gists (read and write)** only — the Sync page
+   links to the right settings screen.
+3. Paste the token and connect. The app finds (or creates) a private gist named
+   `integration-study-progress` and merges its contents with local progress.
+4. Repeat on each device with the same token (or another token of the same account).
+
+Changes are pushed automatically a few seconds after each answer/exam; other devices merge on
+load. The token is stored only in each browser's localStorage and is used exclusively for the
+Gist API. The Sync page also offers **export/import** of a progress file — handy as a backup
+or to migrate progress from an old local copy.
+
+## Content is data
+
+All certification content lives in `data/`:
+
+- `data/certs.json` — the manifest: which certification files to load.
+- `data/mcd1.json`, `data/mcd2.json`, `data/mcia.json`, `data/ccdak.json` — one file per
+  certification: exam metadata, sections (title, weight, objectives, notes HTML, `topicDocs`
+  documentation links), and the question bank.
+
+### Adding your own questions
+
+Append to the `questions` array of the certification's JSON file:
+
+```json
 {
-  id: "m1-999",            // unique id
-  section: "s3",           // must match a section id in the notes file
-  q: "Question text?",
-  options: ["Option A", "Option B", "Option C", "Option D"],
-  answer: 1,               // index of the correct option (0-based)
-  explanation: "Why the answer is correct."
+  "id": "m1-999",
+  "section": "s3",
+  "q": "Question text?",
+  "options": ["Option A", "Option B", "Option C", "Option D"],
+  "answer": 1,
+  "explanation": "Why the answer is correct."
 }
 ```
 
-Section ids: L1 uses `s1`–`s12` (see `data/mcd1-notes-a.js` / `-b.js`), L2 uses `d1`–`d5`
-(see `data/mcd2-notes-a.js` / `-b.js`), the Integration Architect uses `a1`–`a10`
-(see `data/mcia-notes-a.js` / `-b.js`), and CCDAK uses `k1`–`k6`
-(see `data/ccdak-notes-a.js` / `-b.js`). Study notes include diagrams from the official
-MuleSoft and Apache Kafka documentation (stored locally in `images/`). You can also add a whole new certification by creating a new
-entry in `window.CERT_DATA` following the same shape and adding its `<script>` tags to
-`index.html`.
+`id` must be unique; `section` must be an existing section id (L1 `s1`–`s12`, L2 `d1`–`d5`,
+Integration Architect `a1`–`a10`, CCDAK `k1`–`k6`); `answer` is the 0-based index of the
+correct option. A whole new certification = a new JSON file with the same shape plus an entry
+in `data/certs.json`.
+
+Run `node scripts/validate-data.js` to check the data files (unique ids, valid section
+references, answer indexes, weights, documentation-link coverage). The same check runs in CI
+on every push (`.github/workflows/validate.yml`).
 
 ## Resetting progress
 
-Progress is stored under the `mulesoft-study-v1` key in your browser's localStorage.
-Clear it from DevTools (Application → Local Storage) to start fresh, or use the
-"Clear history" button on each exam-history page for exam attempts only.
+Local progress lives under the `mulesoft-study-v1` key in localStorage (clear it from
+DevTools → Application → Local Storage). If sync is connected, also delete the
+`integration-study-progress` gist (or its contents) at https://gist.github.com — otherwise
+the next sync restores the merged state. Exam attempts alone can be cleared per certification
+with the "Clear history" button.

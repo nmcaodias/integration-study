@@ -98,6 +98,29 @@ pre code { background: none; padding: 0; }
   cursor: pointer;
   font-size: 1rem;
 }
+#sync-link {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 1.05rem;
+  padding: .3rem .45rem;
+  border-radius: 8px;
+}
+#sync-link:hover { background: var(--surface-2); color: var(--text); }
+#sync-status { font-size: .8rem; margin-left: .15rem; vertical-align: middle; }
+#sync-status.sync-idle { color: var(--ok, #1e8e4e); }
+#sync-status.sync-syncing { color: var(--warn, #b8860b); }
+#sync-status.sync-error { color: var(--bad, #c0392b); }
+.setup-field input[type="password"] {
+  width: 100%;
+  max-width: 480px;
+  padding: .5rem .7rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-family: inherit;
+  font-size: .95rem;
+}
 
 /* ---------- Layout ---------- */
 #app { max-width: 980px; margin: 0 auto; padding: 1.6rem 1.2rem 4rem; }

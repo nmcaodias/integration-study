@@ -2,8 +2,8 @@
 (function () {
   "use strict";
 
-  const CERTS = window.CERT_DATA;
-  const CERT_IDS = Object.keys(CERTS);
+  let CERTS = {};
+  let CERT_IDS = [];
   const STORE_KEY = "mulesoft-study-v1";
   const app = document.getElementById("app");
   const topnav = document.getElementById("topnav");
@@ -24,8 +24,11 @@
       return s;
     }
   }
-  const state = loadState();
-  function save() { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+  let state = null;
+  function save() {
+    localStorage.setItem(STORE_KEY, JSON.stringify(state));
+    if (window.SYNC) SYNC.schedulePush();
+  }
 
   // transient (not persisted) session state for the active quiz/exam
   let session = null;
@@ -78,10 +81,12 @@
 
   /* ---------------- Router ---------------- */
   function route() {
+    if (!state) return; // data still loading (boot() calls route when ready)
     // leaving an unfinished exam? keep session only for its own route
     const hash = location.hash || "#/";
     const parts = hash.replace(/^#\//, "").split("/").filter(Boolean);
     stopTimer();
+    if (parts[0] === "sync") return renderSync();
     if (parts.length === 0) return renderHome();
     if (parts[0] === "cert" && CERTS[parts[1]]) return renderCert(parts[1]);
     if (parts[0] === "notes" && CERTS[parts[1]] && sectionById(CERTS[parts[1]], parts[2])) return renderNotes(parts[1], parts[2]);
@@ -626,6 +631,113 @@
     };
   }
 
+  /* ---------------- Sync & backup ---------------- */
+  function renderSync() {
+    setNav(null);
+    const connected = window.SYNC && SYNC.isConnected();
+    app.innerHTML = `
+      <p class="muted"><a href="#/">← Home</a></p>
+      <h1>Sync &amp; backup</h1>
+      <p class="subtitle">Keep your study progress in sync across devices using a private GitHub Gist.</p>
+      <div class="card">
+        <h2>GitHub sync ${connected ? '<span class="pill ok">connected</span>' : '<span class="pill">not connected</span>'}</h2>
+        ${connected ? `
+          <p class="muted">Progress is stored in a private Gist (<code>${esc(SYNC.gistId() || "")}</code>) and pushed automatically a few seconds after every change. Other devices merge it on load.</p>
+          <div class="btn-row">
+            <button class="btn" id="sync-now">Sync now</button>
+            <button class="btn danger" id="sync-disconnect">Disconnect this device</button>
+          </div>
+          <p class="muted" id="sync-msg"></p>` : `
+          <ol class="objectives">
+            <li>Create a GitHub personal access token: <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">fine-grained token</a> with <strong>Account permissions → Gists → Read and write</strong> (nothing else). If Gists isn't available there, use a <a href="https://github.com/settings/tokens/new?scopes=gist&description=integration-study-sync" target="_blank" rel="noopener">classic token</a> with only the <strong>gist</strong> scope.</li>
+            <li>Paste it below. The token is stored only in this browser and used only to read/write one private Gist.</li>
+            <li>Repeat on each device — the same Gist is found automatically.</li>
+          </ol>
+          <div class="setup-field">
+            <label for="sync-token">GitHub token</label>
+            <input type="password" id="sync-token" placeholder="github_pat_… / ghp_…" autocomplete="off">
+          </div>
+          <div class="btn-row"><button class="btn" id="sync-connect">Connect</button></div>
+          <p class="muted" id="sync-msg"></p>`}
+      </div>
+      <div class="card">
+        <h2>Backup file</h2>
+        <p class="muted">Export your progress as a JSON file, or import one — for example, from the old local copy of this app. Imports are <strong>merged</strong> into current progress, never overwritten.</p>
+        <div class="btn-row">
+          <button class="btn secondary" id="export-btn">⬇ Export progress</button>
+          <button class="btn secondary" id="import-btn">⬆ Import progress</button>
+          <input type="file" id="import-file" accept=".json,application/json" style="display:none">
+        </div>
+        <p class="muted" id="backup-msg"></p>
+      </div>`;
+
+    const msg = (id, text, isError) => {
+      const el = document.getElementById(id);
+      if (el) { el.textContent = text; el.style.color = isError ? "var(--bad, #c0392b)" : ""; }
+    };
+
+    if (connected) {
+      document.getElementById("sync-now").onclick = async (ev) => {
+        ev.target.disabled = true;
+        msg("sync-msg", "Syncing…");
+        try {
+          await SYNC.syncNow();
+          state = loadState();
+          msg("sync-msg", "Synced ✓");
+        } catch (e) {
+          msg("sync-msg", String(e.message || e), true);
+        }
+        ev.target.disabled = false;
+      };
+      document.getElementById("sync-disconnect").onclick = () => {
+        if (confirm("Disconnect sync on this device? Progress stays here and in the Gist.")) {
+          SYNC.disconnect();
+          renderSync();
+        }
+      };
+    } else if (window.SYNC) {
+      document.getElementById("sync-connect").onclick = async (ev) => {
+        const tok = document.getElementById("sync-token").value.trim();
+        if (!tok) return msg("sync-msg", "Paste a token first.", true);
+        ev.target.disabled = true;
+        msg("sync-msg", "Connecting…");
+        try {
+          await SYNC.connect(tok);
+          state = loadState();
+          renderSync();
+        } catch (e) {
+          msg("sync-msg", String(e.message || e), true);
+          ev.target.disabled = false;
+        }
+      };
+    }
+
+    document.getElementById("export-btn").onclick = () => {
+      const blob = new Blob([JSON.stringify(state, null, 1)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "integration-study-progress-" + new Date().toISOString().slice(0, 10) + ".json";
+      a.click();
+      URL.revokeObjectURL(a.href);
+      msg("backup-msg", "Progress exported.");
+    };
+    document.getElementById("import-btn").onclick = () => document.getElementById("import-file").click();
+    document.getElementById("import-file").onchange = async (ev) => {
+      const file = ev.target.files[0];
+      if (!file) return;
+      try {
+        const imported = JSON.parse(await file.text());
+        if (typeof imported !== "object" || imported === null) throw new Error("not a progress file");
+        state = window.SYNC ? SYNC.merge(state, imported) : Object.assign(state, imported);
+        CERT_IDS.forEach(id => { if (!state[id]) state[id] = blankCertState(); });
+        save();
+        msg("backup-msg", "Imported and merged ✓");
+      } catch (e) {
+        msg("backup-msg", "Import failed: " + String(e.message || e), true);
+      }
+    };
+  }
+
   /* ---------------- Theme ---------------- */
   const THEME_KEY = "mulesoft-study-theme";
   function applyTheme(t) {
@@ -640,5 +752,38 @@
   };
 
   /* ---------------- Boot ---------------- */
-  route();
+  async function boot() {
+    try {
+      const manifestRes = await fetch("data/certs.json");
+      if (!manifestRes.ok) throw new Error("HTTP " + manifestRes.status + " loading data/certs.json");
+      const manifest = await manifestRes.json();
+      const entries = await Promise.all(manifest.certs.map(async id => {
+        const res = await fetch("data/" + id + ".json");
+        if (!res.ok) throw new Error("HTTP " + res.status + " loading data/" + id + ".json");
+        return [id, await res.json()];
+      }));
+      CERTS = Object.fromEntries(entries);
+      CERT_IDS = Object.keys(CERTS);
+    } catch (e) {
+      app.innerHTML = `
+        <div class="card">
+          <h2>⚠ Could not load the study data</h2>
+          <p>${esc(String(e.message || e))}</p>
+          <p class="muted">If you opened <code>index.html</code> directly from disk, the browser blocks
+          <code>fetch()</code> of local files. Serve the folder over HTTP instead — run
+          <code>python -m http.server</code> (or <code>npx serve</code>) in the project folder and open
+          <code>http://localhost:8000</code> — or use the hosted site.</p>
+        </div>`;
+      return;
+    }
+    if (window.SYNC) {
+      SYNC.initStatus();
+      if (SYNC.isConnected()) {
+        try { await SYNC.pullAndMerge(); } catch (e) { /* status shows the error; app still works locally */ }
+      }
+    }
+    state = loadState();
+    route();
+  }
+  boot();
 })();
