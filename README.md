@@ -1,8 +1,9 @@
 # Integration Study
 
 A self-contained web app to study for integration certifications:
-**MuleSoft Certified Developer – Level 1**, **Level 2 (Mule 4)**, and the
-**Salesforce Certified MuleSoft Platform Integration Architect (Mule-Arch-202)**.
+**MuleSoft Certified Developer – Level 1**, **Level 2**, the
+**MuleSoft Platform Integration Architect**, and the
+**Confluent Certified Developer for Apache Kafka (CCDAK)**.
 No server, no build step — everything runs in your browser, and progress is saved in `localStorage`.
 
 ## How to run
@@ -13,7 +14,7 @@ Double-click `index.html` (or right-click → Open with → your browser). That'
 
 - **Study notes** — in-depth notes and official exam objectives for every exam section
   (12 sections for L1, 5 weighted domains for L2, 10 weighted sections for the
-  Integration Architect). Mark sections as read.
+  Integration Architect, 6 weighted sections for CCDAK). Mark sections as read.
 - **Practice quizzes** — pick a topic (or all) and a question count; instant feedback with
   explanations after every answer. Per-topic accuracy is tracked on the certification page.
 - **Exam simulation** — timed mock exam mirroring the real format (120-minute countdown,
@@ -38,9 +39,10 @@ Each one is a plain object — copy the pattern:
 ```
 
 Section ids: L1 uses `s1`–`s12` (see `data/mcd1-notes-a.js` / `-b.js`), L2 uses `d1`–`d5`
-(see `data/mcd2-notes-a.js` / `-b.js`), and the Integration Architect uses `a1`–`a10`
-(see `data/mcia-notes-a.js` / `-b.js`). Study notes include diagrams from the official
-MuleSoft documentation (stored locally in `images/`). You can also add a whole new certification by creating a new
+(see `data/mcd2-notes-a.js` / `-b.js`), the Integration Architect uses `a1`–`a10`
+(see `data/mcia-notes-a.js` / `-b.js`), and CCDAK uses `k1`–`k6`
+(see `data/ccdak-notes-a.js` / `-b.js`). Study notes include diagrams from the official
+MuleSoft and Apache Kafka documentation (stored locally in `images/`). You can also add a whole new certification by creating a new
 entry in `window.CERT_DATA` following the same shape and adding its `<script>` tags to
 `index.html`.
 

@@ -185,7 +185,7 @@
     app.innerHTML = `
       <p class="muted"><a href="#/cert/${certId}">← ${esc(cert.short)}</a></p>
       <h1>${esc(sec.title)}</h1>
-      <p class="subtitle">${sec.weight ? sec.weight + "% of the exam · " : ""}Section ${idx + 1} of ${cert.sections.length} · <span class="muted">📖 next to a topic links to its official MuleSoft docs</span></p>
+      <p class="subtitle">${sec.weight ? sec.weight + "% of the exam · " : ""}Section ${idx + 1} of ${cert.sections.length} · <span class="muted">📖 next to a topic links to its official documentation</span></p>
       <div class="card">
         <h3>🎯 Exam objectives</h3>
         <ul class="objectives">${sec.objectives.map(o => `<li>${esc(o)}</li>`).join("")}</ul>

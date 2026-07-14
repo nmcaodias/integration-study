@@ -1,9 +1,9 @@
-// MuleSoft Platform Integration Architect (Mule-Arch-202) — study notes, sections 1–5
+// MuleSoft Platform Integration Architect — study notes, sections 1–5
 window.CERT_DATA = window.CERT_DATA || {};
 window.CERT_DATA.mcia = {
   id: "mcia",
-  name: "Salesforce Certified MuleSoft Platform Integration Architect (Mule-Arch-202)",
-  short: "Integration Architect",
+  name: "MuleSoft Platform Integration Architect",
+  short: "MC Integration Architect",
   exam: { questions: 60, minutes: 120, passPct: 70 },
   questions: [],
   sections: [

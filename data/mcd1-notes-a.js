@@ -2,7 +2,7 @@
 window.CERT_DATA = window.CERT_DATA || {};
 window.CERT_DATA.mcd1 = {
   id: "mcd1",
-  name: "MuleSoft Certified Developer – Level 1 (Mule 4)",
+  name: "MuleSoft Certified Developer – Level 1",
   short: "MCD Level 1",
   exam: { questions: 60, minutes: 120, passPct: 70 },
   questions: [],
