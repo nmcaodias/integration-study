@@ -124,7 +124,7 @@
       </a>`;
     });
     app.innerHTML = `
-      <h1>MuleSoft Certification Study</h1>
+      <h1>Integration Study</h1>
       <p class="subtitle">Pick a certification to study its topics, take practice quizzes, or run a full timed exam simulation.</p>
       <div class="grid-2">${cards}</div>`;
   }
@@ -142,7 +142,7 @@
       rows += `
       <div class="topic-row">
         <div class="t-title">
-          <a href="#/notes/${certId}/${sec.id}">${esc(sec.title)}</a>
+          <a href="#/notes/${certId}/${sec.id}">${esc(sec.title)}</a>${sec.docs && sec.docs.length ? ` <a class="doc-link" href="${sec.docs[0].url}" target="_blank" rel="noopener" title="Official docs: ${esc(sec.docs[0].label)}">📖</a>` : ""}
           <div class="t-meta">${sec.weight ? sec.weight + "% of exam · " : ""}${p.total} questions${cs.read[sec.id] ? " · ✅ notes read" : ""}</div>
         </div>
         <div class="t-stats">
@@ -181,7 +181,7 @@
     app.innerHTML = `
       <p class="muted"><a href="#/cert/${certId}">← ${esc(cert.short)}</a></p>
       <h1>${esc(sec.title)}</h1>
-      <p class="subtitle">${sec.weight ? sec.weight + "% of the exam · " : ""}Section ${idx + 1} of ${cert.sections.length}</p>
+      <p class="subtitle">${sec.weight ? sec.weight + "% of the exam · " : ""}Section ${idx + 1} of ${cert.sections.length} · <span class="muted">📖 next to a topic links to its official MuleSoft docs</span></p>
       <div class="card">
         <h3>🎯 Exam objectives</h3>
         <ul class="objectives">${sec.objectives.map(o => `<li>${esc(o)}</li>`).join("")}</ul>
@@ -195,6 +195,21 @@
         ${prev ? `<a class="btn secondary" href="#/notes/${certId}/${prev.id}">← ${esc(prev.title)}</a>` : ""}
         ${next ? `<a class="btn secondary" href="#/notes/${certId}/${next.id}">${esc(next.title)} →</a>` : ""}
       </div>`;
+
+    if (sec.topicDocs) {
+      app.querySelectorAll(".notes-body h3").forEach(h => {
+        const url = sec.topicDocs[h.textContent.trim()];
+        if (!url) return;
+        const a = document.createElement("a");
+        a.href = url;
+        a.target = "_blank";
+        a.rel = "noopener";
+        a.className = "h-doc";
+        a.textContent = "📖";
+        a.title = "Official MuleSoft documentation";
+        h.append(" ", a);
+      });
+    }
 
     document.getElementById("mark-read").onclick = () => {
       if (state[certId].read[sid]) delete state[certId].read[sid];

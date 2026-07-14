@@ -11,6 +11,18 @@ window.CERT_DATA.mcd2 = {
       id: "d1",
       title: "Building Performant and Reliable Mule Applications",
       weight: 27,
+      topicDocs: {
+        "Streaming in Mule 4": "https://docs.mulesoft.com/mule-runtime/latest/streaming-about",
+        "Reliability patterns": "https://docs.mulesoft.com/mule-runtime/latest/reliability-patterns",
+        "Transactions": "https://docs.mulesoft.com/mule-runtime/latest/transaction-management",
+        "Performance and scaling": "https://docs.mulesoft.com/mule-runtime/latest/execution-engine"
+      },
+      docs: [
+        { label: "Streaming in Mule 4", url: "https://docs.mulesoft.com/mule-runtime/latest/streaming-about" },
+        { label: "Reliability patterns", url: "https://docs.mulesoft.com/mule-runtime/latest/reliability-patterns" },
+        { label: "Transaction management", url: "https://docs.mulesoft.com/mule-runtime/latest/transaction-management" },
+        { label: "Until Successful scope", url: "https://docs.mulesoft.com/mule-runtime/latest/until-successful-scope" }
+      ],
       objectives: [
         "Use streaming (repeatable and non-repeatable) to process large payloads",
         "Tune streaming strategies: in-memory vs file-stored buffers",
@@ -84,6 +96,17 @@ window.CERT_DATA.mcd2 = {
       id: "d2",
       title: "Maintainable and Modular Mule Applications (Maven)",
       weight: 25,
+      topicDocs: {
+        "POM anatomy of a Mule project": "https://docs.mulesoft.com/mule-runtime/latest/mmp-concept",
+        "Maven lifecycle (what runs when)": "https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html",
+        "Exchange as a Maven repository": "https://docs.mulesoft.com/exchange/to-publish-assets-maven",
+        "Reuse mechanisms — pick the right one": "https://docs.mulesoft.com/mule-runtime/latest/shared-resources",
+        "Versioning and configuration": "https://semver.org/"
+      },
+      docs: [
+        { label: "Mule Maven plugin", url: "https://docs.mulesoft.com/mule-runtime/latest/mmp-concept" },
+        { label: "Publish assets to Exchange with Maven", url: "https://docs.mulesoft.com/exchange/to-publish-assets-maven" }
+      ],
       objectives: [
         "Explain the Maven lifecycle and the POM structure of a Mule project",
         "Use the mule-maven-plugin to package and deploy applications",
@@ -179,6 +202,18 @@ window.CERT_DATA.mcd2 = {
       id: "d3",
       title: "Securing Data",
       weight: 20,
+      topicDocs: {
+        "TLS building blocks": "https://docs.mulesoft.com/mule-runtime/latest/tls-configuration",
+        "Secure configuration properties": "https://docs.mulesoft.com/mule-runtime/latest/secure-configuration-properties",
+        "Payload-level cryptography": "https://docs.mulesoft.com/mule-runtime/latest/cryptography",
+        "API security policies (API Manager)": "https://docs.mulesoft.com/mule-gateway/policies-included-directory"
+      },
+      docs: [
+        { label: "TLS configuration", url: "https://docs.mulesoft.com/mule-runtime/latest/tls-configuration" },
+        { label: "Secure configuration properties", url: "https://docs.mulesoft.com/mule-runtime/latest/secure-configuration-properties" },
+        { label: "Cryptography module", url: "https://docs.mulesoft.com/mule-runtime/latest/cryptography" },
+        { label: "Included policies directory", url: "https://docs.mulesoft.com/mule-gateway/policies-included-directory" }
+      ],
       objectives: [
         "Configure one-way and two-way (mutual) TLS on HTTP listeners and requesters",
         "Create and use keystores and truststores",

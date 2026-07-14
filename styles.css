@@ -186,7 +186,16 @@ h3 { font-size: 1.05rem; margin: 1rem 0 .4rem; }
 .notes-body th { background: var(--surface-2); }
 .objectives { background: var(--primary-soft); border-radius: 8px; padding: .8rem 1rem .8rem 2rem; margin-bottom: 1rem; }
 .objectives li { margin-bottom: .2rem; font-size: .92rem; }
+.doc-link { text-decoration: none; font-size: .9rem; }
 .notes-body h3 { margin-top: 1.5rem; padding-bottom: .25rem; border-bottom: 1px solid var(--border); }
+.notes-body h3 .h-doc {
+  text-decoration: none;
+  font-size: .8em;
+  opacity: .55;
+  border-bottom: none;
+  vertical-align: middle;
+}
+.notes-body h3 .h-doc:hover { opacity: 1; }
 .notes-body figure { margin: 1rem 0; text-align: center; }
 .notes-body figure img {
   max-width: 100%;

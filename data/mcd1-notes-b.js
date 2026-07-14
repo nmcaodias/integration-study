@@ -3,6 +3,19 @@ window.CERT_DATA.mcd1.sections.push(
   {
     id: "s7",
     title: "Handling Errors",
+    weight: 8,
+    topicDocs: {
+      "Two kinds of errors": "https://docs.mulesoft.com/mule-runtime/latest/error-handling",
+      "The Mule Error object": "https://docs.mulesoft.com/mule-runtime/latest/mule-error-concept",
+      "Default behavior (no error handler anywhere)": "https://docs.mulesoft.com/mule-runtime/latest/error-handling",
+      "On Error Propagate vs On Error Continue": "https://docs.mulesoft.com/mule-runtime/latest/on-error-scope-concept",
+      "Three levels of handling": "https://docs.mulesoft.com/mule-runtime/latest/try-scope-concept",
+      "Raising and mapping errors": "https://docs.mulesoft.com/mule-runtime/latest/raise-error-component-reference"
+    },
+    docs: [
+      { label: "Error handling", url: "https://docs.mulesoft.com/mule-runtime/latest/error-handling" },
+      { label: "Try scope", url: "https://docs.mulesoft.com/mule-runtime/latest/try-scope-concept" }
+    ],
     objectives: [
       "Describe the default error handling in a Mule application",
       "Define a custom global default error handler and identify when it is used",
@@ -62,6 +75,19 @@ window.CERT_DATA.mcd1.sections.push(
   {
     id: "s8",
     title: "Transforming Data with DataWeave",
+    weight: 10,
+    topicDocs: {
+      "Script anatomy": "https://docs.mulesoft.com/dataweave/latest/dataweave-language-introduction",
+      "Selectors": "https://docs.mulesoft.com/dataweave/latest/dataweave-selectors",
+      "Core functions (dw::Core is auto-imported)": "https://docs.mulesoft.com/dataweave/latest/dw-core",
+      "Working with XML": "https://docs.mulesoft.com/dataweave/latest/dataweave-formats-xml",
+      "Type coercion and formatting": "https://docs.mulesoft.com/dataweave/latest/dataweave-types",
+      "Variables, functions, modules, lookup": "https://docs.mulesoft.com/dataweave/latest/dataweave-variables"
+    },
+    docs: [
+      { label: "DataWeave language", url: "https://docs.mulesoft.com/dataweave/latest/" },
+      { label: "dw::Core functions", url: "https://docs.mulesoft.com/dataweave/latest/dw-core" }
+    ],
     objectives: [
       "Write DataWeave scripts to convert JSON, XML, and Java data structures",
       "Use DataWeave functions (including map, filter, orderBy, groupBy)",
@@ -149,6 +175,19 @@ now() + |P1D|                            // date arithmetic with periods
   {
     id: "s9",
     title: "Using Connectors",
+    weight: 12,
+    topicDocs: {
+      "Database connector": "https://docs.mulesoft.com/db-connector/latest/",
+      "HTTP Request & REST connectors": "https://docs.mulesoft.com/http-connector/latest/",
+      "Web Service Consumer (SOAP)": "https://docs.mulesoft.com/web-service-consumer-connector/latest/",
+      "File / FTP / SFTP connectors": "https://docs.mulesoft.com/file-connector/latest/",
+      "JMS connector": "https://docs.mulesoft.com/jms-connector/latest/"
+    },
+    docs: [
+      { label: "All connectors", url: "https://docs.mulesoft.com/connectors/" },
+      { label: "Database connector", url: "https://docs.mulesoft.com/db-connector/latest/" },
+      { label: "HTTP connector", url: "https://docs.mulesoft.com/http-connector/latest/" }
+    ],
     objectives: [
       "Retrieve data from a database with the Database connector, including parameterized queries",
       "Retrieve data from a REST service using HTTP Request or a REST Connector",
@@ -208,6 +247,19 @@ WHERE toAirport = :destination AND price &lt; :maxPrice
   {
     id: "s10",
     title: "Processing Records",
+    weight: 10,
+    topicDocs: {
+      "Choosing a record-processing tool": "https://docs.mulesoft.com/mule-runtime/latest/for-each-scope-concept",
+      "Batch Job — three phases": "https://docs.mulesoft.com/mule-runtime/latest/batch-processing-concept",
+      "Triggering flows": "https://docs.mulesoft.com/mule-runtime/latest/scheduler-concept",
+      "Watermarking — sync only what's new": "https://docs.mulesoft.com/object-store-connector/latest/",
+      "Object Store": "https://docs.mulesoft.com/object-store-connector/latest/"
+    },
+    docs: [
+      { label: "Batch processing", url: "https://docs.mulesoft.com/mule-runtime/latest/batch-processing-concept" },
+      { label: "For Each scope", url: "https://docs.mulesoft.com/mule-runtime/latest/for-each-scope-concept" },
+      { label: "Object Store connector", url: "https://docs.mulesoft.com/object-store-connector/latest/" }
+    ],
     objectives: [
       "List and compare the methods for processing individual records in a collection",
       "Use the For Each scope to process records",
@@ -265,6 +317,16 @@ WHERE toAirport = :destination AND price &lt; :maxPrice
   {
     id: "s11",
     title: "Debugging and Troubleshooting Mule Applications",
+    weight: 5,
+    topicDocs: {
+      "The Mule debugger": "https://docs.mulesoft.com/anypoint-studio/latest/index",
+      "Maven dependency problems": "https://docs.mulesoft.com/anypoint-studio/latest/index",
+      "Reading Mule logs": "https://docs.mulesoft.com/mule-runtime/latest/logging-in-mule"
+    },
+    docs: [
+      { label: "Anypoint Studio docs (debugger)", url: "https://docs.mulesoft.com/anypoint-studio/latest/" },
+      { label: "Logging in Mule", url: "https://docs.mulesoft.com/mule-runtime/latest/logging-in-mule" }
+    ],
     objectives: [
       "Use breakpoints to inspect a Mule event at runtime",
       "Install missing Maven dependencies",
@@ -306,6 +368,19 @@ Element               : get:\\flights:api-config/processors/1 @ training-app
   {
     id: "s12",
     title: "Deploying and Managing APIs",
+    weight: 5,
+    topicDocs: {
+      "Packaging": "https://docs.mulesoft.com/mule-runtime/latest/package-a-mule-application",
+      "CloudHub deployment": "https://docs.mulesoft.com/cloudhub/deploying-to-cloudhub",
+      "Managing APIs — API Manager": "https://docs.mulesoft.com/api-manager/latest/latest-overview-concept",
+      "Policies": "https://docs.mulesoft.com/mule-gateway/policies-included-directory",
+      "Client ID enforcement, contracts and SLA tiers": "https://docs.mulesoft.com/api-manager/latest/create-instance-task"
+    },
+    docs: [
+      { label: "Deploying to CloudHub", url: "https://docs.mulesoft.com/cloudhub/deploying-to-cloudhub" },
+      { label: "API Manager", url: "https://docs.mulesoft.com/api-manager/latest/" },
+      { label: "API autodiscovery", url: "https://docs.mulesoft.com/mule-gateway/mule-gateway-config-autodiscovery-mule4" }
+    ],
     objectives: [
       "Package Mule applications for deployment",
       "Deploy applications to CloudHub",

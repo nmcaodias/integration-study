@@ -4,6 +4,18 @@ window.CERT_DATA.mcd2.sections.push(
     id: "d4",
     title: "Building Monitorable Mule Applications",
     weight: 15,
+    topicDocs: {
+      "Log4j 2 configuration": "https://docs.mulesoft.com/mule-runtime/latest/logging-in-mule",
+      "Correlation and structure": "https://docs.mulesoft.com/mule-runtime/latest/correlation-id",
+      "Anypoint Monitoring": "https://docs.mulesoft.com/monitoring/",
+      "Alerts in Runtime Manager vs API Manager": "https://docs.mulesoft.com/runtime-manager/alerts-on-runtime-manager",
+      "Business-level tracking": "https://docs.mulesoft.com/mule-runtime/latest/business-events"
+    },
+    docs: [
+      { label: "Logging in Mule (Log4j 2)", url: "https://docs.mulesoft.com/mule-runtime/latest/logging-in-mule" },
+      { label: "Anypoint Monitoring", url: "https://docs.mulesoft.com/monitoring/" },
+      { label: "Runtime Manager alerts", url: "https://docs.mulesoft.com/runtime-manager/alerts-on-runtime-manager" }
+    ],
     objectives: [
       "Configure application logging with Log4j 2 (levels, categories, appenders, async logging)",
       "Write effective, structured log messages with correlation IDs",
@@ -74,6 +86,17 @@ window.CERT_DATA.mcd2.sections.push(
     id: "d5",
     title: "Production-Ready APIs and Automated Testing",
     weight: 13,
+    topicDocs: {
+      "MUnit test structure": "https://docs.mulesoft.com/munit/latest/munit-test-concept",
+      "Coverage and the Maven build": "https://docs.mulesoft.com/munit/latest/coverage-maven-concept",
+      "Production readiness checklist": "https://docs.mulesoft.com/api-manager/latest/latest-overview-concept",
+      "Versioning and deprecation": "https://semver.org/"
+    },
+    docs: [
+      { label: "MUnit", url: "https://docs.mulesoft.com/munit/latest/" },
+      { label: "MUnit coverage (Maven)", url: "https://docs.mulesoft.com/munit/latest/coverage-maven-concept" },
+      { label: "Anypoint Exchange", url: "https://docs.mulesoft.com/exchange/" }
+    ],
     objectives: [
       "Test applications with MUnit: test suites, asserts, mocks, spies",
       "Set MUnit coverage requirements and run tests in a Maven build",

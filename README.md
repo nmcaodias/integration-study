@@ -1,6 +1,7 @@
-# MuleSoft Certification Study App
+# Integration Study
 
-A self-contained web app to study for **MuleSoft Certified Developer – Level 1** and **Level 2 (Mule 4)**.
+A self-contained web app to study for integration certifications, starting with
+**MuleSoft Certified Developer – Level 1** and **Level 2 (Mule 4)**.
 No server, no build step — everything runs in your browser, and progress is saved in `localStorage`.
 
 ## How to run

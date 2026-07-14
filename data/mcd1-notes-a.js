@@ -10,6 +10,19 @@ window.CERT_DATA.mcd1 = {
     {
       id: "s1",
       title: "Explaining Application Network Basics",
+      weight: 7,
+      topicDocs: {
+        "The IT delivery gap": "https://docs.mulesoft.com/general/api-led-overview",
+        "API-led connectivity — the three layers": "https://docs.mulesoft.com/general/api-led-overview",
+        "Modern APIs": "https://docs.mulesoft.com/general/api-led-overview",
+        "Center for Enablement (C4E)": "https://docs.mulesoft.com/general/",
+        "HTTP fundamentals": "https://docs.mulesoft.com/http-connector/latest/",
+        "Anypoint Platform components": "https://docs.mulesoft.com/general/"
+      },
+      docs: [
+        { label: "API-led connectivity overview", url: "https://docs.mulesoft.com/general/api-led-overview" },
+        { label: "Anypoint Platform docs", url: "https://docs.mulesoft.com/general/" }
+      ],
       objectives: [
         "Explain MuleSoft's proposal for closing the IT delivery gap",
         "Describe the characteristics and benefits of modern APIs and API-led connectivity",
@@ -97,6 +110,17 @@ window.CERT_DATA.mcd1 = {
     {
       id: "s2",
       title: "Designing and Consuming APIs",
+      weight: 8,
+      topicDocs: {
+        "The design-first API lifecycle": "https://docs.mulesoft.com/design-center/design-create-publish-api-specs",
+        "RAML essentials": "https://github.com/raml-org/raml-spec/blob/master/versions/raml-10/raml-10.md",
+        "Reuse in RAML": "https://docs.mulesoft.com/exchange/asset-types",
+        "Consuming APIs": "https://docs.mulesoft.com/exchange/"
+      },
+      docs: [
+        { label: "Design an API spec (Design Center)", url: "https://docs.mulesoft.com/design-center/design-create-publish-api-specs" },
+        { label: "RAML 1.0 specification", url: "https://github.com/raml-org/raml-spec/blob/master/versions/raml-10/raml-10.md" }
+      ],
       objectives: [
         "Describe the lifecycle of the modern API (design, simulate, feedback, validate)",
         "Use RAML to define API resources, nested resources, and methods",
@@ -195,6 +219,18 @@ properties:
     {
       id: "s3",
       title: "Accessing and Modifying Mule Events",
+      weight: 10,
+      topicDocs: {
+        "Anatomy of a Mule event": "https://docs.mulesoft.com/mule-runtime/latest/about-mule-event",
+        "The golden rule of attributes": "https://docs.mulesoft.com/mule-runtime/latest/about-mule-event",
+        "Accessing event data with DataWeave": "https://docs.mulesoft.com/dataweave/latest/dataweave-selectors",
+        "Setting event data": "https://docs.mulesoft.com/mule-runtime/latest/dataweave",
+        "Enrichment with target parameters": "https://docs.mulesoft.com/mule-runtime/latest/target-variables"
+      },
+      docs: [
+        { label: "Mule events", url: "https://docs.mulesoft.com/mule-runtime/latest/about-mule-event" },
+        { label: "DataWeave selectors", url: "https://docs.mulesoft.com/dataweave/latest/dataweave-selectors" }
+      ],
       objectives: [
         "Describe the Mule event data structure (message payload, attributes, variables)",
         "Use transformers to set the payload, attributes, and variables",
@@ -244,6 +280,20 @@ message                              // the whole message (payload+attributes)</
     {
       id: "s4",
       title: "Structuring Mule Applications",
+      weight: 10,
+      topicDocs: {
+        "Project structure": "https://docs.mulesoft.com/mule-runtime/latest/package-a-mule-application",
+        "Property placeholders": "https://docs.mulesoft.com/mule-runtime/latest/configuring-properties",
+        "Global configurations": "https://docs.mulesoft.com/mule-runtime/latest/global-elements",
+        "Flows, private flows, subflows": "https://docs.mulesoft.com/mule-runtime/latest/about-flows",
+        "Async scope": "https://docs.mulesoft.com/mule-runtime/latest/async-scope-reference",
+        "Domain projects": "https://docs.mulesoft.com/mule-runtime/latest/shared-resources"
+      },
+      docs: [
+        { label: "Flows and subflows", url: "https://docs.mulesoft.com/mule-runtime/latest/about-flows" },
+        { label: "Configuring properties", url: "https://docs.mulesoft.com/mule-runtime/latest/configuring-properties" },
+        { label: "Shared resources (domains)", url: "https://docs.mulesoft.com/mule-runtime/latest/shared-resources" }
+      ],
       objectives: [
         "Parameterize an application using property placeholders",
         "Define and reuse global configurations in an application",
@@ -308,6 +358,17 @@ http:
     {
       id: "s5",
       title: "Building API Implementation Interfaces",
+      weight: 7,
+      topicDocs: {
+        "Manual RESTful interfaces": "https://docs.mulesoft.com/http-connector/latest/",
+        "APIkit": "https://docs.mulesoft.com/apikit/latest/",
+        "How the APIkit Router works": "https://docs.mulesoft.com/apikit/latest/",
+        "Keeping spec and implementation in sync": "https://docs.mulesoft.com/apikit/latest/",
+        "REST Connect connectors": "https://docs.mulesoft.com/exchange/"
+      },
+      docs: [
+        { label: "APIkit", url: "https://docs.mulesoft.com/apikit/latest/" }
+      ],
       objectives: [
         "Manually create a RESTful interface for a Mule application",
         "Generate a REST Connector from a RAML specification",
@@ -358,6 +419,18 @@ http:
     {
       id: "s6",
       title: "Routing Events",
+      weight: 8,
+      topicDocs: {
+        "Choice router — conditional, exactly one route": "https://docs.mulesoft.com/mule-runtime/latest/choice-router-concept",
+        "Scatter-Gather — concurrent multicast": "https://docs.mulesoft.com/mule-runtime/latest/scatter-gather-concept",
+        "Other routers (know they exist)": "https://docs.mulesoft.com/mule-runtime/latest/choice-router-concept",
+        "Validation module": "https://docs.mulesoft.com/validation-connector/latest/"
+      },
+      docs: [
+        { label: "Choice router", url: "https://docs.mulesoft.com/mule-runtime/latest/choice-router-concept" },
+        { label: "Scatter-Gather", url: "https://docs.mulesoft.com/mule-runtime/latest/scatter-gather-concept" },
+        { label: "Validation module", url: "https://docs.mulesoft.com/validation-connector/latest/" }
+      ],
       objectives: [
         "Use the Choice router to route events based on conditional logic",
         "Use the Scatter-Gather router to multicast events",
