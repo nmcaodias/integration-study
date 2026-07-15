@@ -70,8 +70,19 @@ for (const id of manifest.certs) {
     qIds.add(q.id);
     if (!secIds.has(q.section)) fail(`${id}/${q.id}: unknown section '${q.section}'`);
     if (!Array.isArray(q.options) || q.options.length < 2) fail(`${id}/${q.id}: needs at least 2 options`);
-    if (typeof q.answer !== "number" || q.answer < 0 || q.answer >= (q.options || []).length) {
-      fail(`${id}/${q.id}: answer index out of range`);
+    const optCount = (q.options || []).length;
+    const hasSingle = typeof q.answer === "number";
+    const hasMulti = Array.isArray(q.answers);
+    if (hasSingle === hasMulti) {
+      fail(`${id}/${q.id}: must have exactly one of 'answer' (number) or 'answers' (array)`);
+    } else if (hasSingle) {
+      if (q.answer < 0 || q.answer >= optCount) fail(`${id}/${q.id}: answer index out of range`);
+    } else {
+      if (q.answers.length < 1) fail(`${id}/${q.id}: 'answers' must not be empty`);
+      if (new Set(q.answers).size !== q.answers.length) fail(`${id}/${q.id}: duplicate indexes in 'answers'`);
+      if (q.answers.some(a => typeof a !== "number" || a < 0 || a >= optCount)) {
+        fail(`${id}/${q.id}: 'answers' index out of range`);
+      }
     }
     if (!q.q || !q.explanation) fail(`${id}/${q.id}: missing question text or explanation`);
   }

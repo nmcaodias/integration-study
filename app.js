@@ -46,6 +46,21 @@
     return a;
   }
 
+  // multi-select support: a question has either `answer` (number) or `answers` (array)
+  function isMulti(q) { return Array.isArray(q.answers); }
+  function answerSet(q) { return isMulti(q) ? q.answers : [q.answer]; }
+  function setEq(a, b) {
+    if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
+    const s = new Set(a);
+    return b.every(x => s.has(x));
+  }
+  function correctLetters(q, order) {
+    return answerSet(q).map(x => letters[order ? order.indexOf(x) : x]).sort().join(", ");
+  }
+  function makeOrders(questions) {
+    return questions.map(q => shuffle(q.options.map((_, i) => i)));
+  }
+
   function sectionById(cert, sid) {
     return cert.sections.find(s => s.id === sid);
   }
@@ -169,13 +184,19 @@
       <p class="subtitle">Real exam: ${cert.exam.questions} questions · ${cert.exam.minutes} minutes · ${cert.exam.passPct}% to pass</p>
       <div class="btn-row" style="margin-bottom:1.2rem">
         <a class="btn" href="#/quiz/${certId}">📝 Practice quiz</a>
+        <button class="btn" id="weak-quiz" title="15 questions picked from your weakest and least-practiced areas">🎯 Practice weak areas</button>
         <a class="btn" href="#/exam/${certId}">⏱️ Exam simulation</a>
         <a class="btn secondary" href="#/history/${certId}">📈 Exam history ${lastExams ? "· " + lastExams : ""}</a>
       </div>
+      ${st.attempted ? "" : `<p class="muted" style="margin-bottom:1rem">🎯 Weak-areas practice gets smarter as you answer questions — right now it's mostly random.</p>`}
       <div class="card">
         <h2>Topics</h2>
         ${rows}
       </div>`;
+
+    document.getElementById("weak-quiz").onclick = () => {
+      startQuiz(certId, null, 0, buildWeakPool(certId, 15));
+    };
   }
 
   function renderNotes(certId, sid) {
@@ -264,19 +285,41 @@
     };
   }
 
-  function startQuiz(certId, sectionId, count) {
+  function startQuiz(certId, sectionId, count, prebuiltPool) {
     const cert = CERTS[certId];
-    let pool = sectionId ? cert.questions.filter(q => q.section === sectionId) : cert.questions.slice();
-    pool = shuffle(pool);
+    let pool = prebuiltPool
+      ? prebuiltPool.slice()
+      : shuffle(sectionId ? cert.questions.filter(q => q.section === sectionId) : cert.questions.slice());
     if (count > 0) pool = pool.slice(0, count);
     session = {
       mode: "quiz", certId, questions: pool, idx: 0,
-      answers: new Array(pool.length).fill(null), // chosen option index
+      answers: new Array(pool.length).fill(null), // chosen original index (or array for multi)
+      orders: makeOrders(pool),                   // per-question shuffled display order
+      picked: [],                                 // multi: currently toggled original indexes
       revealed: false, correctCount: 0
     };
     go("#/quizrun");
     // if hash unchanged (already on quizrun), force render
     if (location.hash === "#/quizrun") renderQuizQuestion();
+  }
+
+  /* Weak-areas pool: unseen questions are unknowns, low-accuracy ones are weaknesses.
+     Blend ~1/3 unseen with ~2/3 worst-accuracy attempted questions. */
+  function buildWeakPool(certId, size) {
+    const cert = CERTS[certId];
+    const qs = state[certId].qstats;
+    const unseen = shuffle(cert.questions.filter(q => !qs[q.id] || !qs[q.id].a));
+    const attempted = cert.questions.filter(q => qs[q.id] && qs[q.id].a > 0)
+      .map(q => ({ q, acc: qs[q.id].c / qs[q.id].a, r: Math.random() }))
+      .sort((a, b) => (a.acc - b.acc) || (a.r - b.r))
+      .map(x => x.q);
+    const wantUnseen = Math.min(unseen.length, Math.round(size / 3));
+    const pool = attempted.slice(0, size - wantUnseen).concat(unseen.slice(0, wantUnseen));
+    // top up from whatever is left if the bank is small
+    const chosen = new Set(pool.map(q => q.id));
+    const rest = shuffle(cert.questions.filter(q => !chosen.has(q.id)));
+    while (pool.length < size && rest.length) pool.push(rest.pop());
+    return shuffle(pool);
   }
 
   function renderQuizQuestion() {
@@ -285,18 +328,26 @@
     if (s.idx >= s.questions.length) return renderQuizSummary();
     const q = s.questions[s.idx];
     const sec = sectionById(cert, q.section);
-    const chosen = s.answers[s.idx];
+    const order = s.orders[s.idx];
+    const chosen = s.answers[s.idx]; // original index (single) or array (multi)
+    const multi = isMulti(q);
+    const correctSet = new Set(answerSet(q));
+    const chosenSet = new Set(multi ? (chosen || s.picked) : (chosen === null ? [] : [chosen]));
 
-    const optionsHtml = q.options.map((opt, i) => {
+    const optionsHtml = order.map((origIdx, pos) => {
       let cls = "option";
       let dis = "";
       if (s.revealed) {
         dis = "disabled";
-        if (i === q.answer) cls += " correct";
-        else if (i === chosen) cls += " wrong";
+        if (correctSet.has(origIdx)) cls += " correct";
+        else if (chosenSet.has(origIdx)) cls += " wrong";
+      } else if (multi && s.picked.includes(origIdx)) {
+        cls += " selected";
       }
-      return `<button class="${cls}" data-i="${i}" ${dis}><span class="letter">${letters[i]}.</span><span>${esc(opt)}</span></button>`;
+      return `<button class="${cls}" data-i="${origIdx}" ${dis}><span class="letter">${letters[pos]}.</span><span>${esc(q.options[origIdx])}</span></button>`;
     }).join("");
+
+    const wasCorrect = multi ? setEq(chosen || [], answerSet(q)) : chosen === q.answer;
 
     app.innerHTML = `
       <div class="q-progress">
@@ -304,12 +355,12 @@
         <span>Score: ${s.correctCount}/${s.idx + (s.revealed ? 1 : 0)}</span>
       </div>
       <div class="card">
-        <div class="q-section-tag"><span class="pill info">${esc(sec.title)}</span></div>
+        <div class="q-section-tag"><span class="pill info">${esc(sec.title)}</span>${multi ? ` <span class="pill warn">Select all that apply (${answerSet(q).length})</span>` : ""}</div>
         <div class="q-text">${esc(q.q)}</div>
         <div class="options">${optionsHtml}</div>
         ${s.revealed ? `
           <div class="explanation">
-            <strong>${chosen === q.answer ? "✅ Correct!" : "❌ Incorrect — the answer is " + letters[q.answer] + "."}</strong>
+            <strong>${wasCorrect ? "✅ Correct!" : "❌ Incorrect — the answer is " + correctLetters(q, order) + "."}</strong>
             ${esc(q.explanation)}
           </div>
           <div class="btn-row">
@@ -317,27 +368,43 @@
             <button class="btn secondary" id="q-quit">End quiz</button>
           </div>` : `
           <div class="btn-row">
+            ${multi ? `<button class="btn" id="q-check">Check answer</button>` : ""}
             <button class="btn secondary" id="q-quit">End quiz</button>
           </div>`}
+        <p class="kbd-hint muted">Keys: 1–${order.length} select · Enter ${multi && !s.revealed ? "check" : "next"}</p>
       </div>`;
+
+    function commitAnswer(chosenValue, correct) {
+      s.answers[s.idx] = chosenValue;
+      s.revealed = true;
+      s.picked = [];
+      if (correct) s.correctCount++;
+      const qs = state[s.certId].qstats;
+      if (!qs[q.id]) qs[q.id] = { a: 0, c: 0 };
+      qs[q.id].a++;
+      if (correct) qs[q.id].c++;
+      save();
+      renderQuizQuestion();
+    }
 
     if (!s.revealed) {
       app.querySelectorAll(".option").forEach(btn => {
         btn.onclick = () => {
           const i = parseInt(btn.dataset.i, 10);
-          s.answers[s.idx] = i;
-          s.revealed = true;
-          const correct = i === q.answer;
-          if (correct) s.correctCount++;
-          // persist per-question stats
-          const qs = state[s.certId].qstats;
-          if (!qs[q.id]) qs[q.id] = { a: 0, c: 0 };
-          qs[q.id].a++;
-          if (correct) qs[q.id].c++;
-          save();
-          renderQuizQuestion();
+          if (multi) {
+            s.picked = s.picked.includes(i) ? s.picked.filter(x => x !== i) : s.picked.concat(i);
+            renderQuizQuestion();
+          } else {
+            commitAnswer(i, i === q.answer);
+          }
         };
       });
+      if (multi) {
+        document.getElementById("q-check").onclick = () => {
+          if (!s.picked.length) return;
+          commitAnswer(s.picked.slice(), setEq(s.picked, answerSet(q)));
+        };
+      }
     } else {
       document.getElementById("q-next").onclick = () => {
         s.idx++;
@@ -419,9 +486,11 @@
 
   function startExam(certId) {
     const cert = CERTS[certId];
+    const drawn = drawExamQuestions(cert);
     session = {
       mode: "exam", certId,
-      questions: drawExamQuestions(cert),
+      questions: drawn,
+      orders: makeOrders(drawn),
       idx: 0,
       answers: {}, flags: {},
       secondsLeft: cert.exam.minutes * 60,
@@ -436,10 +505,13 @@
     const cert = CERTS[s.certId];
     const q = s.questions[s.idx];
     const chosen = s.answers[s.idx];
+    const order = s.orders[s.idx];
+    const multi = isMulti(q);
+    const chosenSet = new Set(multi ? (chosen || []) : (chosen === undefined ? [] : [chosen]));
 
-    const optionsHtml = q.options.map((opt, i) =>
-      `<button class="option ${chosen === i ? "selected" : ""}" data-i="${i}">
-         <span class="letter">${letters[i]}.</span><span>${esc(opt)}</span>
+    const optionsHtml = order.map((origIdx, pos) =>
+      `<button class="option ${chosenSet.has(origIdx) ? "selected" : ""}" data-i="${origIdx}">
+         <span class="letter">${letters[pos]}.</span><span>${esc(q.options[origIdx])}</span>
        </button>`).join("");
 
     const grid = s.questions.map((_, i) => {
@@ -461,13 +533,14 @@
         <div class="q-progress"><span>Question ${s.idx + 1} of ${s.questions.length}</span>
           <button class="btn secondary" id="flag-btn" style="padding:.25rem .7rem">${s.flags[s.idx] ? "🚩 Unflag" : "🏳️ Flag for review"}</button>
         </div>
-        <div class="q-text">${esc(q.q)}</div>
+        <div class="q-text">${multi ? `<span class="pill warn">Select all that apply (${answerSet(q).length})</span><br>` : ""}${esc(q.q)}</div>
         <div class="options">${optionsHtml}</div>
         <div class="btn-row">
           <button class="btn secondary" id="prev-btn" ${s.idx === 0 ? "disabled" : ""}>← Previous</button>
           <button class="btn secondary" id="next-btn" ${s.idx === s.questions.length - 1 ? "disabled" : ""}>Next →</button>
           <button class="btn danger" id="submit-btn">Submit exam</button>
         </div>
+        <p class="kbd-hint muted">Keys: 1–${order.length} ${multi ? "toggle" : "select"} · ←/→ navigate · F flag</p>
       </div>
       <div class="card">
         <p class="muted">Navigator — blue = answered, yellow = flagged</p>
@@ -476,9 +549,17 @@
 
     app.querySelectorAll(".option").forEach(btn => {
       btn.onclick = () => {
-        s.answers[s.idx] = parseInt(btn.dataset.i, 10);
-        // auto-advance except on the last question
-        if (s.idx < s.questions.length - 1) s.idx++;
+        const i = parseInt(btn.dataset.i, 10);
+        if (multi) {
+          // toggle; no auto-advance for multi-select
+          const cur = s.answers[s.idx] || [];
+          const next = cur.includes(i) ? cur.filter(x => x !== i) : cur.concat(i);
+          if (next.length) s.answers[s.idx] = next; else delete s.answers[s.idx];
+        } else {
+          s.answers[s.idx] = i;
+          // auto-advance except on the last question
+          if (s.idx < s.questions.length - 1) s.idx++;
+        }
         renderExamQuestion();
       };
     });
@@ -526,7 +607,9 @@
     const review = [];
     s.questions.forEach((q, i) => {
       const chosen = s.answers[i];
-      const ok = chosen === q.answer;
+      const ok = isMulti(q)
+        ? setEq(chosen || [], answerSet(q))
+        : chosen === q.answer;
       perSection[q.section].t++;
       if (ok) { correct++; perSection[q.section].c++; }
       else review.push({ q, chosen: chosen === undefined ? null : chosen });
@@ -570,8 +653,8 @@
         <div class="q-text" style="font-size:.98rem">${esc(r.q.q)}</div>
         <p>${r.chosen === null
           ? '<span class="pill warn">Not answered</span>'
-          : `<span class="pill bad">Your answer: ${letters[r.chosen]}. ${esc(r.q.options[r.chosen])}</span>`}</p>
-        <p><span class="pill ok">Correct: ${letters[r.q.answer]}. ${esc(r.q.options[r.q.answer])}</span></p>
+          : `<span class="pill bad">Your answer: ${(Array.isArray(r.chosen) ? r.chosen : [r.chosen]).map(c => letters[c] + ". " + esc(r.q.options[c])).join(" · ")}</span>`}</p>
+        <p><span class="pill ok">Correct: ${answerSet(r.q).map(c => letters[c] + ". " + esc(r.q.options[c])).join(" · ")}</span></p>
         <div class="explanation">${esc(r.q.explanation)}</div>
       </div>`).join("") : "<p class='muted'>Perfect — nothing to review! 🎉</p>";
 
@@ -750,6 +833,39 @@
   document.getElementById("theme-toggle").onclick = () => {
     applyTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
   };
+
+  /* ---------------- Keyboard shortcuts ---------------- */
+  document.addEventListener("keydown", (e) => {
+    if (!session) return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    const t = e.target;
+    if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT")) return;
+
+    // 1-9: click the option at that display position (works for quiz and exam)
+    if (/^[1-9]$/.test(e.key)) {
+      const opts = app.querySelectorAll(".options .option:not([disabled])");
+      const btn = opts[parseInt(e.key, 10) - 1];
+      if (btn) { btn.click(); e.preventDefault(); }
+      return;
+    }
+    if (session.mode === "quiz" && e.key === "Enter") {
+      const next = document.getElementById("q-next") || document.getElementById("q-check");
+      if (next) { next.click(); e.preventDefault(); }
+      return;
+    }
+    if (session.mode === "exam") {
+      if (e.key === "ArrowLeft") {
+        const b = document.getElementById("prev-btn");
+        if (b && !b.disabled) { b.click(); e.preventDefault(); }
+      } else if (e.key === "ArrowRight") {
+        const b = document.getElementById("next-btn");
+        if (b && !b.disabled) { b.click(); e.preventDefault(); }
+      } else if (e.key === "f" || e.key === "F") {
+        const b = document.getElementById("flag-btn");
+        if (b) { b.click(); e.preventDefault(); }
+      }
+    }
+  });
 
   /* ---------------- Boot ---------------- */
   async function boot() {
