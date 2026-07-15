@@ -2,8 +2,8 @@
 
 A self-contained web app to study for integration certifications:
 **MuleSoft Certified Developer – Level 1**, **Level 2**, the
-**MuleSoft Platform Integration Architect**, and the
-**Confluent Certified Developer for Apache Kafka (CCDAK)**.
+**MuleSoft Platform Integration Architect**, the **MuleSoft Platform Architect**,
+and the **Confluent Certified Developer for Apache Kafka (CCDAK)**.
 
 No build step and no backend — a static site whose content lives in JSON files, with optional
 cross-device progress sync through a private GitHub Gist.
@@ -21,15 +21,20 @@ cross-device progress sync through a private GitHub Gist.
 ## Features
 
 - **Study notes** — in-depth notes and official exam objectives for every exam section
-  (12 sections for L1, 5 weighted domains for L2, 10 weighted sections for the
-  Integration Architect, 6 weighted sections for CCDAK), with diagrams from the official
-  MuleSoft and Apache Kafka documentation (stored locally in `images/`) and a 📖 link on
-  every sub-topic heading to its official documentation page.
+  of all five certifications, with diagrams from the official MuleSoft and Apache Kafka
+  documentation (stored locally in `images/`) and a 📖 link on every sub-topic heading
+  to its official documentation page.
 - **Practice quizzes** — pick a topic (or all) and a question count; instant feedback with
   explanations after every answer. Per-topic accuracy is tracked on the certification page.
+- **Weak-areas practice** — a 🎯 button on each certification page builds a quiz from your
+  worst-performing and least-practiced questions, using the stats the app already tracks.
 - **Exam simulation** — timed mock exam mirroring the real format, drawn according to the
   official topic weightings: question flagging, a navigator grid, auto-submit on timeout,
   a per-topic score report, and a review of every incorrect answer. Attempts are saved.
+- **Realistic questions** — answer options are shuffled on every attempt, and banks include
+  multi-select ("select all that apply") questions scored all-or-nothing like real exams.
+- **Keyboard shortcuts** (desktop) — 1–9 select/toggle options, Enter next/check,
+  ←/→ navigate the exam, F flags a question.
 - **Cross-device sync** — see below.
 - **Dark/light theme** — toggle with the 🌓 button.
 
@@ -75,9 +80,10 @@ Append to the `questions` array of the certification's JSON file:
 ```
 
 `id` must be unique; `section` must be an existing section id (L1 `s1`–`s12`, L2 `d1`–`d5`,
-Integration Architect `a1`–`a10`, CCDAK `k1`–`k6`); `answer` is the 0-based index of the
-correct option. A whole new certification = a new JSON file with the same shape plus an entry
-in `data/certs.json`.
+Integration Architect `a1`–`a10`, CCDAK `k1`–`k6`, Platform Architect `p1`–`p9`); `answer`
+is the 0-based index of the correct option. For a multi-select question, replace `answer`
+with `"answers": [0, 2]` (array of correct indexes — scored all-or-nothing). A whole new
+certification = a new JSON file with the same shape plus an entry in `data/certs.json`.
 
 Run `node scripts/validate-data.js` to check the data files (unique ids, valid section
 references, answer indexes, weights, documentation-link coverage). The same check runs in CI

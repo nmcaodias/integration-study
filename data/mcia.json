@@ -943,6 +943,365 @@
    ],
    "answer": 1,
    "explanation": "Mule propagates the correlation ID automatically over the HTTP connector (X-Correlation-ID) and default log patterns include it — searching that ID in the central log store reconstructs the full journey across apps."
+  },
+  {
+   "id": "ia-073",
+   "section": "a1",
+   "q": "Which requirements are NON-functional? (Select all that apply)",
+   "options": [
+    "Orders must reach SAP within 30 seconds end to end",
+    "Customer records must be enriched with credit scores",
+    "The solution must survive the loss of one availability zone",
+    "All data at rest must be encrypted with AES-256"
+   ],
+   "answers": [
+    0,
+    2,
+    3
+   ],
+   "explanation": "Latency, availability/fault tolerance, and encryption standards describe HOW WELL the solution must operate — NFRs. Enriching records with credit scores is WHAT it does: functional."
+  },
+  {
+   "id": "ia-074",
+   "section": "a1",
+   "q": "A bank requires that API management metadata stays in the EU while Mule applications run in the bank's own data centers. Which combination fits?",
+   "options": [
+    "US control plane + CloudHub",
+    "EU control plane + customer-hosted runtimes registered via Runtime Manager",
+    "PCE + CloudHub",
+    "GovCloud + Runtime Fabric"
+   ],
+   "answer": 1,
+   "explanation": "The EU control plane keeps platform metadata in Europe, and customer-hosted (hybrid) runtimes keep all business data and execution in the bank's data centers. PCE would go further (self-hosted control plane) but doesn't pair with CloudHub."
+  },
+  {
+   "id": "ia-075",
+   "section": "a2",
+   "q": "A retailer must notify inventory, shipping, analytics, AND a future unknown number of systems whenever an order is placed. Which integration style minimizes future change?",
+   "options": [
+    "The order service calls each system's REST API in sequence",
+    "Publish an OrderPlaced event to a message exchange/topic; each current and future system subscribes independently",
+    "Nightly batch export to CSV",
+    "Scatter-Gather to the four current systems"
+   ],
+   "answer": 1,
+   "explanation": "Pub-sub decouples the producer from its consumers: adding system #5 means adding a subscription, with zero change to the order service. Point-to-point calls (sequential or Scatter-Gather) require modifying the producer for every new consumer."
+  },
+  {
+   "id": "ia-076",
+   "section": "a2",
+   "q": "When is synchronous HTTP request-reply PREFERRED over messaging?",
+   "options": [
+    "When the caller cannot proceed without the response and the operation completes quickly",
+    "When the downstream system has frequent outages",
+    "When load spikes must be absorbed",
+    "When ordering must be preserved across weeks"
+   ],
+   "answer": 0,
+   "explanation": "If the caller needs the answer NOW (validation, lookup, UI interaction) and the callee is fast and available, HTTP request-reply is simpler and lower-latency. The other scenarios all favor broker-based decoupling."
+  },
+  {
+   "id": "ia-077",
+   "section": "a3",
+   "q": "Which Salesforce Connector mechanisms RECEIVE changes from Salesforce in near real time? (Select all that apply)",
+   "options": [
+    "Subscribe Channel on platform events",
+    "Change Data Capture (CDC) channel subscription",
+    "Scheduled SOQL queries every 5 seconds",
+    "Bulk API v2 query jobs"
+   ],
+   "answers": [
+    0,
+    1
+   ],
+   "explanation": "Streaming subscriptions (platform events, CDC) push changes to Mule with replay support. Frequent polling burns API limits and adds latency; Bulk jobs are for mass data operations, not change notification."
+  },
+  {
+   "id": "ia-078",
+   "section": "a3",
+   "q": "An architect proposes one enterprise-wide canonical model covering all 14 business domains. What is the strongest argument AGAINST this?",
+   "options": [
+    "DataWeave cannot handle large types",
+    "Agreement and versioning across every team makes the model slow to change and bloated; bounded per-domain models evolve independently",
+    "Exchange cannot store more than 10 types",
+    "Canonical models require XML"
+   ],
+   "answer": 1,
+   "explanation": "The classic failure of giant CDMs is organizational: every change needs enterprise-wide consensus, producing lowest-common-denominator types nobody fully owns. Bounded contexts keep models focused and independently versionable."
+  },
+  {
+   "id": "ia-079",
+   "section": "a3",
+   "q": "Where does design-time metadata (DataSense) for a Transform Message COME from? (Select all that apply)",
+   "options": [
+    "Connector operations declaring their input/output types",
+    "API specifications imported via APIkit",
+    "Custom metadata types defined from schemas or examples",
+    "Runtime payload inspection in production"
+   ],
+   "answers": [
+    0,
+    1,
+    2
+   ],
+   "explanation": "Metadata is design-time only: connectors, API specs, and user-defined types/examples feed the mapping UI. Production payloads are never inspected for metadata — and metadata enforces nothing at runtime."
+  },
+  {
+   "id": "ia-080",
+   "section": "a4",
+   "q": "An app deployed to a 3-node customer-hosted CLUSTER uses the Idempotent Message Validator with the default in-memory object store. Duplicates still slip through occasionally. What is the actual cause?",
+   "options": [
+    "The validator is broken",
+    "Nothing — in a cluster, object stores live in the shared data grid, so this setup should work; the duplicates must come from another source (e.g., idExpression collisions or expiry)",
+    "Clusters don't support object stores",
+    "The validator only works on CloudHub"
+   ],
+   "answer": 1,
+   "explanation": "This is the subtle one: in a true CLUSTER the object store IS shared via the memory grid, so cross-node dedup works. If duplicates still pass, look at the idExpression (is it really unique?), entry TTL/expiry, or whether the 'cluster' is actually a server group (which does NOT share stores)."
+  },
+  {
+   "id": "ia-081",
+   "section": "a4",
+   "q": "Which Object Store v2 characteristics must an architect design around? (Select all that apply)",
+   "options": [
+    "Maximum TTL of 30 days per entry",
+    "Rate limiting on the OSv2 API",
+    "Values shared across an app's workers in the region",
+    "Automatic cross-region replication"
+   ],
+   "answers": [
+    0,
+    1,
+    2
+   ],
+   "explanation": "OSv2 caps TTL at 30 days, throttles heavy usage, and is shared across the app's workers — but it is REGIONAL: DR to another region needs its own strategy, there is no automatic cross-region replication."
+  },
+  {
+   "id": "ia-082",
+   "section": "a5",
+   "q": "A polling File listener must process each file exactly once even though the app runs on a 2-node cluster. What makes this work without custom locking?",
+   "options": [
+    "Deploy to a server group instead",
+    "In a cluster, polling sources run on the PRIMARY node only, so no duplicate polling occurs; on failover another node is elected primary",
+    "Files cannot be processed in clusters",
+    "Set maxConcurrency=1"
+   ],
+   "answer": 1,
+   "explanation": "Cluster primary-node semantics exist exactly for this: schedulers and polling sources execute on one elected node. A server group would poll on BOTH nodes — duplicate processing."
+  },
+  {
+   "id": "ia-083",
+   "section": "a5",
+   "q": "Traffic to a CloudHub API must come only from the corporate network, and the API must present a custom domain with the company's certificate. Which set of features is required? (Select all that apply)",
+   "options": [
+    "Anypoint VPC connected to the corporate network (VPN/peering)",
+    "A Dedicated Load Balancer with the custom certificate",
+    "Firewall rules/design ensuring only internal paths reach the workers",
+    "CloudHub static IPs"
+   ],
+   "answers": [
+    0,
+    1,
+    2
+   ],
+   "explanation": "VPC gives the private network + corporate connectivity; the DLB terminates TLS for custom domains; VPC firewall rules close the public path. Static IPs are for allowlisting scenarios — they don't make an API private or rebrand it."
+  },
+  {
+   "id": "ia-084",
+   "section": "a5",
+   "q": "Why does blocking code (e.g., Thread.sleep or a synchronous HTTP call in custom Java) inside a CPU_LITE processor harm a Mule 4 application?",
+   "options": [
+    "It uses too much memory",
+    "CPU_LITE work shares a small number of threads with ALL flows — blocking one starves the shared pool and stalls unrelated flows",
+    "It breaks classloader isolation",
+    "It disables back-pressure"
+   ],
+   "answer": 1,
+   "explanation": "The reactive engine assumes CPU_LITE operations complete quickly and never block. Blocking a shared thread reduces the whole runtime's capacity — the fix is declaring BLOCKING_IO (or using non-blocking clients)."
+  },
+  {
+   "id": "ia-085",
+   "section": "a6",
+   "q": "Which test concern belongs at which level? (1) DataWeave mapping correctness; (2) OAuth handshake against the partner sandbox; (3) sustained 300 TPS for 4 hours",
+   "options": [
+    "1 = integration; 2 = unit; 3 = MUnit",
+    "1 = MUnit unit test; 2 = integration test; 3 = performance/soak test on production-like sizing",
+    "All three in MUnit",
+    "All three in production"
+   ],
+   "answer": 1,
+   "explanation": "Pure logic → MUnit with mocks. Real credential/TLS interactions → integration tests against real endpoints. Quantitative capacity/soak targets → performance testing on production-equivalent infrastructure."
+  },
+  {
+   "id": "ia-086",
+   "section": "a6",
+   "q": "What does MUnit's 'enable flow sources' option change in a test?",
+   "options": [
+    "Nothing; sources never run in tests",
+    "The flow's real event source (e.g., HTTP Listener) starts during the test, so the test can invoke the flow through a real HTTP call instead of a flow-ref",
+    "It doubles coverage automatically",
+    "It mocks all sources"
+   ],
+   "answer": 1,
+   "explanation": "By default MUnit invokes flows via flow-ref with a constructed event. Enabling flow sources starts the real listener, letting tests exercise the full path including source configuration — closer to integration-style testing inside MUnit."
+  },
+  {
+   "id": "ia-087",
+   "section": "a7",
+   "q": "A payment must be recorded in the bank's core system (REST API, no transactions) and a confirmation queued to MQ — with no scenario where the confirmation exists but the payment doesn't. Which design achieves this?",
+   "options": [
+    "XA transaction across HTTP and MQ",
+    "Call the payment API first (idempotent, with retries); only on confirmed success publish the MQ confirmation; failures before publish are retried from a persistent source",
+    "Publish the confirmation first, then call the API",
+    "Scatter-Gather to both simultaneously"
+   ],
+   "answer": 1,
+   "explanation": "HTTP can't join transactions, so ordering + idempotency replaces atomicity: perform the uncertain step first, emit the derived event only after success, and drive the whole thing from a redeliverable (persistent) source. Publishing first (or in parallel) creates exactly the forbidden state."
+  },
+  {
+   "id": "ia-088",
+   "section": "a7",
+   "q": "Which statements correctly distinguish HA from DR on CloudHub? (Select all that apply)",
+   "options": [
+    "Two workers in one region provide HA against worker/AZ failure",
+    "Two workers in one region provide DR against region loss",
+    "DR requires apps deployable to a second region plus a strategy for regional state (OSv2, MQ) and endpoint switchover",
+    "RTO and RPO are DR metrics agreed with the business"
+   ],
+   "answers": [
+    0,
+    2,
+    3
+   ],
+   "explanation": "Multi-worker = HA within the region; the whole region failing takes both workers. DR is the cross-region capability — redeployment, state strategy, DNS switchover — measured by RTO (time) and RPO (data loss)."
+  },
+  {
+   "id": "ia-089",
+   "section": "a7",
+   "q": "Messages that fail processing 5 times must be set aside without blocking the queue, preserving the payload and failure reason. Which mechanism pairs implement this? (Select all that apply)",
+   "options": [
+    "Anypoint MQ maxDeliveries routing to a DLQ",
+    "A Mule redelivery policy raising REDELIVERY_EXHAUSTED, handled by publishing to a dead-letter destination",
+    "Until Successful with infinite retries",
+    "On Error Continue that discards the message"
+   ],
+   "answers": [
+    0,
+    1
+   ],
+   "explanation": "Both broker-side (MQ delivery count → DLQ) and Mule-side (redelivery policy + explicit DLQ publish in the handler) implement poison-message parking. Infinite retries block; discarding loses the message."
+  },
+  {
+   "id": "ia-090",
+   "section": "a8",
+   "q": "An API chain Experience→Process→System has p95 of 900 ms; each layer adds ~300 ms, mostly waiting on the next layer. The target is 500 ms. Which options actually reduce p95? (Select all that apply)",
+   "options": [
+    "Cache stable System API responses at the Process layer",
+    "Collapse layers where the Process API adds no orchestration value",
+    "Parallelize independent backend calls with Scatter-Gather",
+    "Add more workers to every layer"
+   ],
+   "answers": [
+    0,
+    1,
+    2
+   ],
+   "explanation": "Latency comes from sequential hops: caching removes calls, collapsing removes hops, parallelizing overlaps them. More workers increase THROUGHPUT but do nothing for a single request's sequential latency."
+  },
+  {
+   "id": "ia-091",
+   "section": "a8",
+   "q": "A nightly job reads 8 million DB rows and upserts them into Salesforce. Which design is most appropriate?",
+   "options": [
+    "For Each over a full result set in memory",
+    "Streamed DB select feeding a Batch Job with a Batch Aggregator sized for Salesforce Bulk API v2 batches",
+    "Parallel For Each with 8 million entries",
+    "One HTTP call per row"
+   ],
+   "answer": 1,
+   "explanation": "Streaming avoids materializing 8M rows; the Batch Job gives parallelism, restartability, and per-record error tolerance; the aggregator groups records for Bulk API efficiency. The alternatives exhaust memory or API limits."
+  },
+  {
+   "id": "ia-092",
+   "section": "a8",
+   "q": "During load tests, the Mule app scales fine but the downstream ERP starts failing at high concurrency. What is the architecturally correct response?",
+   "options": [
+    "Add more Mule workers",
+    "Constrain concurrency toward the ERP (maxConcurrency, queue buffering at the ERP's safe rate) so Mule absorbs the load the ERP cannot",
+    "Lower the ERP's timeouts",
+    "Retry ERP failures more aggressively"
+   ],
+   "answer": 1,
+   "explanation": "The bottleneck is the ERP: pushing harder (more workers, aggressive retries) amplifies the failure. Mule's job becomes flow control — bounded concurrency or queue-based buffering to the ERP's capacity."
+  },
+  {
+   "id": "ia-093",
+   "section": "a9",
+   "q": "Platform requirement: 'Developers sign in to Anypoint with corporate SSO; CI pipelines must not use anyone's personal credentials.' Which pair satisfies this?",
+   "options": [
+    "Shared admin account for both",
+    "Identity management (SAML/OIDC federation) for humans + Connected Apps (client_credentials) for pipelines",
+    "Client ID enforcement for both",
+    "SSH keys for both"
+   ],
+   "answer": 1,
+   "explanation": "Human access federates to the corporate IdP via identity management; machine access uses connected apps with scoped client credentials — auditable, rotatable, not tied to a person."
+  },
+  {
+   "id": "ia-094",
+   "section": "a9",
+   "q": "Which capabilities require Anypoint Security (and typically Runtime Fabric)? (Select all that apply)",
+   "options": [
+    "Edge policies: DoS protection, HTTP limits, WAF rules",
+    "Tokenization of sensitive fields at the perimeter",
+    "Client ID enforcement on an API",
+    "Secrets Manager for TLS keystores"
+   ],
+   "answers": [
+    0,
+    1,
+    3
+   ],
+   "explanation": "Edge security policies, tokenization, and Secrets Manager are Anypoint Security features (RTF-focused, separately licensed). Client ID enforcement is a standard API Manager policy available everywhere."
+  },
+  {
+   "id": "ia-095",
+   "section": "a9",
+   "q": "Security asks for proof of WHO deployed to production and WHO changed API policies during an incident window. Where does this evidence come from?",
+   "options": [
+    "Application log files",
+    "The Anypoint Platform audit log (UI or query API), exportable to the SIEM",
+    "Anypoint Visualizer",
+    "The Git history"
+   ],
+   "answer": 1,
+   "explanation": "Deployments and policy changes are control-plane actions recorded in the platform audit log with principal, action, object, and timestamp. Git shows code changes, not platform operations."
+  },
+  {
+   "id": "ia-096",
+   "section": "a10",
+   "q": "Order these CI/CD stages correctly: (A) deploy to test with injected properties; (B) mvn package running MUnit with coverage gates; (C) publish versioned artifact to the repository; (D) promote the SAME artifact to production",
+   "options": [
+    "A → B → C → D",
+    "B → C → A → D",
+    "C → B → D → A",
+    "B → A → C → D"
+   ],
+   "answer": 1,
+   "explanation": "Build & test once (B), publish the immutable artifact (C), deploy it to test with environment config (A), then promote the identical artifact to production (D). Any order that rebuilds later violates build-once."
+  },
+  {
+   "id": "ia-097",
+   "section": "a10",
+   "q": "On Runtime Fabric, where do application logs go by default and how are they centralized?",
+   "options": [
+    "To CloudHub's log viewer",
+    "To container stdout, forwarded by the cluster's log-forwarding setup to the organization's logging system (e.g., ELK/Splunk)",
+    "They are discarded",
+    "Only to Anypoint Monitoring with no alternative"
+   ],
+   "answer": 1,
+   "explanation": "RTF apps log to container stdout; the platform/cluster forwards them to configured external log systems, and Anypoint Monitoring agents can additionally publish metrics/logs to the control plane."
   }
  ],
  "sections": [

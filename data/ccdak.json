@@ -813,6 +813,404 @@
    ],
    "answer": 1,
    "explanation": "Each hop can look healthy while queueing between hops accumulates delay. Measuring event-time-to-final-processing spans the entire pipeline — the metric that reflects what the business actually experiences."
+  },
+  {
+   "id": "kk-063",
+   "section": "k1",
+   "q": "Which statements about Kafka partitions are TRUE? (Select all that apply)",
+   "options": [
+    "Partition count can be increased after topic creation",
+    "Partition count can be decreased after topic creation",
+    "Increasing partitions changes which partition new keyed records hash to",
+    "A partition's records are totally ordered by offset"
+   ],
+   "answers": [
+    0,
+    2,
+    3
+   ],
+   "explanation": "Partitions can be added (never removed), each partition is an ordered log, and because partitioning is hash(key) % numPartitions, adding partitions remaps keys — breaking per-key ordering across the change."
+  },
+  {
+   "id": "kk-064",
+   "section": "k1",
+   "q": "A topic has replication.factor=3. Where do producers and consumers connect for a given partition?",
+   "options": [
+    "Any replica, chosen randomly",
+    "The partition LEADER handles all produces and (by default) consumes; followers only replicate",
+    "Producers use the leader, consumers use followers",
+    "The controller broker handles all traffic"
+   ],
+   "answer": 1,
+   "explanation": "All client traffic for a partition goes through its leader; followers fetch to stay in sync and exist for fault tolerance. (Follower fetching exists as an opt-in rack-aware feature, but the default and exam answer is leader.)"
+  },
+  {
+   "id": "kk-065",
+   "section": "k1",
+   "q": "What happens when a consumer group has 3 consumers subscribed to two topics with 4 partitions each (8 total)?",
+   "options": [
+    "Only 3 partitions are consumed",
+    "The 8 partitions are distributed across the 3 consumers (e.g., 3/3/2); all partitions are consumed",
+    "Each consumer gets all 8 partitions",
+    "The group fails — consumer count must divide partition count"
+   ],
+   "answer": 1,
+   "explanation": "The assignor spreads all subscribed partitions over available members; uneven division is fine. Every partition has exactly one owner within the group."
+  },
+  {
+   "id": "kk-066",
+   "section": "k1",
+   "q": "A compacted topic receives: (k1,v1), (k2,v2), (k1,v3), (k2,null). After full compaction, what remains?",
+   "options": [
+    "All four records",
+    "(k1,v3) only — k2's tombstone eventually removes k2 entirely",
+    "(k1,v1) and (k2,v2)",
+    "(k1,v3) and (k2,null) forever"
+   ],
+   "answer": 1,
+   "explanation": "Compaction keeps the latest value per key: k1→v3. The null value for k2 is a tombstone marking deletion; after the tombstone retention period it disappears too, leaving only k1's latest value."
+  },
+  {
+   "id": "kk-067",
+   "section": "k1",
+   "q": "Which ACLs does a consumer application using group 'billing-app' need to read topic 'payments'? (Select all that apply)",
+   "options": [
+    "Read on topic 'payments'",
+    "Read on group 'billing-app'",
+    "Write on topic 'payments'",
+    "Alter on the cluster"
+   ],
+   "answers": [
+    0,
+    1
+   ],
+   "explanation": "Consuming needs READ on the topic AND READ on the consumer group (offset commits are group operations). Write/Alter are producer/admin permissions."
+  },
+  {
+   "id": "kk-068",
+   "section": "k2",
+   "q": "Given acks=1, what data-loss window exists?",
+   "options": [
+    "None — acks=1 is fully durable",
+    "If the leader acknowledges then fails BEFORE followers replicate the record, the write is lost on failover",
+    "Every produce is lost",
+    "Only consumers can lose data"
+   ],
+   "answer": 1,
+   "explanation": "acks=1 waits only for the leader's write. A leader crash before follower replication elects a follower without the record — the acknowledged write vanishes. acks=all + min.insync.replicas closes this window."
+  },
+  {
+   "id": "kk-069",
+   "section": "k2",
+   "q": "Which producer settings primarily trade LATENCY for THROUGHPUT? (Select all that apply)",
+   "options": [
+    "linger.ms increased from 0 to 50",
+    "batch.size increased",
+    "compression.type=zstd",
+    "acks changed from all to 0"
+   ],
+   "answers": [
+    0,
+    1,
+    2
+   ],
+   "explanation": "Waiting to fill bigger batches (linger.ms, batch.size) and batch compression all add a little latency to gain a lot of throughput. acks=0 trades DURABILITY, not just latency — a different axis."
+  },
+  {
+   "id": "kk-070",
+   "section": "k2",
+   "q": "A consumer must never lose a record but can tolerate occasional duplicates. Which commit strategy is correct?",
+   "options": [
+    "enable.auto.commit=true with a short interval",
+    "Process the records FIRST, then commit offsets manually (commitSync/commitAsync) — at-least-once",
+    "Commit before processing — at-most-once",
+    "Never commit offsets"
+   ],
+   "answer": 1,
+   "explanation": "Commit-after-processing means a crash re-delivers the uncommitted batch (duplicates possible, no loss) — at-least-once. Auto-commit can commit mid-batch before processing completes, opening a loss window."
+  },
+  {
+   "id": "kk-071",
+   "section": "k2",
+   "q": "What is required for a producer to participate in transactions? (Select all that apply)",
+   "options": [
+    "A transactional.id set in the producer config",
+    "initTransactions() called before the first transaction",
+    "isolation.level=read_committed on the producer",
+    "Calls wrapped in beginTransaction()/commitTransaction()"
+   ],
+   "answers": [
+    0,
+    1,
+    3
+   ],
+   "explanation": "Transactional producers need a stable transactional.id, an initTransactions() handshake, and explicit begin/commit (or abort). isolation.level is a CONSUMER setting — it controls whether readers see uncommitted records."
+  },
+  {
+   "id": "kk-072",
+   "section": "k2",
+   "q": "A producer sends a 5 MB message and gets RecordTooLargeException. Which options genuinely address this? (Select all that apply)",
+   "options": [
+    "Raise max.request.size (producer) and message.max.bytes (broker/topic) if justified",
+    "Use the claim-check pattern: store the blob externally, send a reference",
+    "Enable compression and hope it fits",
+    "Set retries=10"
+   ],
+   "answers": [
+    0,
+    1,
+    2
+   ],
+   "explanation": "Size limits exist at producer and broker level — raising both works but has operational costs; claim check is the architectural fix; compression MAY bring the payload under the limit (it's applied before the size check on batches). Retrying a non-retriable error changes nothing."
+  },
+  {
+   "id": "kk-073",
+   "section": "k2",
+   "q": "In the Confluent Schema Registry, subject 'orders-value' is set to FORWARD compatibility. What does a valid new schema version guarantee, and who upgrades first?",
+   "options": [
+    "New consumers read old data; consumers first",
+    "Data written with the NEW schema is readable by consumers still on the OLD schema; producers upgrade first",
+    "Nothing about ordering of upgrades",
+    "Both directions forever"
+   ],
+   "answer": 1,
+   "explanation": "FORWARD = old readers handle new data (e.g., new fields are added that old readers ignore). Producers can therefore deploy the new schema first. BACKWARD is the mirror image (consumers first)."
+  },
+  {
+   "id": "kk-074",
+   "section": "k2",
+   "q": "Why does a consumer use the schema ID embedded in each message rather than the 'latest' schema from the registry?",
+   "options": [
+    "The latest schema is always wrong",
+    "Records must be decoded with the WRITER'S schema (the exact version used to serialize); topics legitimately contain records written with different versions",
+    "Schema IDs are faster to type",
+    "The registry has no 'latest' concept"
+   ],
+   "answer": 1,
+   "explanation": "Avro decoding requires the writer's schema; the per-message ID identifies exactly which version wrote that record. Compatibility rules then let the reader map it to its own (reader) schema."
+  },
+  {
+   "id": "kk-075",
+   "section": "k2",
+   "q": "kafka-consumer-groups.sh --describe shows one partition with CURRENT-OFFSET 1000, LOG-END-OFFSET 5200. What does this mean?",
+   "options": [
+    "The consumer is 1000 records behind",
+    "The consumer has a lag of 4200 records on that partition",
+    "The topic has 1000 records",
+    "The consumer is ahead of the log"
+   ],
+   "answer": 1,
+   "explanation": "Lag = LOG-END-OFFSET − CURRENT-OFFSET = 5200 − 1000 = 4200 unconsumed records. Watching whether this number grows or shrinks over time is the core consumption health check."
+  },
+  {
+   "id": "kk-076",
+   "section": "k3",
+   "q": "A Streams app computes 'orders per customer per 1-hour tumbling window'. Which internal Kafka topics does it create? (Select all that apply)",
+   "options": [
+    "A changelog topic backing the windowed aggregation state store",
+    "A repartition topic if the stream is re-keyed to customer ID before aggregating",
+    "A DLQ topic automatically",
+    "Nothing — Streams keeps state only in memory"
+   ],
+   "answers": [
+    0,
+    1
+   ],
+   "explanation": "Stateful operations are backed by compacted changelog topics (fault tolerance), and re-keying before an aggregation inserts a repartition topic so each task sees all records for its keys. DLQs are not automatic in Streams."
+  },
+  {
+   "id": "kk-077",
+   "section": "k3",
+   "q": "What is the difference between a KStream-KTable join and a KStream-KStream join?",
+   "options": [
+    "No difference",
+    "Stream-table joins enrich each event with the table's CURRENT value (no window); stream-stream joins pair events occurring within a time WINDOW",
+    "Stream-table joins require a window",
+    "Stream-stream joins never need co-partitioning"
+   ],
+   "answer": 1,
+   "explanation": "A table lookup is point-in-time — no window needed. Two event streams have no 'current value', so their join must bound how far apart in time matching events may occur (windowed). Both require co-partitioning."
+  },
+  {
+   "id": "kk-078",
+   "section": "k3",
+   "q": "A Streams instance crashes. Its tasks had 50 GB of RocksDB state. What minimizes downtime for those tasks on other instances?",
+   "options": [
+    "Nothing can help; state is lost",
+    "num.standby.replicas ≥ 1 — warm copies of the state on other instances allow near-instant task migration instead of replaying 50 GB of changelog",
+    "Bigger batch.size",
+    "exactly_once_v2"
+   ],
+   "answer": 1,
+   "explanation": "State is recoverable from changelogs, but replaying 50 GB takes time. Standby replicas continuously mirror state on other instances so failover just promotes the standby."
+  },
+  {
+   "id": "kk-079",
+   "section": "k3",
+   "q": "In Kafka Streams, what happens when a record arrives 5 minutes late (event time) for a 1-hour window with a 10-minute grace period?",
+   "options": [
+    "It is dropped",
+    "It updates its correct (already-formed) window because it is within the grace period",
+    "It creates a new window",
+    "Streams crashes"
+   ],
+   "answer": 1,
+   "explanation": "Event-time processing places records into the window their timestamp belongs to; within the grace period, late records still update that window's result. Beyond grace, they are dropped."
+  },
+  {
+   "id": "kk-080",
+   "section": "k4",
+   "q": "Which Connect worker settings/behaviors are DISTRIBUTED-mode only? (Select all that apply)",
+   "options": [
+    "REST API management of connectors",
+    "Config/offset/status stored in internal Kafka topics",
+    "Automatic task rebalancing when a worker dies",
+    "Running a connector at all"
+   ],
+   "answers": [
+    0,
+    1,
+    2
+   ],
+   "explanation": "Distributed mode adds REST management, Kafka-backed shared state, and rebalancing/fault tolerance. Standalone can still RUN connectors — just without any of those properties."
+  },
+  {
+   "id": "kk-081",
+   "section": "k4",
+   "q": "A JDBC sink connector reads Avro records (Schema Registry) and writes to Postgres. Which config is essential?",
+   "options": [
+    "value.converter=StringConverter",
+    "value.converter=io.confluent.connect.avro.AvroConverter with value.converter.schema.registry.url pointing at the registry",
+    "errors.tolerance=none",
+    "tasks.max=1 always"
+   ],
+   "answer": 1,
+   "explanation": "The converter must match how the data was written: AvroConverter + registry URL turns the wire format (magic byte + schema ID) back into structured records with schemas — which the JDBC sink needs to build SQL."
+  },
+  {
+   "id": "kk-082",
+   "section": "k4",
+   "q": "Kafka Connect source offsets (e.g., 'which rows have been read') are stored where in distributed mode?",
+   "options": [
+    "In __consumer_offsets like consumer groups",
+    "In the Connect cluster's offset storage TOPIC (connect-offsets)",
+    "In a local file on each worker",
+    "In Schema Registry"
+   ],
+   "answer": 1,
+   "explanation": "Source progress is Connect-specific state kept in the connect-offsets internal topic (distributed mode). __consumer_offsets stores consumer-group offsets — sink connectors use that mechanism for their consumer side."
+  },
+  {
+   "id": "kk-083",
+   "section": "k4",
+   "q": "During peak load, a sink connector falls behind. tasks.max=1 and the topic has 8 partitions. What is the FIRST scaling step?",
+   "options": [
+    "Add more partitions",
+    "Raise tasks.max (up to 8, the partition count) so multiple tasks consume in parallel across workers",
+    "Add brokers",
+    "Reduce the topic's replication factor"
+   ],
+   "answer": 1,
+   "explanation": "One task = one consumer doing all the work. Raising tasks.max lets Connect run parallel tasks (bounded by partitions for sinks). Partitions/brokers/RF are cluster-side changes that don't fix a self-imposed parallelism cap."
+  },
+  {
+   "id": "kk-084",
+   "section": "k5",
+   "q": "Which assertions can a TopologyTestDriver-based test make? (Select all that apply)",
+   "options": [
+    "Values read from a TestOutputTopic match expectations",
+    "Contents of a state store at a given point",
+    "Window results after advancing the driver's wall-clock time",
+    "Actual network latency to the broker"
+   ],
+   "answers": [
+    0,
+    1,
+    2
+   ],
+   "explanation": "The driver runs the topology in-process: outputs, state stores, and time-driven behavior (windows, punctuators) are all synchronously inspectable. There IS no broker or network — that's the point."
+  },
+  {
+   "id": "kk-085",
+   "section": "k5",
+   "q": "A test must verify the application's error handling when a produce fails with a broker exception. Which approach is deterministic?",
+   "options": [
+    "Run against production and wait for failures",
+    "MockProducer with errorNext(new TimeoutException(...)) to force the send's callback/future to fail",
+    "Disconnect the network cable",
+    "Set acks=0"
+   ],
+   "answer": 1,
+   "explanation": "MockProducer lets the test inject an exact failure into the next send, driving the error path deterministically — no broker, no flakiness, repeatable in CI."
+  },
+  {
+   "id": "kk-086",
+   "section": "k5",
+   "q": "Where should schema-compatibility verification run to prevent breaking consumers?",
+   "options": [
+    "Only manually before major releases",
+    "In CI on every change to a schema — validating the candidate against the subject's compatibility mode via the registry's check endpoint or the schema-registry Maven plugin",
+    "In the consumer at runtime",
+    "Nowhere; the registry blocks bad schemas at produce time anyway"
+   ],
+   "answer": 1,
+   "explanation": "The registry does reject incompatible registrations at runtime — but discovering that during deployment is late. CI checks catch it at build time. Runtime consumer failures are exactly what this prevents."
+  },
+  {
+   "id": "kk-087",
+   "section": "k6",
+   "q": "Which metrics indicate the PRODUCER is struggling, before data loss occurs? (Select all that apply)",
+   "options": [
+    "Rising record-retry-rate",
+    "Rising request-latency-avg",
+    "bufferpool-wait-time climbing (buffer.memory pressure)",
+    "records-lag-max"
+   ],
+   "answers": [
+    0,
+    1,
+    2
+   ],
+   "explanation": "Retries, broker latency, and buffer pressure are the producer's early-warning chain (ending in TimeoutExceptions). records-lag-max is a CONSUMER metric — the other side of the pipeline."
+  },
+  {
+   "id": "kk-088",
+   "section": "k6",
+   "q": "Consumer lag on all partitions grows during business hours and shrinks overnight. Processing each record takes 80 ms, and the topic gets 100 records/second across 4 partitions with 4 consumers. What is the bottleneck?",
+   "options": [
+    "The brokers",
+    "Per-record processing time: 4 consumers × (1000/80) ≈ 50 records/s capacity vs 100/s incoming — processing must get faster or more parallel (more partitions + consumers, or batch/async the work)",
+    "The network",
+    "Schema Registry"
+   ],
+   "answer": 1,
+   "explanation": "Capacity math: each consumer handles ~12.5 records/s at 80 ms/record; four handle ~50/s against 100/s inflow — lag grows exactly when traffic exceeds capacity. Fix processing speed or raise parallelism (needs more partitions)."
+  },
+  {
+   "id": "kk-089",
+   "section": "k6",
+   "q": "A team wants per-record processing counts and trace propagation WITHOUT modifying application business code. Which Kafka client feature does this?",
+   "options": [
+    "Broker-side plugins",
+    "Producer/Consumer interceptors registered via interceptor.classes",
+    "A custom partitioner",
+    "Higher fetch.max.bytes"
+   ],
+   "answer": 1,
+   "explanation": "Interceptors hook the send/consume path for cross-cutting concerns (metrics, tracing headers). Partitioners route records; fetch sizes are throughput tuning; brokers can't see application semantics."
+  },
+  {
+   "id": "kk-090",
+   "section": "k6",
+   "q": "End-to-end latency (event created → final consumer processed) is 45 s although every service's own metrics look healthy. Where does the time usually hide, and how is it found?",
+   "options": [
+    "In DNS resolution",
+    "As QUEUEING between hops (consumer lag at intermediate topics) — found by comparing record event timestamps with processing time at each stage, or watching lag per intermediate consumer group",
+    "In TLS handshakes",
+    "In log rotation"
+   ],
+   "answer": 1,
+   "explanation": "Each hop can be fast while records WAIT in topics between hops. Event-timestamp-to-processing-time deltas per stage (or per-group lag) expose which queue is absorbing the 45 seconds."
   }
  ],
  "sections": [

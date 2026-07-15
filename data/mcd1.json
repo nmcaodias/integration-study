@@ -982,6 +982,350 @@
    ],
    "answer": 1,
    "explanation": "Client ID enforcement rejects requests without valid credentials. Consumers register a client application (request access in Exchange), get approved, and pass the credentials in headers or query params per the policy configuration."
+  },
+  {
+   "id": "m1-076",
+   "section": "s1",
+   "q": "Which activities are performed in Anypoint Exchange? (Select all that apply)",
+   "options": [
+    "Discovering reusable API specifications and connectors",
+    "Requesting access to an API with a client application",
+    "Applying rate-limiting policies to an API instance",
+    "Viewing auto-generated API documentation and examples"
+   ],
+   "answers": [
+    0,
+    1,
+    3
+   ],
+   "explanation": "Exchange is the catalog: discovery, documentation/portals, and consumer access requests (creating contracts) all happen there. Applying policies to an API instance is done in API Manager."
+  },
+  {
+   "id": "m1-077",
+   "section": "s2",
+   "q": "In RAML, what is the difference between a trait and a resourceType?",
+   "options": [
+    "Traits are applied to resources; resourceTypes are applied to methods",
+    "Traits define reusable METHOD-level patterns (applied with 'is:'); resourceTypes define reusable RESOURCE-level patterns (applied with 'type:')",
+    "Traits can only hold data type definitions",
+    "There is no difference"
+   ],
+   "answer": 1,
+   "explanation": "A trait captures method-level reuse (pagination params, common headers) and is applied with 'is:'. A resourceType captures a whole resource shape (e.g., collection/member) and is applied with 'type:'."
+  },
+  {
+   "id": "m1-078",
+   "section": "s2",
+   "q": "A RAML spec declares 'baseUri: http://api.acme.com/v1' and a resource '/flights' with a nested '/{ID}'. Which URL retrieves flight 42?",
+   "options": [
+    "http://api.acme.com/flights/v1/42",
+    "http://api.acme.com/v1/flights/42",
+    "http://api.acme.com/v1/flights?ID=42",
+    "http://api.acme.com/v1/{ID}/flights/42"
+   ],
+   "answer": 1,
+   "explanation": "Nested resources append to their parent path under the baseUri: baseUri + /flights + /42. The {ID} is a URI parameter, filled with the actual value — not a query parameter."
+  },
+  {
+   "id": "m1-079",
+   "section": "s3",
+   "q": "A flow sets var 'total' then calls an HTTP Request WITHOUT a target. Which statements are true afterwards? (Select all that apply)",
+   "options": [
+    "The payload is the HTTP response body",
+    "vars.total is unchanged and still accessible",
+    "The attributes now contain the HTTP response status code and headers",
+    "The original request attributes are still available in attributes"
+   ],
+   "answers": [
+    0,
+    1,
+    2
+   ],
+   "explanation": "A connector operation replaces the message (payload AND attributes) with the operation result, but variables survive for the rest of the flow. The original attributes are gone — save them to a var if needed later."
+  },
+  {
+   "id": "m1-080",
+   "section": "s3",
+   "q": "Which DataWeave expression reads the value of the query parameter 'code' from a request to http://host/api/flights?code=ER38sd",
+   "options": [
+    "#[payload.code]",
+    "#[attributes.queryParams.code]",
+    "#[attributes.uriParams.code]",
+    "#[vars.code]"
+   ],
+   "answer": 1,
+   "explanation": "Query string parameters arrive in attributes.queryParams. uriParams holds template parameters from the path (like /flights/{code}); payload is the request body."
+  },
+  {
+   "id": "m1-081",
+   "section": "s4",
+   "q": "A property is defined as 'db.port: 3306' in the config file packaged in the JAR, and the app is deployed with the system property -Ddb.port=3307. What value does ${db.port} resolve to?",
+   "options": [
+    "3306 — files beat system properties",
+    "3307 — system/deployment properties override packaged property files",
+    "Neither; the deployment fails with a conflict",
+    "Both, depending on the flow"
+   ],
+   "answer": 1,
+   "explanation": "Property precedence puts deployment and system properties above property files — that's exactly how the same JAR is configured differently per environment without rebuilding."
+  },
+  {
+   "id": "m1-082",
+   "section": "s4",
+   "q": "Which characteristics apply to a SUBFLOW? (Select all that apply)",
+   "options": [
+    "It has no event source",
+    "It has no error handling scope of its own",
+    "It can be called from a DataWeave lookup() function",
+    "Changes it makes to the event are returned to the caller"
+   ],
+   "answers": [
+    0,
+    1,
+    3
+   ],
+   "explanation": "Subflows have neither a source nor their own error handling (they inherit the caller's), and like any Flow Reference call, event changes flow back to the caller. lookup() can only invoke flows, not subflows."
+  },
+  {
+   "id": "m1-083",
+   "section": "s5",
+   "q": "After scaffolding, a developer renames the APIkit-generated flow 'get:\\flights:api-config' to 'getFlights'. What happens to GET /api/flights requests?",
+   "options": [
+    "They still work; APIkit tracks flows internally",
+    "The router can no longer find the implementation flow — the naming convention IS the routing contract",
+    "They are routed to the console flow",
+    "They return 400 Bad Request"
+   ],
+   "answer": 1,
+   "explanation": "The APIkit Router maps requests to flows BY NAME (method:\\resource:config). Renaming breaks the mapping. The result surfaces as APIKIT:NOT_IMPLEMENTED (501) for that resource."
+  },
+  {
+   "id": "m1-084",
+   "section": "s5",
+   "q": "A client sends GET /api/flights?destination=XXX where the RAML declares destination as an enum of [SFO, LAX, CLE]. What does the APIkit router do?",
+   "options": [
+    "Forwards the request; validation is the flow's job",
+    "Rejects it with APIKIT:BAD_REQUEST mapped to a 400 response",
+    "Returns 404 Not Found",
+    "Strips the invalid parameter and continues"
+   ],
+   "answer": 1,
+   "explanation": "The router validates requests against the spec — an out-of-enum query parameter violates the contract, raising APIKIT:BAD_REQUEST which the generated error handler maps to HTTP 400."
+  },
+  {
+   "id": "m1-085",
+   "section": "s6",
+   "q": "A Scatter-Gather has 3 routes taking 100 ms, 200 ms, and 300 ms. Roughly how long does the router take, and what is the payload afterwards?",
+   "options": [
+    "600 ms; the last route's payload",
+    "300 ms; an object with keys '0','1','2', each holding that route's Mule message",
+    "300 ms; an array of three payloads",
+    "100 ms; the first completed route's payload"
+   ],
+   "answer": 1,
+   "explanation": "Routes run concurrently, so total ≈ slowest (300 ms). The result is an object keyed by route index where each entry contains the route's full message (attributes + payload) — hence the common 'pluck $.payload' aggregation."
+  },
+  {
+   "id": "m1-086",
+   "section": "s6",
+   "q": "Which Validation module behavior is correct?",
+   "options": [
+    "Validators return true/false for use in Choice routers",
+    "Validators throw a typed error (VALIDATION namespace) when the check fails, and do nothing when it passes",
+    "Validators fix invalid data automatically",
+    "Validators only work inside APIkit flows"
+   ],
+   "answer": 1,
+   "explanation": "Validation components are 'fail fast': on failure they raise e.g. VALIDATION:INVALID_EMAIL (catchable by error handlers); on success the event continues unchanged. They don't return booleans."
+  },
+  {
+   "id": "m1-087",
+   "section": "s7",
+   "q": "An error handler contains, in order: On Error Continue for MULE:ANY, then On Error Propagate for HTTP:NOT_FOUND. An HTTP:NOT_FOUND error occurs. Which scope handles it?",
+   "options": [
+    "The On Error Propagate — it is more specific",
+    "The On Error Continue — scopes are evaluated in order and MULE:ANY matches everything first",
+    "Both scopes execute",
+    "Neither; the error escapes"
+   ],
+   "answer": 1,
+   "explanation": "On Error scopes are checked top to bottom, FIRST match wins. MULE:ANY placed first swallows every error, making later scopes unreachable — order specific types before general ones."
+  },
+  {
+   "id": "m1-088",
+   "section": "s7",
+   "q": "Flow A (with On Error Propagate) is called via Flow Reference from Flow B. A processor in A fails. What happens in Flow B?",
+   "options": [
+    "Nothing; A's handler dealt with it",
+    "The error resurfaces in B at the Flow Reference, triggering B's error handling",
+    "B continues with A's last successful payload",
+    "B restarts from its event source"
+   ],
+   "answer": 1,
+   "explanation": "On Error Propagate re-throws after running its processors. To the caller, the Flow Reference itself fails — B's error handling (or the default handler) takes over. On Error Continue in A would have let B continue normally."
+  },
+  {
+   "id": "m1-089",
+   "section": "s7",
+   "q": "Which fields exist on the Mule error object? (Select all that apply)",
+   "options": [
+    "error.errorType",
+    "error.description",
+    "error.cause",
+    "error.statusCode"
+   ],
+   "answers": [
+    0,
+    1,
+    2
+   ],
+   "explanation": "The error object carries errorType (namespace:identifier), description, cause (underlying exception), plus errorMessage/childErrors in some cases. HTTP status codes live in error.errorMessage.attributes for HTTP errors — there is no error.statusCode field."
+  },
+  {
+   "id": "m1-090",
+   "section": "s8",
+   "q": "What does this script output for payload [{price: 200}, {price: 900}, {price: 500}]?\n\n%dw 2.0\noutput application/json\n---\npayload filter ($.price > 300) map ($.price * 2)",
+   "options": [
+    "[400, 1800, 1000]",
+    "[1800, 1000]",
+    "[900, 500]",
+    "[{price: 1800}, {price: 1000}]"
+   ],
+   "answer": 1,
+   "explanation": "filter keeps prices > 300 → [{price:900},{price:500}]; then map projects price*2 for each → [1800, 1000]. Note map returns what the lambda returns — here numbers, not objects."
+  },
+  {
+   "id": "m1-091",
+   "section": "s8",
+   "q": "What is the result type of 'payload groupBy $.destination' when payload is an array of flight objects?",
+   "options": [
+    "An array of arrays",
+    "An object whose keys are the destination values and whose values are arrays of the matching flights",
+    "A single object per destination",
+    "A number"
+   ],
+   "answer": 1,
+   "explanation": "groupBy returns an object keyed by the grouping criteria; each key maps to the array of elements sharing that key. To get arrays back, follow with pluck or mapObject."
+  },
+  {
+   "id": "m1-092",
+   "section": "s8",
+   "q": "Which DataWeave expression converts the string '25/12/2025' into the string '2025-12-25'?",
+   "options": [
+    "'25/12/2025' as Date",
+    "('25/12/2025' as Date {format: 'dd/MM/yyyy'}) as String {format: 'yyyy-MM-dd'}",
+    "'25/12/2025' as String {format: 'yyyy-MM-dd'}",
+    "toDate('25/12/2025')"
+   ],
+   "answer": 1,
+   "explanation": "Reformatting a non-ISO date string is a two-step coercion: PARSE with the input format (as Date {format:...}), then FORMAT with the output format (as String {format:...}). A bare 'as Date' fails because the string isn't ISO-8601."
+  },
+  {
+   "id": "m1-093",
+   "section": "s8",
+   "q": "A Transform must output XML from this input: {items: [{id: 1}, {id: 2}]}. Why does 'output application/xml --- payload' fail?",
+   "options": [
+    "XML cannot represent numbers",
+    "XML requires a single root element and the array of repeated elements must be wrapped with {( ... )} inside it",
+    "DataWeave cannot output XML",
+    "The input must be XML too"
+   ],
+   "answer": 1,
+   "explanation": "XML documents need exactly one root. Arrays must be converted to repeated elements, typically: items: {(payload.items map item: {id: $.id})} — the {( )} syntax spreads the array as repeated keys."
+  },
+  {
+   "id": "m1-094",
+   "section": "s8",
+   "q": "In a DataWeave map lambda, what do $ and $$ represent?",
+   "options": [
+    "$ = index, $$ = value",
+    "$ = value (current element), $$ = index",
+    "$ = payload, $$ = attributes",
+    "$ = key, $$ = namespace"
+   ],
+   "answer": 1,
+   "explanation": "For arrays: $ is the current item, $$ is its index. (For object functions like mapObject/pluck: $ is the value, $$ the key.) Mixing these up is the most common DataWeave reading error."
+  },
+  {
+   "id": "m1-095",
+   "section": "s9",
+   "q": "Why should a Database SELECT use input parameters (:param) instead of string-concatenating values into the SQL?",
+   "options": [
+    "Concatenation is slower to type",
+    "Input parameters prevent SQL injection and handle type conversion/escaping safely",
+    "Input parameters allow multiple databases",
+    "The Database connector rejects concatenated strings"
+   ],
+   "answer": 1,
+   "explanation": "Parameterized queries separate SQL from data, closing the injection hole and letting the driver handle typing/escaping. The connector accepts concatenated SQL — it's just dangerous."
+  },
+  {
+   "id": "m1-096",
+   "section": "s9",
+   "q": "Which statement about the Web Service Consumer connector is TRUE?",
+   "options": [
+    "It generates REST endpoints from a WSDL",
+    "Configured with a WSDL, it exposes the service's SOAP operations, and a Transform before Consume shows the expected SOAP body structure as metadata",
+    "It requires writing the SOAP envelope by hand including namespaces",
+    "It only supports one-way operations"
+   ],
+   "answer": 1,
+   "explanation": "WSC reads the WSDL (service/port/address) and publishes operation metadata via DataSense, so the Transform Message before the Consume operation shows exactly the XML body to build. The envelope itself is handled by the connector."
+  },
+  {
+   "id": "m1-097",
+   "section": "s10",
+   "q": "What payload does the On Complete phase of a Batch Job receive?",
+   "options": [
+    "The original payload that triggered the job",
+    "A BatchJobResult object with counts: totalRecords, successfulRecords, failedRecords, etc.",
+    "An array of all processed records",
+    "The last record processed"
+   ],
+   "answer": 1,
+   "explanation": "On Complete runs once after all records finish and receives summary statistics only — the original payload and the records themselves are NOT available there. Use it for reporting/logging."
+  },
+  {
+   "id": "m1-098",
+   "section": "s10",
+   "q": "A Scheduler-triggered flow must fetch only records changed since its last run, across app restarts. Which components implement a manual watermark? (Select all that apply)",
+   "options": [
+    "Object Store 'Retrieve' with a default value, before the query",
+    "Object Store 'Store' with the new maximum, after processing",
+    "A variable holding the last timestamp",
+    "An Until Successful scope around the query"
+   ],
+   "answers": [
+    0,
+    1
+   ],
+   "explanation": "The watermark must SURVIVE restarts, so it lives in an Object Store: retrieve (with default for the first run) → query 'since' → store the new max. A var is lost when the app stops; Until Successful is retry logic, unrelated."
+  },
+  {
+   "id": "m1-099",
+   "section": "s11",
+   "q": "In the Studio debugger, a breakpoint is set on a Transform Message. When execution pauses, what does the debugger show?",
+   "options": [
+    "The event AFTER the transform executed",
+    "The event AS IT ARRIVES at the transform (before it executes), with payload, attributes, and vars inspectable",
+    "Only the payload",
+    "The compiled Java bytecode"
+   ],
+   "answer": 1,
+   "explanation": "Breakpoints pause BEFORE the selected processor runs — you inspect the incoming event and can evaluate DataWeave expressions against it. Step over to see the result."
+  },
+  {
+   "id": "m1-100",
+   "section": "s12",
+   "q": "An API instance in API Manager has SLA tiers and the SLA-based rate limiting policy applied. What must a consumer do to call the API successfully?",
+   "options": [
+    "Nothing; the policy only monitors traffic",
+    "Request access via Exchange with a client application and an approved tier, then send its client_id/client_secret credentials on each request",
+    "Whitelist their IP address",
+    "Deploy their own copy of the API"
+   ],
+   "answer": 1,
+   "explanation": "SLA-based policies identify consumers by client credentials issued through the Exchange access-request flow (client app + tier + approved contract). Requests without valid credentials get 401; over-tier-limit requests get 429."
   }
  ],
  "sections": [
