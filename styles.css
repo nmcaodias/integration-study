@@ -107,9 +107,9 @@ pre code { background: none; padding: 0; }
 }
 #sync-link:hover { background: var(--surface-2); color: var(--text); }
 #sync-status { font-size: .8rem; margin-left: .15rem; vertical-align: middle; }
-#sync-status.sync-idle { color: var(--ok, #1e8e4e); }
-#sync-status.sync-syncing { color: var(--warn, #b8860b); }
-#sync-status.sync-error { color: var(--bad, #c0392b); }
+#sync-status.sync-idle { color: var(--success); }
+#sync-status.sync-syncing { color: var(--warn); }
+#sync-status.sync-error { color: var(--danger); }
 .setup-field input[type="password"] {
   width: 100%;
   max-width: 480px;
@@ -120,6 +120,43 @@ pre code { background: none; padding: 0; }
   color: var(--text);
   font-family: inherit;
   font-size: .95rem;
+}
+
+/* ---------- Flashcards ---------- */
+.flash-card { max-width: 720px; margin: 0 auto 1rem; }
+.flash-face {
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  font-size: 1.05rem;
+  line-height: 1.55;
+  padding: .6rem 0;
+}
+.flash-back { color: var(--text); }
+.flash-divider { border: none; border-top: 1px dashed var(--border); margin: .8rem 0; }
+.flash-ratings {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: .5rem;
+  margin-top: .8rem;
+}
+.flash-ratings .btn { text-align: center; padding: .55rem .3rem; line-height: 1.25; }
+.flash-ratings small { opacity: .75; font-weight: 400; }
+.rate-again { background: var(--danger); }
+.rate-hard { background: var(--warn); }
+.rate-good { background: var(--primary); }
+.rate-easy { background: var(--success); }
+.flash-done { text-align: center; padding: 2rem 1rem; }
+.flash-done .big-emoji { font-size: 2.4rem; margin-bottom: .4rem; }
+
+/* ---------- Readiness ---------- */
+.readiness { margin-bottom: 1.2rem; }
+.readiness h2 { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
+.ready-bars { margin-top: .6rem; display: flex; flex-direction: column; gap: .45rem; }
+.ready-row { display: grid; grid-template-columns: minmax(200px, 1fr) 2fr; gap: .8rem; align-items: center; font-size: .9rem; }
+.ready-row small { display: block; font-size: .76rem; }
+@media (max-width: 640px) {
+  .ready-row { grid-template-columns: 1fr; gap: .2rem; }
+  .flash-ratings { grid-template-columns: repeat(2, 1fr); }
 }
 
 /* ---------- Keyboard hint (desktop only) ---------- */

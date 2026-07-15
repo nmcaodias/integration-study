@@ -60,7 +60,8 @@
   function writeLocal(state) { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
 
   /* Merge two progress states: union of read sections, per-question max of
-     attempts/correct, exams concatenated and de-duplicated by date. */
+     attempts/correct, exams concatenated and de-duplicated by date, and
+     spaced-repetition entries by latest review timestamp. */
   function mergeCert(a, b) {
     a = a || {}; b = b || {};
     const read = Object.assign({}, a.read || {}, b.read || {});
@@ -74,7 +75,12 @@
     const exams = [...(a.exams || []), ...(b.exams || [])]
       .filter(e => e && e.date && !seen.has(e.date) && seen.add(e.date))
       .sort((x, y) => (x.date < y.date ? -1 : 1));
-    return { read, qstats, exams };
+    const srs = {};
+    new Set([...Object.keys(a.srs || {}), ...Object.keys(b.srs || {})]).forEach(k => {
+      const x = (a.srs || {})[k], y = (b.srs || {})[k];
+      srs[k] = !x ? y : !y ? x : ((y.t || 0) > (x.t || 0) ? y : x); // latest review wins
+    });
+    return { read, qstats, exams, srs };
   }
   function merge(a, b) {
     a = a || {}; b = b || {};

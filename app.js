@@ -10,13 +10,16 @@
 
   /* ---------------- State & persistence ---------------- */
   function blankCertState() {
-    return { read: {}, qstats: {}, exams: [] };
+    return { read: {}, qstats: {}, exams: [], srs: {} };
   }
   function loadState() {
     try {
       const raw = localStorage.getItem(STORE_KEY);
       const s = raw ? JSON.parse(raw) : {};
-      CERT_IDS.forEach(id => { if (!s[id]) s[id] = blankCertState(); });
+      CERT_IDS.forEach(id => {
+        if (!s[id]) s[id] = blankCertState();
+        if (!s[id].srs) s[id].srs = {}; // backfill for saves from before flashcards
+      });
       return s;
     } catch (e) {
       const s = {};
@@ -90,6 +93,118 @@
     return String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
   }
 
+  /* ---------------- Spaced repetition (SM-2 lite) ---------------- */
+  const DAY_MS = 24 * 60 * 60 * 1000;
+  const NEW_CARDS_PER_SESSION = 15;
+
+  // rating: 0=Again 1=Hard 2=Good 3=Easy — returns the updated srs entry
+  function srsRate(entry, rating) {
+    const e = entry || { ease: 2.5, ivl: 0, reps: 0 };
+    let { ease, ivl, reps } = e;
+    if (rating === 0) {          // Again
+      reps = 0; ivl = 0; ease = Math.max(1.3, ease - 0.2);
+    } else if (rating === 1) {   // Hard
+      ivl = Math.max(1, ivl * 1.2); ease = Math.max(1.3, ease - 0.15); reps++;
+    } else if (rating === 2) {   // Good
+      ivl = reps === 0 ? 1 : ivl * ease; reps++;
+    } else {                     // Easy
+      ivl = reps === 0 ? 4 : ivl * ease * 1.3; ease = ease + 0.15; reps++;
+    }
+    ivl = Math.round(ivl * 10) / 10;
+    return { ease: Math.round(ease * 100) / 100, ivl, reps, due: Date.now() + ivl * DAY_MS, t: Date.now() };
+  }
+
+  /* A reviewable card: authored ({id, section, front, back}) or an auto-card built
+     from a question the user answered incorrectly (id "q:<questionId>"). */
+  function cardById(cert, cardId) {
+    if (cardId.startsWith("q:")) {
+      const q = cert.questions.find(x => x.id === cardId.slice(2));
+      if (!q) return null;
+      return {
+        id: cardId, section: q.section, auto: true,
+        front: q.q + "\n\n" + q.options.map((o, i) => letters[i] + ". " + o).join("\n"),
+        back: "Answer: " + answerSet(q).map(i => letters[i] + ". " + q.options[i]).join(" · ") + "\n\n" + q.explanation
+      };
+    }
+    const c = (cert.cards || []).find(x => x.id === cardId);
+    return c ? { ...c, auto: false } : null;
+  }
+
+  /* Due queue = all cards whose srs entry is due, plus up to NEW_CARDS_PER_SESSION
+     authored cards never seen before. Auto-cards only exist once missed (srs entry
+     created by the quiz/exam hook). */
+  function buildFlashQueue(certId) {
+    const cert = CERTS[certId];
+    const srs = state[certId].srs;
+    const now = Date.now();
+    const due = Object.keys(srs)
+      .filter(id => srs[id].due <= now && cardById(cert, id))
+      .sort((a, b) => srs[a].due - srs[b].due);
+    const fresh = shuffle((cert.cards || []).filter(c => !srs[c.id]).map(c => c.id))
+      .slice(0, NEW_CARDS_PER_SESSION);
+    return due.concat(fresh);
+  }
+
+  function flashCounts(certId) {
+    const cert = CERTS[certId];
+    const srs = state[certId].srs;
+    const now = Date.now();
+    let due = 0, future = Infinity;
+    Object.keys(srs).forEach(id => {
+      if (!cardById(cert, id)) return;
+      if (srs[id].due <= now) due++;
+      else future = Math.min(future, srs[id].due);
+    });
+    const fresh = (cert.cards || []).filter(c => !srs[c.id]).length;
+    return { due, fresh: Math.min(fresh, NEW_CARDS_PER_SESSION), freshTotal: fresh, nextDue: future };
+  }
+
+  // hook: a wrongly answered question becomes a due flashcard
+  function enqueueMissedQuestion(certId, questionId) {
+    const srs = state[certId].srs;
+    const id = "q:" + questionId;
+    if (!srs[id]) srs[id] = { ease: 2.5, ivl: 0, reps: 0, due: Date.now(), t: Date.now() };
+  }
+
+  /* ---------------- Exam readiness ---------------- */
+  function readiness(certId) {
+    const cert = CERTS[certId];
+    const cs = state[certId];
+    const totalWeight = cert.sections.reduce((t, s) => t + (s.weight || 0), 0) || cert.sections.length;
+    let coverageW = 0, accuracyW = 0;
+    const perSection = [];
+    cert.sections.forEach(sec => {
+      const w = (sec.weight || (totalWeight / cert.sections.length)) / totalWeight;
+      let attempted = 0, correctSum = 0, attemptSum = 0, total = 0;
+      cert.questions.forEach(q => {
+        if (q.section !== sec.id) return;
+        total++;
+        const st = cs.qstats[q.id];
+        if (st && st.a > 0) { attempted++; attemptSum += st.a; correctSum += st.c; }
+      });
+      const coverage = total ? attempted / total : 0;
+      const accuracy = attemptSum ? correctSum / attemptSum : 0;
+      coverageW += w * coverage;
+      accuracyW += w * accuracy;
+      perSection.push({ sec, coverage, accuracy, attempted, total });
+    });
+    const cutoff = Date.now() - 30 * DAY_MS;
+    const examEvidence = cs.exams
+      .filter(e => new Date(e.date).getTime() >= cutoff)
+      .reduce((b, e) => Math.max(b, e.pct), 0) / 100;
+    const score = Math.round(100 * (0.30 * coverageW + 0.45 * accuracyW + 0.25 * examEvidence));
+    const verdict = score >= 85 ? ["ready — book it", "ok"]
+      : score >= 75 ? ["nearly ready", "ok"]
+      : score >= 50 ? ["getting there", "warn"]
+      : ["building foundations", "info"];
+    // weakest sections: lowest (accuracy weighted by how attempted they are)
+    const weakest = perSection
+      .map(p => ({ ...p, weakScore: 0.6 * p.accuracy + 0.4 * p.coverage }))
+      .sort((a, b) => a.weakScore - b.weakScore)
+      .slice(0, 3);
+    return { score, verdict, coverageW, accuracyW, examEvidence, weakest };
+  }
+
   function bar(pct, cls) {
     return `<div class="bar"><div class="${cls || ""}" style="width:${Math.max(0, Math.min(100, pct))}%"></div></div>`;
   }
@@ -102,6 +217,7 @@
     const parts = hash.replace(/^#\//, "").split("/").filter(Boolean);
     stopTimer();
     if (parts[0] === "sync") return renderSync();
+    if (parts[0] === "flash") return renderFlash(parts[1]);
     if (parts.length === 0) return renderHome();
     if (parts[0] === "cert" && CERTS[parts[1]]) return renderCert(parts[1]);
     if (parts[0] === "notes" && CERTS[parts[1]] && sectionById(CERTS[parts[1]], parts[2])) return renderNotes(parts[1], parts[2]);
@@ -178,6 +294,8 @@
 
     const lastExams = cs.exams.slice(-3).reverse().map(e =>
       `<span class="pill ${e.pass ? "ok" : "bad"}">${e.pct}%</span>`).join(" ");
+    const rd = readiness(certId);
+    const fc = flashCounts(certId);
 
     app.innerHTML = `
       <h1>${esc(cert.name)}</h1>
@@ -185,10 +303,22 @@
       <div class="btn-row" style="margin-bottom:1.2rem">
         <a class="btn" href="#/quiz/${certId}">📝 Practice quiz</a>
         <button class="btn" id="weak-quiz" title="15 questions picked from your weakest and least-practiced areas">🎯 Practice weak areas</button>
+        <a class="btn" href="#/flash/${certId}">🃏 Flashcards${fc.due + fc.fresh ? ` <span class="pill warn">${fc.due + fc.fresh}</span>` : ""}</a>
         <a class="btn" href="#/exam/${certId}">⏱️ Exam simulation</a>
         <a class="btn secondary" href="#/history/${certId}">📈 Exam history ${lastExams ? "· " + lastExams : ""}</a>
       </div>
       ${st.attempted ? "" : `<p class="muted" style="margin-bottom:1rem">🎯 Weak-areas practice gets smarter as you answer questions — right now it's mostly random.</p>`}
+      <div class="card readiness">
+        <h2>Exam readiness <span class="pill ${rd.verdict[1]}">${rd.score}% · ${rd.verdict[0]}</span></h2>
+        <div class="ready-bars">
+          <div class="ready-row"><span>Coverage <small class="muted">(30%) — how much of the bank you've attempted</small></span>${bar(Math.round(100 * rd.coverageW))}</div>
+          <div class="ready-row"><span>Accuracy <small class="muted">(45%) — weighted by exam topic weights</small></span>${bar(Math.round(100 * rd.accuracyW))}</div>
+          <div class="ready-row"><span>Recent exam <small class="muted">(25%) — best simulation in the last 30 days</small></span>${bar(Math.round(100 * rd.examEvidence))}</div>
+        </div>
+        ${st.attempted ? `<p class="muted" style="margin-top:.6rem">Focus next: ${rd.weakest.map(w =>
+          `<strong>${esc(w.sec.title)}</strong> (${Math.round(100 * w.accuracy)}% accuracy · ${Math.round(100 * w.coverage)}% attempted)`).join(" · ")}</p>`
+        : `<p class="muted" style="margin-top:.6rem">Take quizzes and exam simulations to build up this score.</p>`}
+      </div>
       <div class="card">
         <h2>Topics</h2>
         ${rows}
@@ -383,6 +513,7 @@
       if (!qs[q.id]) qs[q.id] = { a: 0, c: 0 };
       qs[q.id].a++;
       if (correct) qs[q.id].c++;
+      else enqueueMissedQuestion(s.certId, q.id);
       save();
       renderQuizQuestion();
     }
@@ -612,7 +743,10 @@
         : chosen === q.answer;
       perSection[q.section].t++;
       if (ok) { correct++; perSection[q.section].c++; }
-      else review.push({ q, chosen: chosen === undefined ? null : chosen });
+      else {
+        review.push({ q, chosen: chosen === undefined ? null : chosen });
+        enqueueMissedQuestion(s.certId, q.id);
+      }
       // exam answers also feed question stats
       const qs = state[s.certId].qstats;
       if (!qs[q.id]) qs[q.id] = { a: 0, c: 0 };
@@ -712,6 +846,102 @@
         renderHistory(certId);
       }
     };
+  }
+
+  /* ---------------- Flashcards ---------------- */
+  let flashSession = null;
+
+  function renderFlash(certId) {
+    setNav(certId);
+    const cert = CERTS[certId];
+    if (!cert) return go("#/");
+    if (!flashSession || flashSession.certId !== certId) {
+      flashSession = { certId, queue: buildFlashQueue(certId), revealed: false, done: 0 };
+    }
+    renderFlashCard();
+  }
+
+  function fmtIvl(ivl) {
+    if (ivl < 1) return "<10 min";
+    if (ivl < 30) return Math.round(ivl) + " d";
+    return Math.round(ivl / 30) + " mo";
+  }
+
+  function renderFlashCard() {
+    const fs = flashSession;
+    const cert = CERTS[fs.certId];
+
+    if (!fs.queue.length) {
+      const counts = flashCounts(fs.certId);
+      const next = counts.nextDue === Infinity ? null : new Date(counts.nextDue);
+      app.innerHTML = `
+        <p class="muted"><a href="#/cert/${fs.certId}">← ${esc(cert.short)}</a></p>
+        <h1>🃏 Flashcards</h1>
+        <div class="card flash-done">
+          <p class="big-emoji">🎉</p>
+          <h2>${fs.done ? `Session complete — ${fs.done} card${fs.done === 1 ? "" : "s"} reviewed` : "All caught up!"}</h2>
+          <p class="muted">${next ? "Next review due " + next.toLocaleString() + "." : counts.freshTotal ? "" : "Answer quizzes to add missed questions as cards."}</p>
+          <div class="btn-row" style="justify-content:center">
+            <a class="btn" href="#/cert/${fs.certId}">Back to ${esc(cert.short)}</a>
+          </div>
+        </div>`;
+      return;
+    }
+
+    const cardId = fs.queue[0];
+    const card = cardById(cert, cardId);
+    if (!card) { fs.queue.shift(); return renderFlashCard(); }
+    const sec = sectionById(cert, card.section);
+    const entry = state[fs.certId].srs[cardId];
+    const preview = r => fmtIvl(srsRate(entry, r).ivl);
+
+    app.innerHTML = `
+      <div class="q-progress">
+        <span>🃏 ${esc(cert.short)} · ${fs.queue.length} card${fs.queue.length === 1 ? "" : "s"} left</span>
+        <span>${fs.done} reviewed</span>
+      </div>
+      <div class="card flash-card">
+        <div class="q-section-tag">
+          <span class="pill info">${esc(sec ? sec.title : card.section)}</span>
+          ${card.auto ? '<span class="pill warn">from a missed question</span>' : ""}
+          ${!entry ? '<span class="pill">new card</span>' : ""}
+        </div>
+        <div class="flash-face">${esc(card.front)}</div>
+        ${fs.revealed ? `
+          <hr class="flash-divider">
+          <div class="flash-face flash-back">${esc(card.back)}</div>
+          <div class="flash-ratings">
+            <button class="btn rate-again" data-r="0">Again<br><small>${preview(0)}</small></button>
+            <button class="btn rate-hard" data-r="1">Hard<br><small>${preview(1)}</small></button>
+            <button class="btn rate-good" data-r="2">Good<br><small>${preview(2)}</small></button>
+            <button class="btn rate-easy" data-r="3">Easy<br><small>${preview(3)}</small></button>
+          </div>
+          <p class="kbd-hint muted">Keys: 1 again · 2 hard · 3 good · 4 easy</p>` : `
+          <div class="btn-row" style="justify-content:center">
+            <button class="btn" id="flash-reveal">Show answer</button>
+          </div>
+          <p class="kbd-hint muted">Key: Space/Enter reveals</p>`}
+      </div>
+      <p class="muted" style="text-align:center"><a href="#/cert/${fs.certId}">End session</a></p>`;
+
+    if (!fs.revealed) {
+      document.getElementById("flash-reveal").onclick = () => { fs.revealed = true; renderFlashCard(); };
+    } else {
+      app.querySelectorAll(".flash-ratings .btn").forEach(btn => {
+        btn.onclick = () => rateFlash(parseInt(btn.dataset.r, 10));
+      });
+    }
+  }
+
+  function rateFlash(rating) {
+    const fs = flashSession;
+    const cardId = fs.queue.shift();
+    state[fs.certId].srs[cardId] = srsRate(state[fs.certId].srs[cardId], rating);
+    if (rating === 0) fs.queue.push(cardId); // "Again" comes back this session
+    else fs.done++;
+    fs.revealed = false;
+    save();
+    renderFlashCard();
   }
 
   /* ---------------- Sync & backup ---------------- */
@@ -836,10 +1066,27 @@
 
   /* ---------------- Keyboard shortcuts ---------------- */
   document.addEventListener("keydown", (e) => {
-    if (!session) return;
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     const t = e.target;
     if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT")) return;
+
+    // flashcard session keys
+    if (flashSession && location.hash.startsWith("#/flash/") && flashSession.queue.length) {
+      if (!flashSession.revealed && (e.key === " " || e.key === "Enter")) {
+        flashSession.revealed = true;
+        renderFlashCard();
+        e.preventDefault();
+        return;
+      }
+      if (flashSession.revealed && /^[1-4]$/.test(e.key)) {
+        rateFlash(parseInt(e.key, 10) - 1);
+        e.preventDefault();
+        return;
+      }
+      return;
+    }
+
+    if (!session) return;
 
     // 1-9: click the option at that display position (works for quiz and exam)
     if (/^[1-9]$/.test(e.key)) {

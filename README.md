@@ -28,6 +28,13 @@ cross-device progress sync through a private GitHub Gist.
   explanations after every answer. Per-topic accuracy is tracked on the certification page.
 - **Weak-areas practice** — a 🎯 button on each certification page builds a quiz from your
   worst-performing and least-practiced questions, using the stats the app already tracks.
+- **Spaced-repetition flashcards** — 🃏 per certification: authored fact cards plus every
+  question you answer wrongly becomes a card automatically. Reviews are scheduled with an
+  SM-2-style algorithm (Again/Hard/Good/Easy; keys 1–4, Space reveals) and sync across
+  devices like all other progress.
+- **Exam readiness score** — each certification page shows a transparent readiness
+  percentage (30% bank coverage + 45% weighted accuracy + 25% recent exam result) with a
+  breakdown and the sections to focus on next.
 - **Exam simulation** — timed mock exam mirroring the real format, drawn according to the
   official topic weightings: question flagging, a navigator grid, auto-submit on timeout,
   a per-topic score report, and a review of every incorrect answer. Attempts are saved.
@@ -84,6 +91,14 @@ Integration Architect `a1`–`a10`, CCDAK `k1`–`k6`, Platform Architect `p1`�
 is the 0-based index of the correct option. For a multi-select question, replace `answer`
 with `"answers": [0, 2]` (array of correct indexes — scored all-or-nothing). A whole new
 certification = a new JSON file with the same shape plus an entry in `data/certs.json`.
+
+Flashcards live in each file's optional `cards` array:
+
+```json
+{ "id": "m1-c999", "section": "s3", "front": "Question side", "back": "Answer side" }
+```
+
+Card ids must not start with `q:` (reserved for auto-cards generated from missed questions).
 
 Run `node scripts/validate-data.js` to check the data files (unique ids, valid section
 references, answer indexes, weights, documentation-link coverage). The same check runs in CI

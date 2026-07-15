@@ -87,7 +87,16 @@ for (const id of manifest.certs) {
     if (!q.q || !q.explanation) fail(`${id}/${q.id}: missing question text or explanation`);
   }
 
-  info.push(`${id}: ${cert.sections.length} sections (weights ${weightSum}%), ${cert.questions.length} questions`);
+  const cardIds = new Set();
+  for (const c of cert.cards || []) {
+    if (cardIds.has(c.id)) fail(`${id}/${c.id}: duplicate card id`);
+    cardIds.add(c.id);
+    if (!secIds.has(c.section)) fail(`${id}/${c.id}: card references unknown section '${c.section}'`);
+    if (!c.front || !c.back) fail(`${id}/${c.id}: card needs non-empty front and back`);
+    if (String(c.id).startsWith("q:")) fail(`${id}/${c.id}: card ids must not use the reserved 'q:' prefix`);
+  }
+
+  info.push(`${id}: ${cert.sections.length} sections (weights ${weightSum}%), ${cert.questions.length} questions, ${(cert.cards || []).length} cards`);
 }
 
 info.forEach(l => console.log(l));
