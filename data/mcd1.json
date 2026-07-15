@@ -1326,6 +1326,2597 @@
    ],
    "answer": 1,
    "explanation": "SLA-based policies identify consumers by client credentials issued through the Exchange access-request flow (client app + tier + approved contract). Requests without valid credentials get 401; over-tier-limit requests get 429."
+  },
+  {
+   "id": "m1-101",
+   "section": "s8",
+   "level": "medium",
+   "q": "A Transform Message component receives the payload shown and executes the script. What is the output?",
+   "exhibit": "INPUT payload (application/json):\n[\n  { \"dest\": \"SFO\", \"price\": 400 },\n  { \"dest\": \"LAX\", \"price\": 120 },\n  { \"dest\": \"SFO\", \"price\": 900 }\n]\n\nSCRIPT:\n%dw 2.0\noutput application/json\n---\npayload filter ($.price > 200) map $.dest",
+   "options": [
+    "[\"SFO\", \"SFO\"]",
+    "[\"SFO\", \"LAX\", \"SFO\"]",
+    "[{\"dest\": \"SFO\"}, {\"dest\": \"SFO\"}]",
+    "\"SFOSFO\""
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — filter keeps the 400 and 900 records; map then projects only the dest value of each, producing an array of strings.",
+    "Wrong — the filter removes the LAX record (120 is not > 200) before map runs.",
+    "Wrong — map returns what the lambda returns; $.dest is the string value, not an object.",
+    "Wrong — map never concatenates; it always produces an array with one element per input element."
+   ],
+   "explanation": "Chained array functions evaluate left to right: filter narrows to the two records with price > 200, then map projects $.dest from each, yielding [\"SFO\", \"SFO\"]."
+  },
+  {
+   "id": "m1-102",
+   "section": "s8",
+   "level": "hard",
+   "q": "What is the exact structure of the output produced by this script?",
+   "exhibit": "INPUT payload (application/json):\n[\n  { \"code\": \"A1\", \"dest\": \"SFO\" },\n  { \"code\": \"B2\", \"dest\": \"LAX\" },\n  { \"code\": \"C3\", \"dest\": \"SFO\" }\n]\n\nSCRIPT:\n%dw 2.0\noutput application/json\n---\npayload groupBy $.dest",
+   "options": [
+    "An object with keys \"SFO\" and \"LAX\", each holding an ARRAY of the matching flight objects",
+    "An array of two arrays, one per destination",
+    "An object with keys \"SFO\" and \"LAX\", each holding a single flight object",
+    "An array of objects each with a 'dest' key and a 'flights' array"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — groupBy returns an object keyed by the grouping criteria; each key maps to the array of ALL elements sharing it (SFO has two).",
+    "Wrong — groupBy produces an OBJECT, not an array of arrays.",
+    "Wrong — each key holds an array even when only one element matches (LAX: array of one).",
+    "Wrong — that shape would require a follow-up pluck/map; groupBy alone doesn't produce it."
+   ],
+   "explanation": "groupBy always yields { criteriaValue: [matching elements] }. To convert back to an array you follow it with pluck or mapObject — a favorite exam follow-up."
+  },
+  {
+   "id": "m1-103",
+   "section": "s8",
+   "level": "medium",
+   "q": "A developer must convert an object of error counts into an array for a report. Which output does this script produce?",
+   "exhibit": "INPUT payload (application/json):\n{ \"HTTP\": 4, \"VALIDATION\": 9 }\n\nSCRIPT:\n%dw 2.0\noutput application/json\n---\npayload pluck (value, key) -> { type: key, count: value }",
+   "options": [
+    "[{\"type\": \"HTTP\", \"count\": 4}, {\"type\": \"VALIDATION\", \"count\": 9}]",
+    "{\"type\": [\"HTTP\", \"VALIDATION\"], \"count\": [4, 9]}",
+    "{\"HTTP\": 4, \"VALIDATION\": 9}",
+    "[[\"HTTP\", 4], [\"VALIDATION\", 9]]"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — pluck iterates an object's entries and returns an ARRAY of whatever the lambda returns: one {type, count} object per entry.",
+    "Wrong — pluck doesn't transpose keys and values into parallel arrays.",
+    "Wrong — that's the unchanged input; pluck always converts object → array.",
+    "Wrong — the lambda returns objects, not two-element arrays."
+   ],
+   "explanation": "pluck is the object→array converter: for each key/value pair the lambda's result becomes an array element. It is the standard follow-up to groupBy."
+  },
+  {
+   "id": "m1-104",
+   "section": "s8",
+   "level": "medium",
+   "q": "What does this script output?",
+   "exhibit": "SCRIPT:\n%dw 2.0\noutput application/json\nvar items = [3, 1, 2]\n---\nitems reduce ((item, acc = 10) -> acc + item)",
+   "options": [
+    "16",
+    "6",
+    "[13, 11, 12]",
+    "10"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — the accumulator starts at 10 (explicit initial value) and adds 3, 1, 2 → 16.",
+    "Wrong — 6 would be the result WITHOUT the initial value (acc starts as the first element).",
+    "Wrong — reduce folds to a single value; it never returns an array of intermediate results.",
+    "Wrong — the lambda runs for every element; the accumulator doesn't stay at its initial value."
+   ],
+   "explanation": "reduce with an explicit accumulator (acc = 10) folds the array into one value: 10+3+1+2 = 16. Without it, the first element seeds the accumulator."
+  },
+  {
+   "id": "m1-105",
+   "section": "s8",
+   "level": "hard",
+   "q": "A flow must output XML. The Transform Message uses the script shown. What happens?",
+   "exhibit": "INPUT payload (application/json):\n[ { \"id\": 1 }, { \"id\": 2 } ]\n\nSCRIPT:\n%dw 2.0\noutput application/xml\n---\nitems: payload map item: { id: $.id }",
+   "options": [
+    "It fails or produces invalid XML — the array creates repeated content that isn't wrapped as repeated elements; the map result must be spread with {( ... )}",
+    "It outputs <items><item><id>1</id></item><item><id>2</id></item></items> correctly",
+    "It outputs a JSON array because the input was JSON",
+    "It outputs only the first item"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — assigning an ARRAY to an XML key is invalid; the idiom is items: {( payload map item: {...} )} which spreads the array into repeated 'item' elements.",
+    "Wrong — that's the DESIRED output, but it requires the {( ... )} dynamic-elements syntax around the map.",
+    "Wrong — the output directive (application/xml) controls the format regardless of input format.",
+    "Wrong — DataWeave doesn't silently truncate arrays."
+   ],
+   "explanation": "XML has no array concept — repeated elements must be created by spreading an array of key:value pairs with {( ... )}: items: {( payload map item: { id: $.id } )}."
+  },
+  {
+   "id": "m1-106",
+   "section": "s8",
+   "level": "medium",
+   "q": "Given the XML payload and script shown, what is the output?",
+   "exhibit": "INPUT payload (application/xml):\n<flights>\n  <flight><code>A1</code></flight>\n  <flight><code>B2</code></flight>\n</flights>\n\nSCRIPT:\n%dw 2.0\noutput application/json\n---\npayload.flights.*flight.code",
+   "options": [
+    "[\"A1\", \"B2\"]",
+    "\"A1\"",
+    "{\"code\": [\"A1\", \"B2\"]}",
+    "null"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — .*flight selects ALL repeated flight elements as an array; .code then projects each one's code value.",
+    "Wrong — a single-value selector (payload.flights.flight.code) would return only the FIRST match; .* returns all.",
+    "Wrong — selectors return values, not wrapping objects.",
+    "Wrong — the path exists; null would mean no match."
+   ],
+   "explanation": "The multi-value selector .* is essential for repeated XML elements: payload.flights.*flight is an array of both flights, and .code maps over it."
+  },
+  {
+   "id": "m1-107",
+   "section": "s8",
+   "level": "easy",
+   "q": "A response must show 'Anonymous' when the optional customer name is absent. Which script fragment is correct?",
+   "exhibit": "INPUT payload (application/json):\n{ \"order\": 1 }   // note: no 'name' field",
+   "options": [
+    "payload.name default \"Anonymous\"",
+    "payload.name orElse \"Anonymous\"",
+    "if payload.name == null \"Anonymous\"",
+    "payload.name ?? \"Anonymous\""
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — the default operator substitutes the right side when the left evaluates to null.",
+    "Wrong — orElse is not a DataWeave operator (it exists in other languages/Java Optionals).",
+    "Wrong — DataWeave's if requires an else branch; this is a syntax error.",
+    "Wrong — ?? is not DataWeave syntax; the null-coalescing operator here is 'default'."
+   ],
+   "explanation": "DataWeave's null fallback is the default operator: expression default fallbackValue. Missing keys evaluate to null, triggering the fallback."
+  },
+  {
+   "id": "m1-108",
+   "section": "s8",
+   "level": "hard",
+   "q": "What does this script output?",
+   "exhibit": "SCRIPT:\n%dw 2.0\noutput application/json\nvar prices = [100, 300, 200]\n---\n(prices orderBy $)[-1 to 0]",
+   "options": [
+    "[300, 200, 100]",
+    "[100, 200, 300]",
+    "[300]",
+    "[100]"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — orderBy sorts ascending ([100,200,300]); the range [-1 to 0] indexes from the last element back to the first, reversing to descending.",
+    "Wrong — that's the ascending intermediate result before the [-1 to 0] reversal.",
+    "Wrong — [-1 to 0] is a RANGE selection of all elements in reverse, not just the last one ([-1] alone would give 300).",
+    "Wrong — [0] would give the first element; the range covers all elements reversed."
+   ],
+   "explanation": "DataWeave's orderBy only sorts ascending; the standard descending idiom is to select the reversed range: (array orderBy criteria)[-1 to 0]."
+  },
+  {
+   "id": "m1-109",
+   "section": "s8",
+   "level": "medium",
+   "q": "A CSV payload must be produced from JSON, using ';' as separator and no header row. Which output directive is correct?",
+   "options": [
+    "output application/csv separator=\";\", header=false",
+    "output application/csv with { separator: \";\", header: false }",
+    "output text/csv --separator=';' --no-header",
+    "output application/csv (the properties can only be set on the reader)"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — writer properties are appended to the output directive: output application/csv separator=\";\", header=false.",
+    "Wrong — 'with { }' is not the syntax for format properties.",
+    "Wrong — CLI-style flags are not DataWeave syntax.",
+    "Wrong — both readers AND writers accept format properties; writer properties go on the output line."
+   ],
+   "explanation": "Reader/writer properties attach to the format declaration: e.g. output application/csv separator=\";\", header=false. The same pattern configures readers (input directive or connector MIME type parameters)."
+  },
+  {
+   "id": "m1-110",
+   "section": "s8",
+   "level": "medium",
+   "q": "What is the output of this script?",
+   "exhibit": "SCRIPT:\n%dw 2.0\noutput application/json\n---\n{ a: 1 } ++ { b: 2 }",
+   "options": [
+    "{\"a\": 1, \"b\": 2}",
+    "[{\"a\": 1}, {\"b\": 2}]",
+    "{\"a\": 3}",
+    "A type error — ++ only works on strings and arrays"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — ++ concatenates objects by merging their key/value pairs.",
+    "Wrong — ++ on two objects produces one object, not an array.",
+    "Wrong — ++ never adds values; it appends entries.",
+    "Wrong — ++ is overloaded for strings, arrays, AND objects (and date/time composition)."
+   ],
+   "explanation": "++ concatenates: strings ('a'++'b'), arrays ([1]++[2]), and objects ({a:1}++{b:2} = {a:1,b:2}) — a frequent exam identification question."
+  },
+  {
+   "id": "m1-111",
+   "section": "s8",
+   "level": "hard",
+   "q": "The API returns dates as 'dd-MM-yyyy' strings but the target system needs ISO 'yyyy-MM-dd'. The input field is payload.bookingDate = \"05-03-2026\". Which expression produces \"2026-03-05\"?",
+   "options": [
+    "(payload.bookingDate as Date {format: \"dd-MM-yyyy\"}) as String {format: \"yyyy-MM-dd\"}",
+    "payload.bookingDate as Date as String",
+    "payload.bookingDate replace \"-\" with \"/\"",
+    "(payload.bookingDate as String {format: \"yyyy-MM-dd\"}) as Date"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — parse the non-ISO string by declaring ITS format, then format the resulting Date with the target pattern.",
+    "Wrong — a bare 'as Date' expects ISO-8601 input; \"05-03-2026\" fails to parse without an explicit format.",
+    "Wrong — replace would give \"05/03/2026\": still the wrong field order, and no date semantics.",
+    "Wrong — the coercion order is reversed: you can't format a String 'as String {format}' meaningfully before parsing it into a Date."
+   ],
+   "explanation": "Date reformatting is always parse-then-format: as Date {format: <input pattern>} followed by as String {format: <output pattern>}."
+  },
+  {
+   "id": "m1-112",
+   "section": "s8",
+   "level": "medium",
+   "q": "What does this script return?",
+   "exhibit": "SCRIPT:\n%dw 2.0\noutput application/json\nvar data = [ { \"id\": 1 }, { \"id\": 2 }, { \"id\": 1 } ]\n---\ndata distinctBy $.id",
+   "options": [
+    "[{\"id\": 1}, {\"id\": 2}]",
+    "[{\"id\": 2}]",
+    "[1, 2]",
+    "{\"1\": 2, \"2\": 1}"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — distinctBy keeps the FIRST occurrence of each unique criteria value, preserving the whole element.",
+    "Wrong — elements that appeared once are kept too; only later duplicates are dropped.",
+    "Wrong — distinctBy returns the original ELEMENTS, not the criteria values.",
+    "Wrong — that would be a count aggregation; distinctBy doesn't count."
+   ],
+   "explanation": "distinctBy de-duplicates an array by the given criteria, returning the original elements with later duplicates removed."
+  },
+  {
+   "id": "m1-113",
+   "section": "s8",
+   "level": "medium",
+   "q": "Which output does this produce?",
+   "exhibit": "SCRIPT:\n%dw 2.0\noutput application/json\n---\n\"ER38sd,ER45if,ER99xx\" splitBy \",\" map ($ ++ \"!\")",
+   "options": [
+    "[\"ER38sd!\", \"ER45if!\", \"ER99xx!\"]",
+    "\"ER38sd!,ER45if!,ER99xx!\"",
+    "[\"ER38sd,ER45if,ER99xx!\"]",
+    "An error — map cannot follow splitBy"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — splitBy yields the array of codes; map appends '!' to each string element.",
+    "Wrong — the result stays an array; joinBy would be needed to rebuild a single string.",
+    "Wrong — splitBy splits on EVERY comma, producing three elements.",
+    "Wrong — splitBy returns an Array, and map operates on arrays; the chain is idiomatic."
+   ],
+   "explanation": "splitBy: String → Array; map transforms each element; joinBy would convert back. Knowing which functions produce which types is half of DataWeave questions."
+  },
+  {
+   "id": "m1-114",
+   "section": "s8",
+   "level": "hard",
+   "q": "The script defines and uses a custom function. What is the output?",
+   "exhibit": "SCRIPT:\n%dw 2.0\noutput application/json\nfun label(p) = if (p > 500) \"premium\" else \"standard\"\n---\n[600, 100] map { price: $, tier: label($) }",
+   "options": [
+    "[{\"price\": 600, \"tier\": \"premium\"}, {\"price\": 100, \"tier\": \"standard\"}]",
+    "[{\"price\": 600, \"tier\": \"standard\"}, {\"price\": 100, \"tier\": \"premium\"}]",
+    "{\"price\": [600, 100], \"tier\": [\"premium\", \"standard\"]}",
+    "An error — functions cannot be called inside map"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — 600 > 500 → premium; 100 → standard; map builds one object per element.",
+    "Wrong — the condition is p > 500; the tiers are swapped here.",
+    "Wrong — map produces an array of per-element objects, not parallel arrays.",
+    "Wrong — header-declared functions are callable anywhere in the body, including lambdas."
+   ],
+   "explanation": "Header fun declarations are ordinary functions; inside map, $ is each element, so label($) evaluates per element. Trace the conditional carefully — swapped-branch distractors are common."
+  },
+  {
+   "id": "m1-115",
+   "section": "s8",
+   "level": "medium",
+   "q": "What does the descendants selector return here?",
+   "exhibit": "INPUT payload (application/json):\n{\n  \"order\": {\n    \"item\": { \"price\": 10 },\n    \"shipping\": { \"price\": 5 }\n  }\n}\n\nSCRIPT:\n%dw 2.0\noutput application/json\n---\nsum(payload..price)",
+   "options": [
+    "15",
+    "[10, 5]",
+    "10",
+    "An error — .. is not valid"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — payload..price collects EVERY price at any depth ([10, 5]); sum() adds them to 15.",
+    "Wrong — that's the intermediate array BEFORE sum() is applied.",
+    "Wrong — .. finds all matches at any level, not just the first.",
+    "Wrong — .. is the descendants selector, fully valid DataWeave."
+   ],
+   "explanation": "The descendants selector .. traverses the whole structure collecting every matching key. Wrapped in sum(), the array [10, 5] becomes 15."
+  },
+  {
+   "id": "m1-116",
+   "section": "s8",
+   "level": "easy",
+   "q": "In the expression 'payload map (item, index) -> ...', what do the shorthand variables $ and $$ correspond to?",
+   "options": [
+    "$ = item (current value), $$ = index",
+    "$ = index, $$ = item",
+    "$ = payload, $$ = attributes",
+    "$ = the previous element, $$ = the next element"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — for arrays, $ is the current element and $$ its index (named 'item, index' when declared explicitly).",
+    "Wrong — reversed; this is the most common DataWeave misreading.",
+    "Wrong — $ and $$ are lambda parameters, unrelated to the event structure.",
+    "Wrong — DataWeave lambdas don't expose neighboring elements."
+   ],
+   "explanation": "Arrays: $ = value, $$ = index. (For object functions like mapObject/pluck, $ = value and $$ = key.) Memorize both pairs."
+  },
+  {
+   "id": "m1-117",
+   "section": "s8",
+   "level": "hard",
+   "q": "The Transform must uppercase all KEYS while leaving values untouched. Which script is correct for input { \"code\": \"a1\", \"dest\": \"sfo\" }?",
+   "options": [
+    "%dw 2.0\noutput application/json\nimport * from dw::core::Strings\n---\npayload mapObject (v, k) -> { (upper(k)): v }",
+    "%dw 2.0\noutput application/json\n---\npayload map (v, k) -> { upper(k): v }",
+    "%dw 2.0\noutput application/json\n---\nupper(payload)",
+    "%dw 2.0\noutput application/json\n---\npayload pluck (v, k) -> { (upper(k)): v }"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — mapObject transforms entries of an OBJECT; (upper(k)) with parentheses evaluates the expression as a dynamic key. upper comes from dw::core::Strings.",
+    "Wrong — map is for ARRAYS; on an object it fails. Also the dynamic key needs parentheses.",
+    "Wrong — upper works on a String, not an entire object.",
+    "Wrong — pluck returns an ARRAY of the lambda results; the output would be [ {CODE: a1}, {DEST: sfo} ], not one object."
+   ],
+   "explanation": "mapObject keeps object→object; dynamic key names must be wrapped in parentheses ((upper(k)): v). pluck is the object→array variant — a deliberate trap here."
+  },
+  {
+   "id": "m1-118",
+   "section": "s8",
+   "level": "medium",
+   "q": "What is the value of the 'result' field?",
+   "exhibit": "SCRIPT:\n%dw 2.0\noutput application/json\nvar vals = [1, 2, 3, 4]\n---\n{ result: sizeOf(vals filter (($ mod 2) == 0)) }",
+   "options": [
+    "2",
+    "4",
+    "[2, 4]",
+    "6"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — the filter keeps even numbers [2, 4]; sizeOf counts them → 2.",
+    "Wrong — 4 is the size of the ORIGINAL array; the filter runs first.",
+    "Wrong — [2, 4] is the filtered array before sizeOf is applied.",
+    "Wrong — 6 would be sum([2,4]); the script asks for size, not sum."
+   ],
+   "explanation": "Evaluate inside-out: filter → [2, 4]; sizeOf → 2. Distractors are always the intermediate values — track which function is outermost."
+  },
+  {
+   "id": "m1-119",
+   "section": "s8",
+   "level": "medium",
+   "q": "A reusable DataWeave library file 'Utils.dwl' is saved in src/main/resources/modules with a function 'toCode'. How does a Transform script use it?",
+   "exhibit": "src/main/resources/modules/Utils.dwl:\n%dw 2.0\nfun toCode(s) = upper(s[0 to 2])",
+   "options": [
+    "import modules::Utils --- then call Utils::toCode(payload.name)",
+    "include \"modules/Utils.dwl\" --- then call toCode(payload.name)",
+    "lookup(\"Utils\", payload.name)",
+    "%dw imports are not supported; the function must be copied into each script"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — libraries under src/main/resources import by path with :: separators; qualified calls use Module::function (or import * from modules::Utils for unqualified calls).",
+    "Wrong — 'include' is not DataWeave syntax.",
+    "Wrong — lookup() invokes Mule FLOWS, not DataWeave modules.",
+    "Wrong — module imports are a core DataWeave feature."
+   ],
+   "explanation": "DW modules live under src/main/resources and are imported with import modules::Utils (or import * from ...). lookup() is unrelated — it calls flows."
+  },
+  {
+   "id": "m1-120",
+   "section": "s8",
+   "level": "hard",
+   "q": "What does this match expression output for the given payload?",
+   "exhibit": "INPUT payload (application/json):\n{ \"status\": 404 }\n\nSCRIPT:\n%dw 2.0\noutput application/json\n---\npayload.status match {\n  case 200 -> \"ok\"\n  case is Number -> \"other number\"\n  case s if (s == 404) -> \"not found\"\n  else -> \"unknown\"\n}",
+   "options": [
+    "\"other number\"",
+    "\"not found\"",
+    "\"ok\"",
+    "\"unknown\""
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — cases evaluate IN ORDER: 404 ≠ 200, but 'is Number' matches first, so its branch wins before the more specific 404 guard is reached.",
+    "Wrong — the 404 guard is declared AFTER 'is Number'; match stops at the first matching case.",
+    "Wrong — 404 ≠ 200.",
+    "Wrong — a case matched, so the else never runs."
+   ],
+   "explanation": "match/case evaluates top-down and stops at the FIRST match — putting a broad type case before a specific value case shadows it, exactly like Choice router ordering."
+  },
+  {
+   "id": "m1-121",
+   "section": "s1",
+   "level": "medium",
+   "q": "A project team must deliver these components:\n1. An API that retrieves inventory levels from SAP\n2. An API that combines inventory and pricing to build product availability\n3. An API returning availability formatted for the point-of-sale devices\n\nAssign each to the correct API-led layer.",
+   "options": [
+    "1 = System, 2 = Process, 3 = Experience",
+    "1 = Process, 2 = System, 3 = Experience",
+    "1 = System, 2 = Experience, 3 = Process",
+    "1 = Experience, 2 = Process, 3 = System"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — unlocking one system of record = System; combining/orchestrating = Process; channel-specific formatting (POS devices) = Experience.",
+    "Wrong — retrieving from a single backend (SAP) is the System layer's definition, not Process.",
+    "Wrong — combining data across sources is orchestration (Process), not channel adaptation.",
+    "Wrong — completely inverted: the SAP unlock is the bottom layer, the POS formatting the top."
+   ],
+   "explanation": "Layer assignment follows the verbs: unlock a system → System API; orchestrate/combine → Process API; format for one channel → Experience API."
+  },
+  {
+   "id": "m1-122",
+   "section": "s1",
+   "level": "easy",
+   "q": "A developer needs to: (1) write a RAML specification collaboratively, (2) let consumers try the API before implementation, and (3) find a reusable 'Address' data type published by another team. Which Anypoint Platform components serve each need?",
+   "options": [
+    "1 = Design Center (API Designer), 2 = the mocking service, 3 = Anypoint Exchange",
+    "1 = Runtime Manager, 2 = API Manager, 3 = Design Center",
+    "1 = Exchange, 2 = Runtime Manager, 3 = the mocking service",
+    "1 = Anypoint Studio only, 2 = API Manager, 3 = Access Management"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — specs are authored in Design Center's API Designer, simulated by the mocking service, and reusable fragments are discovered in Exchange.",
+    "Wrong — Runtime Manager deploys/monitors apps; API Manager governs deployed APIs — neither authors specs.",
+    "Wrong — Exchange catalogs assets; it isn't the authoring editor, and Runtime Manager can't simulate an unimplemented API.",
+    "Wrong — Studio implements; Access Management handles users/permissions."
+   ],
+   "explanation": "Design-time trio: API Designer (write) → mocking service (simulate) → Exchange (share/discover). Management components (API/Runtime Manager) come after implementation."
+  },
+  {
+   "id": "m1-123",
+   "section": "s1",
+   "level": "medium",
+   "q": "An organization measures its C4E quarterly. Which metric BEST indicates the application network is delivering its promised value?",
+   "options": [
+    "The percentage of new projects that consume at least one existing API from Exchange",
+    "The total number of Mule applications deployed",
+    "The number of integrations built by the C4E team itself",
+    "The number of vCores purchased"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — the application network's value thesis is REUSE; projects consuming existing assets instead of rebuilding is the direct measure.",
+    "Wrong — app count measures activity/cost, not reuse or acceleration.",
+    "Wrong — a C4E that builds everything itself is a bottleneck (CoE anti-pattern), not a success signal.",
+    "Wrong — capacity purchased measures spend, not value."
+   ],
+   "explanation": "C4E KPIs are consumption-based: asset reuse rate, consumers per API, time-to-first-API. Production-side numbers don't demonstrate network effects."
+  },
+  {
+   "id": "m1-124",
+   "section": "s5",
+   "level": "medium",
+   "q": "APIkit scaffolds flows from the RAML shown. Which flow names are generated for the /orders resource?",
+   "exhibit": "#%RAML 1.0\ntitle: Orders API\n\n/orders:\n  get:\n  post:\n    body:\n      application/json:\n  /{orderId}:\n    get:",
+   "options": [
+    "get:\\orders:orders-api-config, post:\\orders:application\\json:orders-api-config, get:\\orders\\(orderId):orders-api-config",
+    "getOrders, postOrders, getOrderById",
+    "orders-get, orders-post, orders-orderId-get",
+    "get:/orders, post:/orders, get:/orders/{orderId}"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — the convention is method:\\resource[:mediaType]:configName; POST includes the media type because a body is declared, and {orderId} becomes (orderId).",
+    "Wrong — camelCase names are not the convention; the router matches on the exact generated pattern.",
+    "Wrong — that naming doesn't include the config name and wouldn't be routable.",
+    "Wrong — close, but flow names use backslashes, parentheses for URI params, and end with the config name."
+   ],
+   "explanation": "APIkit routing is name-based: method:\\resource\\(uriParam):mediaType:configName. Recognizing valid generated names (and why renaming breaks routing) is a staple exam topic."
+  },
+  {
+   "id": "m1-125",
+   "section": "s5",
+   "level": "hard",
+   "q": "Clients call an APIkit-based API. Match each request to the response, given the RAML exhibit.\n\nRequest 1: GET /api/flights?dest=BOS\nRequest 2: DELETE /api/flights\nRequest 3: GET /api/pilots",
+   "exhibit": "#%RAML 1.0\ntitle: Flights\n\n/flights:\n  get:\n    queryParameters:\n      dest:\n        enum: [SFO, LAX]\n        required: false",
+   "options": [
+    "1 → 400 Bad Request; 2 → 405 Method Not Allowed; 3 → 404 Not Found",
+    "1 → 200 OK; 2 → 404; 3 → 405",
+    "1 → 400; 2 → 404; 3 → 405",
+    "All three → 501 Not Implemented"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — BOS violates the enum → APIKIT:BAD_REQUEST (400); DELETE isn't declared on an EXISTING resource → METHOD_NOT_ALLOWED (405); /pilots isn't in the spec at all → NOT_FOUND (404).",
+    "Wrong — the router validates enums; dest=BOS cannot reach the flow with a 200.",
+    "Wrong — 2 and 3 are swapped: unknown METHOD on a known resource = 405, unknown RESOURCE = 404.",
+    "Wrong — 501 is raised when a resource exists in the spec but its implementation flow is missing — not the case in these three requests."
+   ],
+   "explanation": "The APIkit router's validation map: contract violation → 400; undeclared method on declared resource → 405; undeclared resource → 404; declared but unimplemented → 501."
+  },
+  {
+   "id": "m1-126",
+   "section": "s5",
+   "level": "easy",
+   "q": "After importing a RAML from Exchange into Studio and scaffolding, a developer notices a flow with an HTTP Listener on path /console/*. What is its purpose?",
+   "options": [
+    "It serves the interactive API console generated from the RAML for exploring and testing the API",
+    "It is the main routing flow for all API traffic",
+    "It exposes JMX metrics",
+    "It is a leftover that should always be deleted before deployment"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — the console flow serves live, interactive documentation rendered from the spec.",
+    "Wrong — API traffic goes through the main flow (default path /api/*) with the APIkit Router.",
+    "Wrong — metrics are not exposed by APIkit consoles.",
+    "Wrong — it's optional in production (often disabled), but its purpose is the interactive console, not garbage."
+   ],
+   "explanation": "Scaffolding generates: the main flow (listener + APIkit router + error handlers), one flow per method/resource, and a console flow on /console/* for interactive docs."
+  },
+  {
+   "id": "m1-127",
+   "section": "s5",
+   "level": "medium",
+   "q": "The RAML adds a new resource /refunds after the implementation was already built. What is the correct way to update the Mule project?",
+   "options": [
+    "Right-click the API in Studio → 'Scaffold flows from these API specifications' — new flows are generated, existing implemented flows are preserved",
+    "Delete all flows and re-import the RAML from scratch",
+    "Manually create a flow named refunds-flow",
+    "Nothing — APIkit picks up spec changes at runtime automatically"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — re-scaffolding is additive: it generates flows for new resources/methods without touching implemented ones.",
+    "Wrong — destroying implemented flows loses all work; never necessary.",
+    "Wrong — a hand-made name that doesn't follow the get:\\refunds:config convention will never be routed to.",
+    "Wrong — scaffolding is a design-time action; the router needs the generated flow to exist."
+   ],
+   "explanation": "Keeping spec and implementation in sync = re-scaffold after spec changes. The generator only adds missing flows; the naming convention connects them to the router."
+  },
+  {
+   "id": "m1-128",
+   "section": "s5",
+   "level": "medium",
+   "q": "An APIkit implementation flow ends with just a Transform Message setting the payload. How does the HTTP response status get set to 201 for the POST flow, per the RAML's declared 201 response?",
+   "options": [
+    "Set an httpStatus variable (as scaffolded) or configure the listener's response status code field — the router/listener returns 200 by default otherwise",
+    "APIkit reads the RAML and automatically returns 201 for every POST",
+    "The Transform must output a special __status field in the payload",
+    "Status codes cannot be customized with APIkit"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — scaffolded projects wire the listener's response status to a variable (commonly vars.httpStatus); the flow sets it to 201. Default success status is 200.",
+    "Wrong — the spec DOCUMENTS 201, but the implementation must actually set it; APIkit doesn't infer runtime status from the RAML.",
+    "Wrong — payload fields don't drive the status line.",
+    "Wrong — they can: via the listener's response builder / status code expression."
+   ],
+   "explanation": "HTTP status is controlled by the listener's response configuration — scaffolding binds it to a variable so each APIkit flow can set its declared status (e.g., 201 for creation)."
+  },
+  {
+   "id": "m1-129",
+   "section": "s5",
+   "level": "hard",
+   "q": "A request GET /api/flights/ABC arrives, where the RAML declares /flights/{ID} with ID of type integer. The implementation flow exists. What happens?",
+   "options": [
+    "The APIkit router rejects it with APIKIT:BAD_REQUEST (400) — the URI parameter fails type validation and never reaches the flow",
+    "The flow runs and receives attributes.uriParams.ID = \"ABC\"",
+    "The router returns 404 because ABC does not exist in the database",
+    "The router converts ABC to 0 and continues"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — URI parameters are validated against their declared RAML type; a non-integer value violates the contract → 400.",
+    "Wrong — validation happens BEFORE routing; the flow is never invoked with an invalid parameter.",
+    "Wrong — 404-by-lookup would be the FLOW's business decision; the router 404s only for undeclared resources. Here validation fails first with 400.",
+    "Wrong — the router never coerces invalid values silently."
+   ],
+   "explanation": "The router enforces the full contract — path shape, methods, query params, headers, body, AND URI parameter types — rejecting violations as APIKIT:BAD_REQUEST before any flow logic runs."
+  },
+  {
+   "id": "m1-130",
+   "section": "s5",
+   "level": "medium",
+   "q": "A team hand-builds a RESTful interface with one HTTP Listener per resource instead of using APIkit. Which consequences should they expect? (Select all that apply)",
+   "options": [
+    "Request validation against the API spec must be implemented manually",
+    "Nothing keeps the implementation aligned with the published RAML over time",
+    "Standard error responses (400/404/405) must be hand-coded",
+    "The application cannot be deployed to CloudHub"
+   ],
+   "answers": [
+    0,
+    1,
+    2
+   ],
+   "optionNotes": [
+    "Correct — without the router, parameter/body/type validation is custom code.",
+    "Correct — spec drift is undetected; APIkit's scaffolding/validation is what enforces the contract.",
+    "Correct — APIkit's generated error handler provides the standard mappings; manual interfaces must reproduce them.",
+    "Wrong — deployment targets are unrelated to how the interface is built."
+   ],
+   "explanation": "Hand-built interfaces work but forfeit APIkit's three gifts: automatic contract validation, standardized error responses, and spec-implementation synchronization."
+  },
+  {
+   "id": "m1-131",
+   "section": "s5",
+   "level": "easy",
+   "q": "What does the APIkit Router populate for the implementation flow when routing GET /api/flights/42?dest=SFO (RAML declares /flights/{ID} with query param dest)?",
+   "options": [
+    "attributes.uriParams.ID = \"42\" and attributes.queryParams.dest = \"SFO\"",
+    "vars.ID = 42 and vars.dest = \"SFO\"",
+    "payload.ID and payload.dest",
+    "Nothing — the flow must parse the raw URL"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — the router validates and populates uriParams/queryParams in the message attributes.",
+    "Wrong — parameters arrive as attributes, not variables.",
+    "Wrong — the payload holds the request BODY (empty for this GET), never the URL parts.",
+    "Wrong — parsing is exactly what the router does for you."
+   ],
+   "explanation": "After APIkit routing, the flow reads attributes.uriParams.<name> and attributes.queryParams.<name> — same attributes structure as any HTTP Listener event."
+  },
+  {
+   "id": "m1-132",
+   "section": "s3",
+   "level": "hard",
+   "q": "Trace this flow. What are the payload and vars.original AFTER the HTTP Request completes?",
+   "exhibit": "FLOW (pseudo-XML):\n<flow name=\"orders\">\n  <http:listener path=\"/orders\"/>          <!-- request body: {\"id\": 7} -->\n  <set-variable variableName=\"original\" value=\"#[payload]\"/>\n  <http:request method=\"GET\" path=\"/inventory\"/>   <!-- responds: {\"stock\": 3} -->\n</flow>",
+   "options": [
+    "payload = {\"stock\": 3}; vars.original = {\"id\": 7}",
+    "payload = {\"id\": 7}; vars.original = {\"id\": 7}",
+    "payload = {\"stock\": 3}; vars.original = {\"stock\": 3}",
+    "payload = {\"id\": 7}; vars.original = {\"stock\": 3}"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — the HTTP Request replaces the payload with its response, but variables survive operations unchanged.",
+    "Wrong — without a target, the operation ALWAYS replaces the payload with the response body.",
+    "Wrong — variables are not re-evaluated when the payload changes; original captured {\"id\": 7} at set time.",
+    "Wrong — both halves inverted."
+   ],
+   "explanation": "Connector operations replace the MESSAGE (payload + attributes); variables persist for the rest of the flow. Saving the payload to a var before an operation is the standard pattern to keep it."
+  },
+  {
+   "id": "m1-133",
+   "section": "s3",
+   "level": "hard",
+   "q": "The same flow is changed: the HTTP Request now has target=\"inventory\" and targetValue=\"#[payload.stock]\". What are payload and vars.inventory after it completes?",
+   "exhibit": "<http:request method=\"GET\" path=\"/inventory\"\n              target=\"inventory\"\n              targetValue=\"#[payload.stock]\"/>\n<!-- request body before the call: {\"id\": 7} -->\n<!-- HTTP response: {\"stock\": 3} -->",
+   "options": [
+    "payload = {\"id\": 7} (unchanged); vars.inventory = 3",
+    "payload = {\"stock\": 3}; vars.inventory = 3",
+    "payload = {\"id\": 7}; vars.inventory = {\"stock\": 3}",
+    "payload = 3; vars.inventory = {\"id\": 7}"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — with a target, the message is NOT replaced; targetValue (evaluated against the operation's RESULT) picks payload.stock = 3 into the variable.",
+    "Wrong — target redirects the result into a variable precisely so the payload stays untouched.",
+    "Wrong — targetValue #[payload.stock] extracts the number 3; without targetValue the default #[payload] would store the whole object.",
+    "Wrong — the flow's payload is never replaced when target is set."
+   ],
+   "explanation": "target/targetValue = message enrichment: the operation result (or a fragment of it, via targetValue evaluated on that result) lands in a variable while the in-flight payload is preserved."
+  },
+  {
+   "id": "m1-134",
+   "section": "s3",
+   "level": "medium",
+   "q": "A client calls: POST /api/track?mode=fast with header client_id: abc123 and body {\"pkg\": 9}. Which expressions read the mode, the client_id, and the pkg values?",
+   "options": [
+    "attributes.queryParams.mode · attributes.headers.client_id · payload.pkg",
+    "attributes.uriParams.mode · attributes.client_id · payload.pkg",
+    "payload.mode · attributes.headers.client_id · attributes.body.pkg",
+    "vars.mode · vars.client_id · vars.pkg"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — query string → attributes.queryParams; request headers → attributes.headers; the body IS the payload.",
+    "Wrong — uriParams holds path template values like /track/{id}; mode came from the query string, and headers live under attributes.headers.",
+    "Wrong — the body is the payload itself, not attributes.body; mode is not in the body.",
+    "Wrong — nothing populates variables automatically; vars only hold what the flow sets."
+   ],
+   "explanation": "HTTP Listener event map: body → payload; query string → attributes.queryParams; path templates → attributes.uriParams; headers → attributes.headers; method/path → attributes.method/requestPath."
+  },
+  {
+   "id": "m1-135",
+   "section": "s3",
+   "level": "medium",
+   "q": "A Logger placed after a Database SELECT logs #[attributes]. What does it show?",
+   "options": [
+    "Database result metadata (e.g., row count related metadata) — the HTTP Listener attributes were replaced by the Select operation",
+    "The original HTTP Listener attributes (headers, queryParams)",
+    "Both HTTP and Database attributes merged",
+    "null — operations clear attributes"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — every operation REPLACES the message, attributes included; after Select they describe the DB operation's result.",
+    "Wrong — those were replaced the moment the Select completed; retrieving them later requires having saved them to a variable.",
+    "Wrong — attributes are replaced wholesale, never merged.",
+    "Wrong — they're replaced with the operation's metadata, not nulled."
+   ],
+   "explanation": "The golden rule: after ANY connector operation, payload AND attributes belong to that operation. Needing pre-operation attributes later = save them to a var first."
+  },
+  {
+   "id": "m1-136",
+   "section": "s3",
+   "level": "easy",
+   "q": "Which component sets the variable 'total' to the sum of payload.items[*].price using a full DataWeave script, while ALSO being able to change the payload in the same step?",
+   "options": [
+    "Transform Message — it can define multiple outputs: the payload and any number of variables",
+    "Set Variable — it also transforms the payload",
+    "Set Payload — it also sets variables",
+    "Logger with a target"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — Transform Message supports several simultaneous outputs (payload, vars, attributes), each with its own DataWeave script.",
+    "Wrong — Set Variable writes exactly one variable and leaves the payload alone.",
+    "Wrong — Set Payload writes only the payload.",
+    "Wrong — Logger writes to the log; it has no target parameter."
+   ],
+   "explanation": "Transform Message is the multi-output transformation tool; Set Variable/Set Payload are single-purpose setters for simple values."
+  },
+  {
+   "id": "m1-137",
+   "section": "s3",
+   "level": "medium",
+   "q": "Flow A sets vars.customer and then calls Flow B via Flow Reference. Flow B modifies the payload and sets vars.status. What does Flow A see after the Flow Reference returns?",
+   "options": [
+    "The payload modified by B, vars.customer intact, AND the new vars.status",
+    "Its own original payload; only vars.customer",
+    "B's payload; vars are reset to empty",
+    "Nothing changes — Flow Reference passes a copy"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — Flow Reference passes the WHOLE event synchronously; all changes (payload and variables) return to the caller.",
+    "Wrong — the payload change made in B persists in A after the reference.",
+    "Wrong — variables are part of the traveling event; they're never reset by a Flow Reference.",
+    "Wrong — a COPY is what Async scope gets; Flow Reference shares the event."
+   ],
+   "explanation": "Within one application, Flow Reference is a synchronous call sharing the full event — contrast with the Async scope (copy, changes lost) and HTTP between apps (only payload crosses)."
+  },
+  {
+   "id": "m1-138",
+   "section": "s3",
+   "level": "hard",
+   "q": "The same logic is moved into an Async scope. Flow A sets vars.status='pending', the Async scope's processors set vars.status='done' and change the payload. What does Flow A see immediately after the Async scope?",
+   "exhibit": "<flow name=\"a\">\n  <set-variable variableName=\"status\" value=\"pending\"/>\n  <async>\n    <set-variable variableName=\"status\" value=\"done\"/>\n    <set-payload value=\"processed\"/>\n  </async>\n  <logger message=\"#[vars.status ++ ' / ' ++ payload]\"/>\n</flow>",
+   "options": [
+    "vars.status = 'pending' and the original payload — the async branch works on a COPY and the flow continues without waiting",
+    "vars.status = 'done' and payload = 'processed'",
+    "The flow blocks until the async branch finishes, then sees 'done'",
+    "A runtime error — variables cannot be set inside Async"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — Async hands a copy of the event to another thread and returns immediately; its changes never come back.",
+    "Wrong — that would be the Flow Reference behavior; Async changes are isolated.",
+    "Wrong — not waiting is the entire point of the Async scope.",
+    "Wrong — anything can run inside Async; the changes just stay in the copy."
+   ],
+   "explanation": "Async = fire-and-forget on an event COPY: the main flow proceeds immediately and never observes the branch's modifications. Use it for logging/notifications that must not delay the response."
+  },
+  {
+   "id": "m1-139",
+   "section": "s3",
+   "level": "easy",
+   "q": "In a Logger's message field, which syntax embeds the value of the query parameter 'dest' in a text message?",
+   "options": [
+    "#['Flying to ' ++ attributes.queryParams.dest]",
+    "${attributes.queryParams.dest}",
+    "{{attributes.queryParams.dest}}",
+    "%attributes.queryParams.dest%"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — #[...] marks an inline DataWeave expression; ++ concatenates the strings.",
+    "Wrong — ${...} is PROPERTY placeholder syntax, resolved from configuration files at startup, not runtime event data.",
+    "Wrong — mustache-style syntax is not Mule expression syntax.",
+    "Wrong — percent delimiters are not Mule expression syntax."
+   ],
+   "explanation": "Two different syntaxes coexist: #[dataweave] evaluates per event at runtime; ${property} resolves configuration values at deployment. Mixing them up is a favorite trick question."
+  },
+  {
+   "id": "m1-140",
+   "section": "s3",
+   "level": "medium",
+   "q": "A flow receives JSON but the payload must be sent to a legacy component as a Java LinkedHashMap. What accomplishes the conversion?",
+   "options": [
+    "A Transform Message with output application/java",
+    "Setting the listener's MIME type to application/java",
+    "Java conversion happens automatically for all payloads",
+    "A Set Payload with value #[payload]"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — output application/java materializes the structure as Java objects (maps/lists).",
+    "Wrong — the listener's MIME type declares how to READ incoming data, and the incoming data is JSON.",
+    "Wrong — Mule 4 keeps data in its reader format until a transform requests another; conversion is explicit.",
+    "Wrong — that re-sets the same payload without changing its format."
+   ],
+   "explanation": "Format conversions are Transform Message output directives: application/json ↔ application/java ↔ application/xml etc."
+  },
+  {
+   "id": "m1-141",
+   "section": "s3",
+   "level": "medium",
+   "q": "What is the correlation ID and when is it assigned?",
+   "options": [
+    "A unique identifier assigned when the event is created at the source, carried through the flow and propagated across HTTP calls for tracing",
+    "A random value regenerated by every processor",
+    "The HTTP session cookie",
+    "An ID the developer must always set manually"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — every event gets a correlation ID at creation; it appears in logs and propagates (X-Correlation-ID) across the HTTP connector.",
+    "Wrong — it stays STABLE through the event's journey; that's what makes it useful for tracing.",
+    "Wrong — unrelated to cookies or sessions.",
+    "Wrong — it's automatic; developers may OVERRIDE it (e.g., with a business key) but never need to create it."
+   ],
+   "explanation": "The correlation ID is the event's tracing thread: assigned at the source, stable through processors, logged by default patterns, propagated to downstream apps."
+  },
+  {
+   "id": "m1-142",
+   "section": "s3",
+   "level": "hard",
+   "q": "A flow must respond to the client with the ORIGINAL request body even though it calls two enrichment services. Which design achieves this most cleanly?",
+   "options": [
+    "Call both services with target variables (e.g., target=\"svc1\", target=\"svc2\") so the payload never changes",
+    "Call the services normally and re-fetch the original body from attributes at the end",
+    "Use an Async scope for both calls",
+    "Store the payload in an Object Store and read it back"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — target variables are message enrichment: results land in vars, the request payload flows untouched to the response.",
+    "Wrong — the original body is the PAYLOAD, not an attribute, and it was replaced by the first call.",
+    "Wrong — Async loses the responses entirely (copy semantics) — the enrichment data would be unavailable.",
+    "Wrong — persistent storage for an in-flight value is heavyweight misuse; a variable (or target) is the tool."
+   ],
+   "explanation": "When the response must be the original payload, enrich via target variables — the canonical Mule 4 replacement for Mule 3's message enricher."
+  },
+  {
+   "id": "m1-143",
+   "section": "s3",
+   "level": "easy",
+   "q": "Which statement about Mule event immutability is TRUE?",
+   "options": [
+    "Each processor produces a NEW event instance; components never modify the event in place",
+    "The payload can never change during a flow",
+    "Variables are immutable once set",
+    "Immutability means the event cannot cross flows"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — 'changes' create new immutable instances behind the scenes; each processor receives the previous processor's output event.",
+    "Wrong — the payload changes constantly (transforms, operations); immutability is about INSTANCES, not values over time.",
+    "Wrong — variables can be overwritten or removed at any point.",
+    "Wrong — events travel through Flow References freely."
+   ],
+   "explanation": "Immutability is an implementation guarantee: processors receive and emit event instances rather than mutating shared state — enabling safe parallelism (e.g., Scatter-Gather copies)."
+  },
+  {
+   "id": "m1-144",
+   "section": "s7",
+   "level": "hard",
+   "q": "Trace this flow when the HTTP Request throws HTTP:NOT_FOUND. What response does the CLIENT receive?",
+   "exhibit": "<flow name=\"main\">\n  <http:listener path=\"/data\"/>\n  <http:request path=\"/backend\"/>          <!-- throws HTTP:NOT_FOUND -->\n  <set-payload value='{\"ok\": true}'/>\n  <error-handler>\n    <on-error-continue type=\"HTTP:NOT_FOUND\">\n      <set-payload value='{\"fallback\": true}'/>\n    </on-error-continue>\n  </error-handler>\n</flow>",
+   "options": [
+    "HTTP 200 with body {\"fallback\": true}",
+    "HTTP 500 with body {\"fallback\": true}",
+    "HTTP 200 with body {\"ok\": true}",
+    "HTTP 404 with the backend's error body"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — On Error Continue treats the flow as SUCCESSFUL: the handler's payload becomes the response with a success (200) status.",
+    "Wrong — 500 is the Propagate/default-handler outcome; Continue converts the error into success.",
+    "Wrong — the set-payload after the failing processor is SKIPPED; execution jumped to the handler.",
+    "Wrong — the backend's 404 was consumed by the handler; the client sees the handled result."
+   ],
+   "explanation": "On Error Continue: handler output → success response (200). Remember the skipped remainder: processors after the failing one never run."
+  },
+  {
+   "id": "m1-145",
+   "section": "s7",
+   "level": "hard",
+   "q": "Same flow, but the handler is on-error-propagate instead. What does the client receive?",
+   "exhibit": "<error-handler>\n  <on-error-propagate type=\"HTTP:NOT_FOUND\">\n    <set-payload value='{\"fallback\": true}'/>\n  </on-error-propagate>\n</error-handler>",
+   "options": [
+    "HTTP 500 with body {\"fallback\": true}",
+    "HTTP 200 with body {\"fallback\": true}",
+    "HTTP 404 forwarded from the backend",
+    "No response — the connection is dropped"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — Propagate runs its processors (so the BODY is the fallback payload) but re-throws, so the listener returns its ERROR response — 500 by default.",
+    "Wrong — 200 is the Continue outcome; Propagate keeps the flow failed.",
+    "Wrong — the listener doesn't forward the backend's status; the flow's error response applies (customizable on the listener's error response builder).",
+    "Wrong — the listener always answers; error responses are still responses."
+   ],
+   "explanation": "Propagate = handled-but-still-failed: handler processors shape the error body, then the error continues up, producing the listener's error response (default 500)."
+  },
+  {
+   "id": "m1-146",
+   "section": "s7",
+   "level": "hard",
+   "q": "Flow 'parent' calls flow 'child' via Flow Reference. child's error handler has on-error-continue for VALIDATION:INVALID_EMAIL. A validator inside child throws exactly that error. What happens in parent?",
+   "exhibit": "<flow name=\"parent\">\n  <flow-ref name=\"child\"/>\n  <logger message=\"after child\"/>\n</flow>\n\n<flow name=\"child\">\n  <validation:is-email email=\"#[payload.email]\"/>   <!-- throws -->\n  <error-handler>\n    <on-error-continue type=\"VALIDATION:INVALID_EMAIL\">\n      <set-payload value=\"invalid-mail-handled\"/>\n    </on-error-continue>\n  </error-handler>\n</flow>",
+   "options": [
+    "parent continues normally: the logger runs, payload is \"invalid-mail-handled\"",
+    "parent's error handling triggers at the Flow Reference",
+    "parent stops silently without logging",
+    "The error escapes to the default error handler and returns 500"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — child handled the error with Continue, so the Flow Reference call SUCCEEDS; the handler's payload returns to parent.",
+    "Wrong — that's the on-error-PROPAGATE outcome: only a re-thrown error surfaces at the Flow Reference.",
+    "Wrong — nothing stops; the call completed successfully from parent's perspective.",
+    "Wrong — the error was fully consumed inside child."
+   ],
+   "explanation": "Continue in the CALLED flow makes the Flow Reference succeed; Propagate would resurface the error in the caller. This caller/callee interaction is among the most-tested error scenarios."
+  },
+  {
+   "id": "m1-147",
+   "section": "s7",
+   "level": "medium",
+   "q": "An error handler declares these scopes IN ORDER. Which scope handles a DB:CONNECTIVITY error?",
+   "exhibit": "<error-handler>\n  <on-error-continue type=\"MULE:ANY\">          <!-- scope 1 -->\n  <on-error-propagate type=\"DB:CONNECTIVITY\">  <!-- scope 2 -->\n</error-handler>",
+   "options": [
+    "Scope 1 — MULE:ANY matches everything and scopes are evaluated top-down, first match wins",
+    "Scope 2 — the more specific type always wins",
+    "Both scopes execute in order",
+    "Neither — DB errors need a dedicated handler flow"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — evaluation is strictly ordered; ANY placed first shadows every scope below it.",
+    "Wrong — there is NO specificity ranking; only declaration order matters.",
+    "Wrong — exactly one scope handles an error.",
+    "Wrong — DB:CONNECTIVITY is an ordinary matchable error type."
+   ],
+   "explanation": "First-match-wins with no specificity logic: always order specific types BEFORE general ones; MULE:ANY (if used) goes last."
+  },
+  {
+   "id": "m1-148",
+   "section": "s7",
+   "level": "medium",
+   "q": "A Try scope wraps only the enrichment call, with on-error-continue inside. The enrichment fails. What is the effect on the rest of the flow?",
+   "exhibit": "<flow name=\"orders\">\n  <http:listener path=\"/orders\"/>\n  <try>\n    <http:request path=\"/enrich\"/>       <!-- fails -->\n    <error-handler>\n      <on-error-continue>\n        <set-variable variableName=\"enriched\" value=\"false\"/>\n      </on-error-continue>\n    </error-handler>\n  </try>\n  <db:insert .../>\n  <set-payload value='{\"saved\": true}'/>\n</flow>",
+   "options": [
+    "The flow continues past the Try: the DB insert and final payload run; vars.enriched = \"false\"",
+    "The whole flow fails with 500",
+    "The DB insert is skipped but the set-payload runs",
+    "The Try scope retries the enrichment automatically"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — Continue inside the Try contains the failure to that scope; execution resumes AFTER the Try normally.",
+    "Wrong — that's what happens WITHOUT the Try (or with Propagate): the error would reach the flow level.",
+    "Wrong — after a handled Try, ALL subsequent processors run in order.",
+    "Wrong — Try scopes don't retry; retrying is Until Successful's job."
+   ],
+   "explanation": "Try + On Error Continue = 'this part may fail and that's fine': the failure is absorbed at the scope boundary and the flow proceeds — the processor-level tier of Mule error handling."
+  },
+  {
+   "id": "m1-149",
+   "section": "s7",
+   "level": "medium",
+   "q": "The error object after a failed HTTP call must drive the response. Which expression returns the HTTP status code of the FAILED backend response?",
+   "options": [
+    "error.errorMessage.attributes.statusCode",
+    "error.statusCode",
+    "error.errorType.status",
+    "attributes.statusCode"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — for HTTP errors, error.errorMessage carries the failed response as a Mule message: its attributes hold statusCode, headers, and its payload holds the error body.",
+    "Wrong — the error object has no direct statusCode field.",
+    "Wrong — errorType holds namespace/identifier (HTTP:NOT_FOUND), not response details.",
+    "Wrong — inside an error handler, the event's attributes are NOT the failed response's attributes; the failed response lives in error.errorMessage."
+   ],
+   "explanation": "error.errorMessage packages the failing operation's message: error.errorMessage.attributes.statusCode and error.errorMessage.payload (error body) — the exam loves this exact path."
+  },
+  {
+   "id": "m1-150",
+   "section": "s7",
+   "level": "medium",
+   "q": "A flow calls two different services; both can raise HTTP:NOT_FOUND. The error handler must react differently depending on WHICH call failed. What is the recommended approach?",
+   "options": [
+    "Use Error Mapping on each operation to map HTTP:NOT_FOUND to custom types (e.g., APP:CUSTOMER_NOT_FOUND, APP:ORDER_NOT_FOUND) and handle those types",
+    "Compare error.description text in a when expression",
+    "It is impossible to distinguish them",
+    "Wrap the whole flow in one Try scope"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — error mapping converts source types per-operation into business-meaningful custom types, giving handlers precise targets.",
+    "Wrong — matching on message text is brittle (wording changes, localization); types are the contract.",
+    "Wrong — error mapping exists exactly for this.",
+    "Wrong — one Try around everything still yields the same HTTP:NOT_FOUND type for both calls."
+   ],
+   "explanation": "Error Mapping (per operation) turns generic connector errors into distinct custom types (namespace like APP:), making two identical failure modes distinguishable to handlers."
+  },
+  {
+   "id": "m1-151",
+   "section": "s7",
+   "level": "easy",
+   "q": "A business rule check fails and the flow must abort with a meaningful, catchable error. Which component is designed for this?",
+   "options": [
+    "Raise Error with a custom type such as APP:ORDER_REJECTED and a description",
+    "Logger with level ERROR",
+    "Set Payload with an error message",
+    "A Choice route that ends the flow"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — Raise Error throws a typed, handler-catchable Mule error with your namespace:identifier and description.",
+    "Wrong — logging records the fact but the flow continues normally.",
+    "Wrong — an error-looking payload isn't an error; downstream processing continues.",
+    "Wrong — Choice routes don't abort processing or produce error semantics."
+   ],
+   "explanation": "Raise Error is the explicit throw: custom type + description, catchable by on-error scopes and mappable to API error responses."
+  },
+  {
+   "id": "m1-152",
+   "section": "s7",
+   "level": "hard",
+   "q": "Given the global default error handler configuration shown, which flows use 'globalHandler' when an error occurs?",
+   "exhibit": "<configuration defaultErrorHandler-ref=\"globalHandler\"/>\n\n<flow name=\"a\">              <!-- no error-handler element -->\n<flow name=\"b\">\n  <error-handler>\n    <on-error-continue type=\"HTTP:NOT_FOUND\"/>\n  </error-handler>\n</flow>",
+   "options": [
+    "Flow a for ALL errors; flow b NOT AT ALL — defining any handler replaces the default entirely (a DB error in b uses Mule's built-in behavior, not globalHandler)",
+    "Both flows for all error types",
+    "Flow b only, as a fallback for non-matching types",
+    "Neither — global handlers must be referenced per flow"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — the configured default applies ONLY to flows with no error handling of their own; it never layers under a flow's own handler.",
+    "Wrong — flow b declared its own handler, opting out of the default completely.",
+    "Wrong — there is no fallback-chaining: an unmatched error in b propagates with built-in default behavior, not via globalHandler.",
+    "Wrong — the configuration reference is exactly how a global default is wired."
+   ],
+   "explanation": "The app-level default error handler is a REPLACEMENT for absent flow handlers, not a safety net beneath existing ones — the most misunderstood rule in Mule error handling."
+  },
+  {
+   "id": "m1-153",
+   "section": "s7",
+   "level": "medium",
+   "q": "Which errors can NO on-error scope ever handle? (Select all that apply)",
+   "options": [
+    "System errors, e.g. a connection lost while the app is idle",
+    "MULE:CRITICAL errors",
+    "HTTP:CONNECTIVITY raised during a request in a flow",
+    "Errors thrown by a Raise Error component"
+   ],
+   "answers": [
+    0,
+    1
+   ],
+   "optionNotes": [
+    "Correct — system errors involve no Mule event, so no handler context exists; Mule logs and applies reconnection.",
+    "Correct — CRITICAL errors (fatal) are not handleable by design.",
+    "Wrong — connectivity errors DURING event processing are ordinary messaging errors, fully handleable.",
+    "Wrong — Raise Error produces standard messaging errors intended to be caught."
+   ],
+   "explanation": "Handlers only see MESSAGING errors (event in flight). System-level failures and MULE:CRITICAL are outside their reach."
+  },
+  {
+   "id": "m1-154",
+   "section": "s7",
+   "level": "medium",
+   "q": "An on-error scope must handle VALIDATION errors only when a variable indicates a retail order. Which configuration is correct?",
+   "options": [
+    "type=\"VALIDATION:INVALID_EMAIL\" when=\"#[vars.channel == 'retail']\" — both conditions must hold",
+    "type=\"VALIDATION:INVALID_EMAIL OR vars.channel == 'retail'\"",
+    "when=\"VALIDATION:INVALID_EMAIL\"",
+    "Two nested error handlers"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — a scope can combine 'type' (error type list) AND 'when' (boolean DataWeave); it matches only when both are satisfied.",
+    "Wrong — 'type' accepts error types (comma-separated), not boolean expressions.",
+    "Wrong — 'when' takes a DataWeave BOOLEAN, not a type name.",
+    "Wrong — handlers don't nest for condition combination; type+when on one scope does it."
+   ],
+   "explanation": "On-error scopes match on type AND/OR when: type filters by error type; when adds an arbitrary runtime condition (evaluated against the error event)."
+  },
+  {
+   "id": "m1-155",
+   "section": "s7",
+   "level": "hard",
+   "q": "APIkit generated the main flow with its standard error handler. A developer's implementation flow (get:\\flights:config) throws VALIDATION:INVALID_EMAIL from a validator, and that flow has NO error handler. What does the client receive?",
+   "options": [
+    "HTTP 500 — the error propagates from the implementation flow to the main flow, whose APIkit handler has no mapping for VALIDATION errors beyond the defaults, so it falls to a generic error response",
+    "HTTP 400 automatically, because validation errors are always client errors",
+    "HTTP 200 with an empty body",
+    "The request hangs"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — unhandled errors bubble to the caller (the main flow via the router); scaffolding maps APIKIT:* types, so a VALIDATION type without custom mapping lands in the generic/ANY propagate path → 500.",
+    "Wrong — auto-mapping applies to APIKIT:BAD_REQUEST (router validation); the FLOW's own validation errors need explicit mapping/handling to become 400s.",
+    "Wrong — an unhandled error never converts to success.",
+    "Wrong — Mule always produces an error response."
+   ],
+   "explanation": "Router-side violations → APIKIT:BAD_REQUEST → 400 automatically. IMPLEMENTATION-side validation errors are yours to map (handle VALIDATION types and set 400) or they surface as 500."
+  },
+  {
+   "id": "m1-156",
+   "section": "s7",
+   "level": "medium",
+   "q": "What does this error hierarchy imply for a handler declaring type=\"MULE:CONNECTIVITY\"?",
+   "exhibit": "Error type hierarchy (excerpt):\nMULE:ANY\n └─ MULE:CONNECTIVITY\n     ├─ HTTP:CONNECTIVITY\n     └─ DB:CONNECTIVITY",
+   "options": [
+    "It matches HTTP:CONNECTIVITY and DB:CONNECTIVITY too — handling a parent type catches all of its children",
+    "It matches only errors whose type is literally MULE:CONNECTIVITY",
+    "It matches every Mule error",
+    "Parent types cannot be used in handlers"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — matching is hierarchical: a scope for a parent type handles all descendant types.",
+    "Wrong — the hierarchy exists precisely to allow umbrella handling; children inherit matchability.",
+    "Wrong — that's MULE:ANY, one level up.",
+    "Wrong — any type in the hierarchy is usable."
+   ],
+   "explanation": "Error types form a tree rooted at MULE:ANY; a handler for MULE:CONNECTIVITY catches every connector's connectivity subtype — coarse-grained retry/fallback logic in one scope."
+  },
+  {
+   "id": "m1-157",
+   "section": "s7",
+   "level": "easy",
+   "q": "With NO error handler anywhere in the application, what happens when a processor in an HTTP-triggered flow fails?",
+   "options": [
+    "Mule's built-in default handler logs the error and propagates it — the client gets an error response (500)",
+    "The event is silently dropped",
+    "The flow restarts from the beginning",
+    "The error is stored for later reprocessing"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — the implicit default behaves like On Error Propagate: log + propagate → listener error response.",
+    "Wrong — errors are never silent; they're always logged and answered.",
+    "Wrong — no automatic replay exists for HTTP flows.",
+    "Wrong — persistence/reprocessing requires explicit design (queues, redelivery)."
+   ],
+   "explanation": "The built-in default error handler = log it, propagate it. For an HTTP listener that means a 500 response with the error description."
+  },
+  {
+   "id": "m1-158",
+   "section": "s2",
+   "level": "medium",
+   "q": "Given this RAML, which request is VALID?",
+   "exhibit": "#%RAML 1.0\ntitle: Bookings\nbaseUri: http://api.acme.com/v1\n\n/bookings:\n  get:\n    queryParameters:\n      status:\n        enum: [open, closed]\n        required: true\n  /{ref}:\n    get:",
+   "options": [
+    "GET http://api.acme.com/v1/bookings?status=open",
+    "GET http://api.acme.com/v1/bookings",
+    "GET http://api.acme.com/v1/bookings/status/open",
+    "POST http://api.acme.com/v1/bookings?status=open"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — path matches /bookings under the baseUri and the REQUIRED status query param has an allowed enum value.",
+    "Wrong — status is required: true; omitting it violates the contract (APIkit would return 400).",
+    "Wrong — status is a QUERY parameter, not a path segment; /bookings/status/open matches no declared resource.",
+    "Wrong — only get is declared on /bookings; POST would be 405 Method Not Allowed."
+   ],
+   "explanation": "Valid request = declared resource path + declared method + required parameters with legal values. Read the indentation: queryParameters belongs to get, /{ref} is a nested resource."
+  },
+  {
+   "id": "m1-159",
+   "section": "s2",
+   "level": "hard",
+   "q": "The RAML uses a trait. What does applying it to the get method achieve?",
+   "exhibit": "traits:\n  pageable:\n    queryParameters:\n      offset:\n        type: integer\n        default: 0\n      limit:\n        type: integer\n        maximum: 100\n\n/flights:\n  get:\n    is: [pageable]",
+   "options": [
+    "GET /flights accepts offset and limit query parameters with the declared types/constraints — the trait's definitions are merged into the method",
+    "The trait creates two sub-resources /offset and /limit",
+    "The trait only documents the parameters; they are not validated",
+    "Traits can only be applied at the resource level, so this is invalid"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — 'is: [pageable]' merges the trait's method-level declarations into get: reusable pagination in one line.",
+    "Wrong — traits contribute method properties (params/headers/responses), never resources.",
+    "Wrong — trait-declared parameters are part of the contract and validated like inline ones (limit=200 → 400).",
+    "Wrong — traits apply to METHODS via is:; resourceTypes apply to resources via type:."
+   ],
+   "explanation": "Traits = reusable method fragments applied with is:. The merged parameters are fully enforced by APIkit. resourceTypes are the resource-level sibling (applied with type:)."
+  },
+  {
+   "id": "m1-160",
+   "section": "s2",
+   "level": "medium",
+   "q": "Which RAML fragment file correctly defines a reusable data type, given the header shown?",
+   "exhibit": "File: dataTypes/customer.raml\n#%RAML 1.0 DataType\ntype: object\nproperties:\n  id: integer\n  email:\n    type: string\n    pattern: \".+@.+\"\n  nickname?: string",
+   "options": [
+    "It defines a Customer type where id and email are required and nickname is optional",
+    "It defines a type where all three properties are optional",
+    "It is invalid — fragments cannot declare patterns",
+    "It defines an array type"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — properties are required by default; the ? suffix (nickname?) marks optional; pattern constrains email.",
+    "Wrong — RAML properties default to required: true; only nickname? is optional.",
+    "Wrong — patterns (regex) are standard type facets, valid in fragments.",
+    "Wrong — type: object declares an object; an array would be Customer[] at the point of use."
+   ],
+   "explanation": "DataType fragments (#%RAML 1.0 DataType) hold one reusable type. Required-by-default and the ? optional suffix are the details exams probe."
+  },
+  {
+   "id": "m1-161",
+   "section": "s2",
+   "level": "easy",
+   "q": "In the design-first lifecycle, what is the correct ORDER of activities before implementation starts?",
+   "options": [
+    "Design the spec → simulate with the mocking service → gather consumer feedback → validate/refine the contract",
+    "Implement → document → publish → design",
+    "Deploy a proxy → design → mock → implement",
+    "Write MUnit tests → design → publish"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — design-first iterates the CONTRACT with consumers (design/simulate/feedback/validate) until stable, then implementation begins.",
+    "Wrong — that's code-first: documentation after implementation defeats consumer collaboration.",
+    "Wrong — proxies govern deployed APIs; nothing exists to proxy yet.",
+    "Wrong — MUnit tests target an implementation, which doesn't exist yet."
+   ],
+   "explanation": "Design → simulate → feedback → validate is the mantra: the mocking service makes the spec testable by consumers before a single flow exists."
+  },
+  {
+   "id": "m1-162",
+   "section": "s2",
+   "level": "medium",
+   "q": "Which statement about this RAML response declaration is TRUE?",
+   "exhibit": "/flights:\n  get:\n    responses:\n      200:\n        body:\n          application/json:\n            type: Flight[]\n            examples:\n              output: !include examples/flights.raml",
+   "options": [
+    "The 200 response is declared to return a JSON array of Flight objects, with an example loaded from a NamedExample fragment",
+    "The API can only ever return exactly the contents of flights.raml",
+    "type: Flight[] means the response has a field called 'Flight'",
+    "The include makes the example mandatory in every response"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — Flight[] is an array of the Flight type; !include pulls the example from a separate fragment file (reusable, format-independent).",
+    "Wrong — examples document and power mocking; the real implementation returns live data conforming to the TYPE.",
+    "Wrong — [] is array syntax for the declared type.",
+    "Wrong — examples are documentation/mocking artifacts, not runtime constraints."
+   ],
+   "explanation": "responses.<code>.body.<mediaType> declares type + examples per status. Type[] = array; !include composes fragments; examples feed the console and mocking service."
+  },
+  {
+   "id": "m1-163",
+   "section": "s2",
+   "level": "hard",
+   "q": "A team wants the 'Address' data type shared by five different API specs, versioned independently, without copy-paste. What is the MuleSoft-idiomatic mechanism?",
+   "options": [
+    "Publish the DataType fragment to Exchange and add it as a dependency to each API spec, importing it via 'uses:'/dependency include",
+    "Paste the type into each RAML and keep them in sync manually",
+    "Define the type in the first API and have other APIs reference that API's URL",
+    "Put the type in a shared database"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — Exchange hosts versioned reusable fragments; API Designer adds them as dependencies so specs import the same governed type.",
+    "Wrong — copy-paste drifts immediately; that's the problem fragments solve.",
+    "Wrong — RAML cannot import types from a deployed API's URL; contracts compose from fragments, not runtime endpoints.",
+    "Wrong — databases hold data, not design-time type definitions."
+   ],
+   "explanation": "Reusable design assets (types, traits, examples, libraries) are published to Exchange as API fragments and consumed as versioned dependencies across specs."
+  },
+  {
+   "id": "m1-164",
+   "section": "s2",
+   "level": "medium",
+   "q": "What is the difference between these two declarations in a RAML spec?",
+   "exhibit": "Declaration A:\n/flights/{ID}:\n\nDeclaration B:\n/flights:\n  get:\n    queryParameters:\n      ID:",
+   "options": [
+    "A identifies ONE specific flight resource by path; B filters the flights collection — A is for identity, B for refinement",
+    "They are interchangeable ways to pass the same value",
+    "A is invalid RAML syntax",
+    "B creates a sub-resource named ID"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — URI parameters address a specific resource (/flights/42); query parameters refine a collection request (/flights?ID=42 is unusual design, filters conceptually).",
+    "Wrong — REST semantics differ: resource identity belongs in the path; filters/options in the query string.",
+    "Wrong — {ID} nested under /flights is standard URI parameter syntax.",
+    "Wrong — queryParameters never create resources; only nested /segments do."
+   ],
+   "explanation": "The identity-vs-refinement rule: specific resource → URI parameter in the path; filtering/sorting/paging a collection → query parameters."
+  },
+  {
+   "id": "m1-165",
+   "section": "s2",
+   "level": "medium",
+   "q": "A consumer reads the published RAML and wants to create a flight. Which request matches the contract?",
+   "exhibit": "/flights:\n  post:\n    headers:\n      client_id:\n        required: true\n    body:\n      application/json:\n        type: object\n        properties:\n          code: string\n          price: number",
+   "options": [
+    "POST /flights with header client_id and JSON body {\"code\": \"ER38sd\", \"price\": 400.99}",
+    "POST /flights with JSON body only — headers are always optional",
+    "PUT /flights with the same body",
+    "POST /flights with body code=ER38sd&price=400.99 as form fields"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — method, required header, media type, and body properties all match the declaration.",
+    "Wrong — client_id is required: true; omitting it violates the contract (400 from APIkit).",
+    "Wrong — only post is declared; PUT → 405.",
+    "Wrong — the declared media type is application/json, not form-encoded."
+   ],
+   "explanation": "Formulating requests from RAML = method + path + required headers/params + body of the declared media type and shape."
+  },
+  {
+   "id": "m1-166",
+   "section": "s2",
+   "level": "easy",
+   "q": "What happens when an API specification is published to Exchange? (Select all that apply)",
+   "options": [
+    "An interactive API console/portal is generated from the spec",
+    "The mocking service can serve example-based responses",
+    "Other developers can discover it and request access",
+    "A Mule implementation is automatically deployed"
+   ],
+   "answers": [
+    0,
+    1,
+    2
+   ],
+   "optionNotes": [
+    "Correct — Exchange renders live documentation from the RAML/OAS.",
+    "Correct — the mocking service exposes a callable simulation using the spec's examples.",
+    "Correct — discovery and access requests (client apps, contracts) are Exchange's core purpose.",
+    "Wrong — publishing a SPEC deploys nothing; implementation and deployment are separate steps."
+   ],
+   "explanation": "Publishing a spec creates the consumption experience (docs, console, mock, discovery) — the implementation lifecycle is entirely separate."
+  },
+  {
+   "id": "m1-167",
+   "section": "s2",
+   "level": "hard",
+   "q": "The spec declares a baseUri with a version placeholder. Which statements are TRUE?",
+   "exhibit": "#%RAML 1.0\ntitle: Orders\nversion: v2\nbaseUri: http://api.acme.com/{version}\n\n/orders:\n  get:",
+   "options": [
+    "Requests resolve to http://api.acme.com/v2/orders — {version} in the baseUri is filled from the version property",
+    "The client must send a version header",
+    "{version} is a queryParameter",
+    "RAML forbids placeholders in baseUri"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — {version} is a reserved baseUri parameter automatically bound to the spec's version value.",
+    "Wrong — the version rides in the URL path here, not a header.",
+    "Wrong — it's a baseUri (path) parameter, not a query parameter.",
+    "Wrong — baseUri placeholders (incl. custom baseUriParameters) are standard RAML."
+   ],
+   "explanation": "The reserved {version} placeholder in baseUri binds to the RAML's version: property — the common URL-versioning pattern (…/v2/orders)."
+  },
+  {
+   "id": "m1-168",
+   "section": "s2",
+   "level": "medium",
+   "q": "Why would an API designer choose a NamedExample fragment (!include of an example file) instead of typing examples inline?",
+   "options": [
+    "The same example can be reused by multiple methods/specs and maintained in one place — and Exchange can serve it through the mocking service",
+    "Inline examples are not allowed in RAML 1.0",
+    "NamedExample fragments are validated, inline examples are not",
+    "It makes the API respond faster"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — externalized examples are reusable, single-source-of-truth artifacts (and publishable to Exchange as fragments).",
+    "Wrong — inline examples are perfectly legal; externalizing is a reuse choice.",
+    "Wrong — both are validated against the declared type.",
+    "Wrong — examples are design-time; runtime performance is unaffected."
+   ],
+   "explanation": "Fragments (DataType, NamedExample, Trait…) exist for reuse and maintainability — one example file feeding many methods beats duplicated inline blobs."
+  },
+  {
+   "id": "m1-169",
+   "section": "s2",
+   "level": "medium",
+   "q": "APIkit validates a request against this RAML. Which request triggers a 400 response?",
+   "exhibit": "/flights:\n  get:\n    queryParameters:\n      airline:\n        enum: [united, delta, american]\n        required: false\n      maxPrice:\n        type: integer\n        required: false",
+   "options": [
+    "GET /flights?maxPrice=cheap",
+    "GET /flights",
+    "GET /flights?airline=delta",
+    "GET /flights?airline=delta&maxPrice=500"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — maxPrice is declared integer; 'cheap' fails type validation → APIKIT:BAD_REQUEST → 400.",
+    "Wrong — both parameters are optional; a bare GET is valid.",
+    "Wrong — delta is in the enum; valid.",
+    "Wrong — both values satisfy their declarations; valid."
+   ],
+   "explanation": "Optional parameters may be omitted, but when PRESENT they must satisfy their type/enum. Type violations are router-level 400s."
+  },
+  {
+   "id": "m1-170",
+   "section": "s9",
+   "level": "hard",
+   "q": "A Database SELECT is configured as shown. What is wrong with it, and what is the fix?",
+   "exhibit": "<db:select config-ref=\"dbConfig\">\n  <db:sql>\n    SELECT * FROM flights\n    WHERE toAirport = '#[attributes.queryParams.dest]'\n  </db:sql>\n</db:select>",
+   "options": [
+    "It concatenates user input into SQL (injection risk); use an input parameter — WHERE toAirport = :dest with input-parameters #[{dest: attributes.queryParams.dest}]",
+    "SELECT * is forbidden by the Database connector",
+    "The db:sql element cannot contain WHERE clauses",
+    "Nothing is wrong"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — expression-interpolated SQL is injectable (dest = \"' OR '1'='1\"); :parameters with the input-parameters map fix typing, escaping, and security.",
+    "Wrong — SELECT * is legal (though explicit columns are nicer).",
+    "Wrong — arbitrary SQL is supported; the problem is HOW the value is injected.",
+    "Wrong — this is the canonical SQL injection anti-pattern."
+   ],
+   "explanation": "Never build SQL by embedding expressions in the string. Input parameters (:name + DataWeave map) are the Database connector's parameterized-query mechanism."
+  },
+  {
+   "id": "m1-171",
+   "section": "s9",
+   "level": "medium",
+   "q": "What does the payload look like immediately after this Database operation returns two rows?",
+   "exhibit": "<db:select config-ref=\"dbConfig\">\n  <db:sql>SELECT code, price FROM flights WHERE dest = :d</db:sql>\n  <db:input-parameters>#[{d: 'SFO'}]</db:input-parameters>\n</db:select>",
+   "options": [
+    "An array of objects: [{code: ..., price: ...}, {code: ..., price: ...}]",
+    "A JSON string",
+    "A single object with arrays per column",
+    "A java.sql.ResultSet requiring manual iteration"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — Select returns an array (List) of row objects (Maps), one per row, keyed by column name.",
+    "Wrong — it's Java structure data; a Transform can output JSON from it.",
+    "Wrong — rows are elements, not parallel column arrays.",
+    "Wrong — the connector materializes/streams rows as Mule data, not raw JDBC objects."
+   ],
+   "explanation": "db:select → array of row objects (streamed). Transforms usually follow to shape it; the array-of-objects assumption underlies most DataWeave exercises."
+  },
+  {
+   "id": "m1-172",
+   "section": "s9",
+   "level": "medium",
+   "q": "An HTTP Request operation is configured with default settings and receives a 404 from the backend. What happens?",
+   "options": [
+    "The operation throws HTTP:NOT_FOUND — by default only 2xx (and 3xx per config) count as success",
+    "The 404 response becomes the payload and the flow continues normally",
+    "The request is retried three times automatically",
+    "The flow returns 404 to its own client automatically"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — non-success status codes raise typed HTTP errors (HTTP:NOT_FOUND, HTTP:INTERNAL_SERVER_ERROR...).",
+    "Wrong — that requires widening the operation's success status codes setting (e.g., '200..404').",
+    "Wrong — status-code failures aren't retried by default (reconnection strategies address CONNECTION failures).",
+    "Wrong — what the flow's client receives depends on the flow's error handling, not automatic forwarding."
+   ],
+   "explanation": "The requester validates response status: outside the success range → typed error. The 'success status codes' setting (e.g. 200..404) opts into treating specific errors as normal responses."
+  },
+  {
+   "id": "m1-173",
+   "section": "s9",
+   "level": "hard",
+   "q": "A flow consumes a SOAP service. Where does the developer see the exact XML structure the Consume operation expects, and how is the request built?",
+   "options": [
+    "The Web Service Consumer publishes the WSDL-derived metadata; placing a Transform Message BEFORE the Consume shows the expected SOAP body as its output structure to map against",
+    "The developer must read the WSDL by hand and write the envelope as a string",
+    "The Consume operation accepts JSON and converts it",
+    "SOAP services cannot be called from Mule 4"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — WSC exposes DataSense metadata per operation; the Transform before Consume presents the SOAP body structure (namespaces included) as the mapping target.",
+    "Wrong — the connector builds the envelope; the developer maps only the BODY, guided by metadata.",
+    "Wrong — the payload must be the XML body for the operation, produced by the preceding Transform.",
+    "Wrong — the Web Service Consumer exists precisely for SOAP."
+   ],
+   "explanation": "WSC pattern: configure with the WSDL → pick the operation → Transform Message immediately before Consume shows the expected XML body via metadata → map to it."
+  },
+  {
+   "id": "m1-174",
+   "section": "s9",
+   "level": "medium",
+   "q": "An On New or Updated File listener keeps reprocessing the same file every poll. The exhibit shows its configuration. What is missing?",
+   "exhibit": "<file:listener directory=\"/data/in\" matcher=\"csvOnly\">\n  <scheduling-strategy>\n    <fixed-frequency frequency=\"10\" timeUnit=\"SECONDS\"/>\n  </scheduling-strategy>\n</file:listener>",
+   "options": [
+    "Post-processing: move the file to another directory (moveToDirectory) and/or rename/delete it after processing — or enable watermarking",
+    "A bigger polling frequency",
+    "A Transform Message inside the listener",
+    "The matcher must be removed"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — without post-processing (move/rename/delete) or a watermark, the file still matches on every poll and is picked up again.",
+    "Wrong — slower polling only reprocesses less often; the duplicate processing remains.",
+    "Wrong — listeners don't contain processors; the problem is source configuration.",
+    "Wrong — the matcher just filters WHICH files match; it doesn't prevent re-matching."
+   ],
+   "explanation": "File listener hygiene: always configure post-processing (moveToDirectory + rename, or auto-delete) — or watermarking on timestamps — so processed files stop matching."
+  },
+  {
+   "id": "m1-175",
+   "section": "s9",
+   "level": "medium",
+   "q": "Which JMS operation pattern implements REQUEST-REPLY over queues (send a message and wait for the answer)?",
+   "options": [
+    "Publish-Consume — publishes to a queue and waits for the response on a reply queue",
+    "Publish followed by an unrelated Consume somewhere else",
+    "On New Message",
+    "Two Publish operations"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — Publish-Consume is the built-in request-reply operation: publish + block for the correlated reply.",
+    "Wrong — uncorrelated operations don't implement request-reply semantics reliably.",
+    "Wrong — On New Message is a listener SOURCE, not a request-reply client.",
+    "Wrong — two publishes send two messages; nothing waits for a reply."
+   ],
+   "explanation": "JMS operations: Publish (fire), Consume (pull one), Publish-Consume (request-reply with correlation), On New Message (listener source)."
+  },
+  {
+   "id": "m1-176",
+   "section": "s9",
+   "level": "easy",
+   "q": "A nightly integration must pick up orders inserted into a database table by another system. Which source is designed for this?",
+   "options": [
+    "The Database connector's On Table Row listener (polls with a watermark column)",
+    "An HTTP Listener",
+    "A JMS On New Message listener",
+    "The File listener"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — On Table Row polls the table and uses a watermark column (id/timestamp) to emit only new rows.",
+    "Wrong — nothing calls the app; the data appears in a TABLE.",
+    "Wrong — there is no queue in this scenario.",
+    "Wrong — the data is rows, not files."
+   ],
+   "explanation": "Match source to signal: table inserts → On Table Row (with watermark); files → File listener; messages → JMS/MQ listener; requests → HTTP Listener."
+  },
+  {
+   "id": "m1-177",
+   "section": "s9",
+   "level": "hard",
+   "q": "The exhibit shows an HTTP Request. Which statements about its behavior are TRUE? (Select all that apply)",
+   "exhibit": "<http:request method=\"POST\" config-ref=\"apiConfig\" path=\"/orders/{oid}/items\">\n  <http:uri-params>#[{oid: vars.orderId}]</http:uri-params>\n  <http:query-params>#[{expand: 'lines'}]</http:query-params>\n</http:request>",
+   "options": [
+    "{oid} in the path is replaced by vars.orderId at runtime",
+    "The request URL ends with ?expand=lines",
+    "The current payload is sent as the POST body by default",
+    "uri-params requires the RAML to declare oid"
+   ],
+   "answers": [
+    0,
+    1,
+    2
+   ],
+   "optionNotes": [
+    "Correct — http:uri-params fills path template placeholders.",
+    "Correct — query-params serialize onto the query string.",
+    "Correct — the requester sends the message payload as the body unless a body expression overrides it.",
+    "Wrong — the REQUEST side is independent of any RAML; templates are purely the client's URL construction."
+   ],
+   "explanation": "HTTP Request anatomy: path templates ({x} + uri-params map), query-params map, body = payload by default, headers configurable — all DataWeave-driven."
+  },
+  {
+   "id": "m1-178",
+   "section": "s9",
+   "level": "medium",
+   "q": "Why choose a REST Connector from Exchange (REST Connect) over a raw HTTP Request to consume a published API?",
+   "options": [
+    "It provides one typed operation per API method with DataSense metadata, so requests/responses are structured and discoverable instead of hand-built URLs",
+    "It is the only way to call HTTPS endpoints",
+    "It bypasses the API's policies",
+    "It removes the need for authentication"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — the generated connector encodes the contract: operations, parameters, and metadata for mapping — less error-prone than manual paths.",
+    "Wrong — HTTP Request handles HTTPS fully (TLS context).",
+    "Wrong — policies apply at the gateway regardless of client type.",
+    "Wrong — configured authentication is still required; the connector just structures it."
+   ],
+   "explanation": "REST Connect turns a published spec into a typed connector — contract-aware consumption with metadata, versus hand-maintained HTTP Request configs."
+  },
+  {
+   "id": "m1-179",
+   "section": "s9",
+   "level": "medium",
+   "q": "A flow writes a file with the File connector. The exhibit shows the config. What happens if /data/out/report.csv already exists?",
+   "exhibit": "<file:write path=\"/data/out/report.csv\" mode=\"CREATE_NEW\"/>",
+   "options": [
+    "The operation fails with FILE:FILE_ALREADY_EXISTS",
+    "The file is silently overwritten",
+    "The content is appended",
+    "A numbered copy report(1).csv is created"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — CREATE_NEW writes only when the target doesn't exist; an existing file raises the typed error.",
+    "Wrong — silent overwrite is mode=OVERWRITE (the default).",
+    "Wrong — appending is mode=APPEND.",
+    "Wrong — the connector never invents file names."
+   ],
+   "explanation": "file:write modes: OVERWRITE (default), APPEND, CREATE_NEW (fail if exists) — pick by idempotency/dedup requirements."
+  },
+  {
+   "id": "m1-180",
+   "section": "s9",
+   "level": "easy",
+   "q": "Which consequence follows from JMS queues DECOUPLING producer and consumer?",
+   "options": [
+    "The producer can keep publishing while the consumer is down; messages wait in the queue",
+    "The producer receives the consumer's return value synchronously",
+    "Both applications must be deployed together",
+    "Messages are lost if not consumed within seconds"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — temporal decoupling is the core benefit: the broker buffers until consumers return.",
+    "Wrong — queue messaging is asynchronous; there is no return value (request-reply needs an explicit reply queue).",
+    "Wrong — independence of deployment/availability is the point.",
+    "Wrong — persistent messages wait according to broker retention, not seconds."
+   ],
+   "explanation": "Messaging decouples in time and availability: producers and consumers run, fail, and scale independently, with the broker buffering in between."
+  },
+  {
+   "id": "m1-181",
+   "section": "s9",
+   "level": "hard",
+   "q": "A Database config needs the MySQL driver. In Studio the config panel shows 'Configure via Maven dependency'. What does completing this do to the project?",
+   "options": [
+    "Adds the driver's groupId/artifactId/version as a dependency in pom.xml so the connector can load it at runtime",
+    "Downloads a .jar into src/main/resources",
+    "Nothing — drivers ship with the runtime",
+    "Adds a <sharedLibraries> entry only, without a dependency"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — the driver is declared in the POM (and Studio also registers it as a shared library so the connector's classloader can see it).",
+    "Wrong — dependencies are managed by Maven, not loose JARs in resources.",
+    "Wrong — Mule ships no vendor JDBC drivers; each app declares its own.",
+    "Wrong — the sharedLibraries entry references a dependency that must ALSO exist."
+   ],
+   "explanation": "JDBC drivers are Maven dependencies declared in pom.xml (plus shared-library visibility for the connector) — Studio's Database config wizard automates both parts."
+  },
+  {
+   "id": "m1-182",
+   "section": "s6",
+   "level": "hard",
+   "q": "What is the payload after this Scatter-Gather completes successfully?",
+   "exhibit": "<scatter-gather>\n  <route>   <!-- route 0: returns [\"A\",\"B\"] -->\n  <route>   <!-- route 1: returns [\"C\"] -->\n</scatter-gather>\n<!-- followed by: -->\n<ee:transform>\n  %dw 2.0\n  output application/json\n  ---\n  flatten(payload pluck $.payload)\n</ee:transform>",
+   "options": [
+    "After the transform: [\"A\", \"B\", \"C\"]",
+    "After the transform: [[\"A\",\"B\"], [\"C\"]]",
+    "After the transform: {\"0\": [\"A\",\"B\"], \"1\": [\"C\"]}",
+    "The transform fails — Scatter-Gather output is an array"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — S-G produces {\"0\": {attributes, payload: [A,B]}, \"1\": {..., payload: [C]}}; pluck extracts the payloads → [[A,B],[C]]; flatten merges → [A,B,C].",
+    "Wrong — that's the intermediate result BEFORE flatten.",
+    "Wrong — that's (approximately) the raw router output BEFORE the transform (values are full messages, not just payloads).",
+    "Wrong — the router output is an OBJECT keyed by route index, which pluck handles."
+   ],
+   "explanation": "The canonical aggregation: Scatter-Gather → object of route messages → pluck $.payload → array of payloads → flatten. Each intermediate shape is a distractor."
+  },
+  {
+   "id": "m1-183",
+   "section": "s6",
+   "level": "medium",
+   "q": "One route of a Scatter-Gather fails with HTTP:CONNECTIVITY while the other two succeed. Default configuration — what error reaches the flow's handler?",
+   "options": [
+    "MULE:COMPOSITE_ROUTING, aggregating the per-route failure details",
+    "HTTP:CONNECTIVITY directly",
+    "No error — failed routes are ignored",
+    "MULE:ANY with no details"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — the router wraps route failures in COMPOSITE_ROUTING; error.errorMessage/childErrors expose which route failed and why.",
+    "Wrong — the original type is inside the composite, not thrown directly.",
+    "Wrong — by default any route failure fails the router (tolerating failures needs Try scopes inside routes).",
+    "Wrong — the composite error carries full per-route detail."
+   ],
+   "explanation": "Scatter-Gather runs all routes; any failure surfaces as MULE:COMPOSITE_ROUTING after all complete. Per-route tolerance = Try + On Error Continue INSIDE the routes."
+  },
+  {
+   "id": "m1-184",
+   "section": "s6",
+   "level": "medium",
+   "q": "Which requests take route 1 in this Choice router?",
+   "exhibit": "<choice>\n  <when expression=\"#[payload.total > 1000]\">        <!-- route 1 -->\n  <when expression=\"#[payload.total > 100]\">         <!-- route 2 -->\n  <otherwise>                                        <!-- route 3 -->\n</choice>",
+   "options": [
+    "Only payloads with total > 1000 — evaluation is top-down and stops at the first true condition",
+    "All payloads with total > 100, because both conditions overlap",
+    "None — overlapping conditions are a configuration error",
+    "Route 1 and route 2 both execute for total = 2000"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — 2000 matches route 1 first and stops there; 500 skips route 1, matches route 2.",
+    "Wrong — a payload of 2000 never reaches route 2; first match wins.",
+    "Wrong — overlap is legal; ordering resolves it (most specific first is the design guideline).",
+    "Wrong — exactly ONE route executes in a Choice."
+   ],
+   "explanation": "Choice = if/else-if/else: ordered evaluation, single route execution. Overlapping ranges are resolved purely by declaration order."
+  },
+  {
+   "id": "m1-185",
+   "section": "s6",
+   "level": "medium",
+   "q": "A flow must try a primary payment provider and, only if it errors, try the backup provider. Which router is purpose-built for this?",
+   "options": [
+    "First Successful — executes routes in order until one completes without error",
+    "Scatter-Gather with two routes",
+    "Round Robin",
+    "Choice with a when on vars.attempt"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — First Successful is the failover router: route 2 runs only when route 1 fails.",
+    "Wrong — S-G runs BOTH concurrently: the backup would be charged too.",
+    "Wrong — Round Robin alternates per EVENT (load distribution), regardless of errors.",
+    "Wrong — Choice picks by condition, not by failure of a previous attempt."
+   ],
+   "explanation": "Failover chains = First Successful. Parallel fan-out = Scatter-Gather. Alternating distribution = Round Robin. Conditional = Choice. Matching router to intent is the whole game."
+  },
+  {
+   "id": "m1-186",
+   "section": "s6",
+   "level": "easy",
+   "q": "Each incoming event must be distributed to exactly ONE of three routes, rotating evenly (event 1 → route 1, event 2 → route 2, ...). Which router?",
+   "options": [
+    "Round Robin",
+    "Scatter-Gather",
+    "Choice",
+    "First Successful"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — Round Robin cycles through its routes, one per event.",
+    "Wrong — Scatter-Gather sends EVERY event to ALL routes.",
+    "Wrong — Choice picks by condition, not rotation.",
+    "Wrong — First Successful is failover, not distribution."
+   ],
+   "explanation": "Round Robin = simple load distribution across routes, one route per event in rotation."
+  },
+  {
+   "id": "m1-187",
+   "section": "s6",
+   "level": "hard",
+   "q": "The validation shown runs against payload {\"email\": \"nope\"}. What EXACTLY happens?",
+   "exhibit": "<validation:is-email email=\"#[payload.email]\" message=\"Bad address supplied\"/>\n<logger message=\"validated ok\"/>",
+   "options": [
+    "A VALIDATION:INVALID_EMAIL error is thrown with description 'Bad address supplied'; the logger does NOT run",
+    "The validator returns false and the logger logs 'validated ok'",
+    "The payload is replaced with a validation report",
+    "The flow returns 400 automatically"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — validators are fail-fast throwers; the custom message becomes error.description; execution jumps to error handling.",
+    "Wrong — validators never return booleans into the flow.",
+    "Wrong — on success the event passes through UNTOUCHED; on failure an error is raised.",
+    "Wrong — the HTTP status depends on how the flow's error handling maps the error (400 requires explicit handling)."
+   ],
+   "explanation": "Validation module semantics: pass → no-op; fail → typed VALIDATION error with your message. HTTP mapping is the handler's job."
+  },
+  {
+   "id": "m1-188",
+   "section": "s6",
+   "level": "medium",
+   "q": "Three independent backends must be queried and ALL results combined; total latency must be minimized. The calls take 300 ms, 500 ms, 400 ms. Which construct and expected duration?",
+   "options": [
+    "Scatter-Gather; ≈500 ms (the slowest route)",
+    "Three sequential HTTP Requests; ≈500 ms",
+    "Scatter-Gather; ≈1200 ms (sum of routes)",
+    "Async scope; ≈0 ms and results available immediately"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — concurrent routes overlap; the router waits for all, so total ≈ max(300,500,400).",
+    "Wrong — sequential calls ADD up: ≈1200 ms.",
+    "Wrong — routes run concurrently, not sequentially.",
+    "Wrong — Async doesn't return results to the flow at all."
+   ],
+   "explanation": "Parallel fan-out cuts aggregate latency to the slowest branch. Async is fire-and-forget (no results); sequential requests sum their latencies."
+  },
+  {
+   "id": "m1-189",
+   "section": "s6",
+   "level": "medium",
+   "q": "Inside a Scatter-Gather, each route sets vars.routeResult. After the router, what is the state of that variable in the main flow?",
+   "options": [
+    "Each route worked on its own event COPY — the routes' variables are inside the aggregated result's messages, not merged into the flow's vars",
+    "vars.routeResult holds the LAST route's value",
+    "vars.routeResult is an array of all values",
+    "Setting variables inside Scatter-Gather is an error"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — routes receive copies; their variable changes live in each route's resulting message (accessible via the aggregate object), not in the continuing event's vars.",
+    "Wrong — no last-write-wins merge occurs for route variables.",
+    "Wrong — no automatic array merge exists; you aggregate explicitly from the router output.",
+    "Wrong — it's legal; the values are just scoped to the copies."
+   ],
+   "explanation": "Scatter-Gather copies the event per route (immutability in action). Route-local changes are collected in the aggregate result object rather than merged into flow variables."
+  },
+  {
+   "id": "m1-190",
+   "section": "s6",
+   "level": "easy",
+   "q": "Which Validation component composes several checks so that ALL must pass?",
+   "options": [
+    "The All validator (validation:all) grouping multiple validators",
+    "The Any validator",
+    "A Choice router",
+    "Validators cannot be combined"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — All aggregates validators; it fails if ANY inner validation fails (reporting the failures).",
+    "Wrong — Any passes when AT LEAST ONE inner validation passes.",
+    "Wrong — Choice routes; it doesn't aggregate validation semantics.",
+    "Wrong — All/Any exist precisely for composition."
+   ],
+   "explanation": "validation:all = logical AND of validators; validation:any = logical OR. Both raise a single composite validation error on failure."
+  },
+  {
+   "id": "m1-191",
+   "section": "s6",
+   "level": "medium",
+   "q": "A Choice router has three when routes and NO otherwise. An event matches none of the conditions. What happens?",
+   "options": [
+    "The event continues to the processor AFTER the Choice, unchanged",
+    "A MULE:ROUTING error is thrown",
+    "The event is dropped",
+    "The first route executes as a fallback"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — with no otherwise and no match, the Choice is a no-op and processing resumes after it.",
+    "Wrong — Mule 4's Choice doesn't error on no-match (unlike some Mule 3 configurations).",
+    "Wrong — events are never silently dropped by a Choice.",
+    "Wrong — routes execute only when their condition is true."
+   ],
+   "explanation": "No match + no otherwise = pass-through. Add an otherwise when a default action (or explicit error) is required."
+  },
+  {
+   "id": "m1-192",
+   "section": "s10",
+   "level": "hard",
+   "q": "Trace this flow. The payload arriving at the Logger AFTER the batch job is what?",
+   "exhibit": "<flow name=\"sync\">\n  <scheduler .../>\n  <db:select .../>              <!-- returns 5,000 rows -->\n  <batch:job jobName=\"syncJob\">\n    <batch:process-records>\n      <batch:step name=\"upsert\"> ... </batch:step>\n    </batch:process-records>\n    <batch:on-complete> ... </batch:on-complete>\n  </batch:job>\n  <logger message=\"#[payload]\"/>   <!-- what prints? -->\n</flow>",
+   "options": [
+    "The original 5,000-row payload — the flow continues immediately with its payload while the batch job processes records asynchronously",
+    "The BatchJobResult with success/failure counts",
+    "The last record processed",
+    "null — the batch job consumes the payload"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — Load & Dispatch queues the records and returns control; the triggering flow proceeds with the ORIGINAL payload while processing happens in the background.",
+    "Wrong — BatchJobResult is the ON COMPLETE phase's payload, inside the job, not the flow's.",
+    "Wrong — records live inside the job's queues; they don't leak into the flow.",
+    "Wrong — the payload is preserved for the continuing flow."
+   ],
+   "explanation": "batch:job is asynchronous: the caller keeps its payload and moves on immediately. Results/statistics are visible only in On Complete — one of the most-tested batch facts."
+  },
+  {
+   "id": "m1-193",
+   "section": "s10",
+   "level": "medium",
+   "q": "Which input types can the Batch Job component split into records WITHOUT a preceding transform?",
+   "options": [
+    "Java Iterables/Iterators/Arrays, and JSON or XML array-like payloads",
+    "Only Java Lists",
+    "Only CSV files",
+    "Any payload, including single objects — everything becomes one record each"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — the job splits collection-like inputs (Java collections/iterators/arrays; JSON and XML payloads with repeating structure).",
+    "Wrong — Lists work, but so do the other collection-like forms.",
+    "Wrong — CSV must first be READ into a structured collection (e.g., by a reader/transform).",
+    "Wrong — non-collection payloads require transformation into a splittable structure first."
+   ],
+   "explanation": "Batch's Load & Dispatch splits Iterables/Iterators/Arrays and JSON/XML collections. Anything else is transformed first — commonly the output of a DB select or a parsed file."
+  },
+  {
+   "id": "m1-194",
+   "section": "s10",
+   "level": "hard",
+   "q": "A batch job has maxFailedRecords=\"-1\" and three steps; step 3 is configured as shown. Record R fails in step 1. What is R's journey?",
+   "exhibit": "<batch:step name=\"step3\" acceptPolicy=\"ONLY_FAILURES\">\n  <ee:transform> ... build error report entry ... </ee:transform>\n</batch:step>",
+   "options": [
+    "R skips step 2 (NO_FAILURES default) but ENTERS step 3, where the error report entry is built",
+    "R is discarded immediately after failing step 1",
+    "R retries step 1 until it succeeds",
+    "R stops the whole job"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — failed records skip subsequent NO_FAILURES steps but match an ONLY_FAILURES step — the standard per-record error-reporting pattern.",
+    "Wrong — with maxFailedRecords=-1, failures are tolerated and tracked, not discarded from the job.",
+    "Wrong — batch steps don't retry records automatically.",
+    "Wrong — -1 means unlimited failed records; the job continues."
+   ],
+   "explanation": "Accept policies route records by status: NO_FAILURES (default), ONLY_FAILURES (error-handling steps), ALL. maxFailedRecords=-1 keeps the job alive regardless of failures."
+  },
+  {
+   "id": "m1-195",
+   "section": "s10",
+   "level": "medium",
+   "q": "Why place a Batch Aggregator (size=200) inside a batch step that upserts to Salesforce?",
+   "exhibit": "<batch:step name=\"upsert\">\n  <batch:aggregator size=\"200\">\n    <salesforce:upsert .../>   <!-- receives an ARRAY of 200 records -->\n  </batch:aggregator>\n</batch:step>",
+   "options": [
+    "To collect records into arrays of 200 and make ONE bulk API call per group instead of one call per record",
+    "To slow down processing for rate limits",
+    "To guarantee record ordering",
+    "To retry failed records"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — aggregators batch records for BULK operations: 5,000 records become 25 upsert calls instead of 5,000.",
+    "Wrong — throughput goes UP, not down; rate-limit protection is a side benefit but not the mechanism's purpose.",
+    "Wrong — batch processing is parallel; aggregation doesn't impose global order.",
+    "Wrong — retry/error handling is separate (accept policies, connector retries)."
+   ],
+   "explanation": "batch:aggregator (fixed size or streaming) turns record-at-a-time steps into array-at-a-time calls — the pattern for bulk-capable targets like Salesforce or DB bulk inserts."
+  },
+  {
+   "id": "m1-196",
+   "section": "s10",
+   "level": "hard",
+   "q": "A variable is set in batch step 1 for record R (vars.score = 88). Which statements are TRUE? (Select all that apply)",
+   "options": [
+    "Step 2 sees vars.score = 88 when processing the SAME record R",
+    "Other records do NOT see R's value — record variables are per record",
+    "The On Complete phase can read vars.score",
+    "Variables cannot be set inside batch steps"
+   ],
+   "answers": [
+    0,
+    1
+   ],
+   "optionNotes": [
+    "Correct — record variables propagate ACROSS STEPS for the same record.",
+    "Correct — each record carries its own variable set (records are independent events).",
+    "Wrong — Process-phase variables do NOT reach On Complete; it only receives the BatchJobResult.",
+    "Wrong — setting vars per record inside steps is standard practice (e.g., for conditional accept expressions)."
+   ],
+   "explanation": "Record vars: per-record, cross-step, gone by On Complete. They drive per-record routing (accept expressions) and enrichment between steps."
+  },
+  {
+   "id": "m1-197",
+   "section": "s10",
+   "level": "medium",
+   "q": "Compare For Each and Parallel For Each for a collection of 100 API calls. Which statements are TRUE? (Select all that apply)",
+   "options": [
+    "For Each processes sequentially and returns the ORIGINAL payload afterwards",
+    "Parallel For Each processes concurrently and returns an ARRAY of each iteration's result",
+    "Payload changes inside For Each persist after the scope",
+    "Parallel For Each requires an Enterprise runtime cluster"
+   ],
+   "answers": [
+    0,
+    1
+   ],
+   "optionNotes": [
+    "Correct — sequential, one at a time, original payload restored after the scope.",
+    "Correct — concurrent execution; the results are aggregated into an array (order preserved by position).",
+    "Wrong — For Each discards payload modifications (vars persist, payload doesn't).",
+    "Wrong — Parallel For Each is a standard scope, no cluster required."
+   ],
+   "explanation": "For Each: sequential, payload restored, vars persist. Parallel For Each: concurrent, results array, composite error on failures. Batch: the heavy-duty asynchronous option."
+  },
+  {
+   "id": "m1-198",
+   "section": "s10",
+   "level": "medium",
+   "q": "This Scheduler must run at 02:30 every weekday. Which cron expression is correct?",
+   "exhibit": "<scheduler>\n  <scheduling-strategy>\n    <cron expression=\"?\"/>\n  </scheduling-strategy>\n</scheduler>",
+   "options": [
+    "0 30 2 ? * MON-FRI",
+    "30 2 * * 1-5 0",
+    "0 0/30 2 * * *",
+    "2:30 MON-FRI"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — Quartz cron: seconds(0) minutes(30) hours(2) day-of-month(?) month(*) day-of-week(MON-FRI).",
+    "Wrong — field order is wrong; Quartz starts with SECONDS.",
+    "Wrong — 0/30 in the minutes field means 'every 30 minutes during hour 2', not once at 02:30.",
+    "Wrong — clock-style text is not cron syntax."
+   ],
+   "explanation": "Mule schedulers use Quartz cron with SIX+ fields starting at seconds: '0 30 2 ? * MON-FRI' = 02:30:00 Monday through Friday."
+  },
+  {
+   "id": "m1-199",
+   "section": "s10",
+   "level": "hard",
+   "q": "This flow implements a manual watermark. Which step is MISSING for it to work across app restarts?",
+   "exhibit": "<flow name=\"delta-sync\">\n  <scheduler .../>\n  <os:retrieve key=\"lastSync\" objectStore=\"syncStore\">\n    <os:default-value>\"1970-01-01T00:00:00Z\"</os:default-value>\n  </os:retrieve>\n  <set-variable variableName=\"since\" value=\"#[payload]\"/>\n  <http:request path=\"/changes\">\n    <http:query-params>#[{since: vars.since}]</http:query-params>\n  </http:request>\n  <!-- ... process the changes ... -->\n</flow>",
+   "options": [
+    "An os:store writing the NEW maximum timestamp back to 'lastSync' after successful processing",
+    "A bigger default value",
+    "An os:remove before each run",
+    "Nothing — the retrieve alone maintains the watermark"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — without storing the new high-water mark, every run re-reads from the same old value; the store-back after success completes the cycle.",
+    "Wrong — the default only seeds the FIRST run.",
+    "Wrong — removing the key would reset the sync every run — the opposite of a watermark.",
+    "Wrong — retrieve reads; nothing shown ever advances the mark."
+   ],
+   "explanation": "Manual watermark = retrieve (with default) → query since → process → STORE the new maximum. Store only after success, or failures skip records."
+  },
+  {
+   "id": "m1-200",
+   "section": "s10",
+   "level": "medium",
+   "q": "The On Table Row listener is configured with watermark column 'id' and ID column 'id'. What do these settings achieve?",
+   "options": [
+    "The watermark tracks the highest id seen (only newer rows are emitted); the ID column additionally prevents re-emitting rows already being processed",
+    "They enable deleting rows after processing",
+    "They create an index on the table",
+    "They are decorative; polling always re-reads everything"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — watermark = automatic 'greater than last seen' filtering (persisted); ID column = duplicate-emission protection within the polling window.",
+    "Wrong — the listener never deletes source rows.",
+    "Wrong — Mule doesn't alter database schemas.",
+    "Wrong — with a watermark, each poll fetches only NEW rows."
+   ],
+   "explanation": "On Table Row's automatic watermarking persists the max watermark-column value between polls (and restarts); the ID column deduplicates in-flight rows."
+  },
+  {
+   "id": "m1-201",
+   "section": "s10",
+   "level": "easy",
+   "q": "Which Object Store operation both reads a stored value AND provides a fallback for the first execution?",
+   "options": [
+    "os:retrieve with a default-value",
+    "os:store with overwrite=false",
+    "os:contains followed by os:remove",
+    "os:clear"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — retrieve returns the stored value, or the configured default when the key doesn't exist yet.",
+    "Wrong — store WRITES; it doesn't read.",
+    "Wrong — contains only answers true/false; remove deletes.",
+    "Wrong — clear empties the whole store."
+   ],
+   "explanation": "os:retrieve + default-value is the idiomatic 'read or initialize' — the first piece of every manual watermark."
+  },
+  {
+   "id": "m1-202",
+   "section": "s10",
+   "level": "hard",
+   "q": "1 million records arrive nightly. Requirements: survive an app crash mid-run; a single bad record must not stop the rest; report success/failure counts at the end. Map each requirement to the batch feature that satisfies it.",
+   "options": [
+    "Crash survival = persistent record queues; bad-record tolerance = maxFailedRecords=-1 (+ accept policies); final report = On Complete's BatchJobResult",
+    "Crash survival = For Each; tolerance = Try scope; report = Logger",
+    "Crash survival = maxFailedRecords; tolerance = persistent queues; report = accept policies",
+    "Batch cannot satisfy these requirements"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — each requirement maps to a distinct batch capability: queued records resume after restart; failure tolerance is configured; statistics arrive in On Complete.",
+    "Wrong — For Each is in-memory and sequential: a crash loses everything.",
+    "Wrong — the features are shuffled into the wrong requirements.",
+    "Wrong — this is precisely the batch component's designed use case."
+   ],
+   "explanation": "Batch = the reliability trifecta for large datasets: persistent queues (restart resilience), maxFailedRecords/accept policies (record-level tolerance), BatchJobResult (reporting)."
+  },
+  {
+   "id": "m1-203",
+   "section": "s10",
+   "level": "medium",
+   "q": "A For Each is configured with a collection expression and batch size. What does this configuration do?",
+   "exhibit": "<foreach collection=\"#[payload.orders]\" batchSize=\"50\">\n  <db:insert .../>\n</foreach>",
+   "options": [
+    "Iterates over payload.orders (not the root payload), giving the insert 50-element chunks per iteration",
+    "Processes the first 50 orders only",
+    "Runs 50 parallel threads",
+    "batchSize converts the For Each into a Batch Job"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — collection selects WHAT to iterate; batchSize groups elements so each iteration's payload is a chunk (array) of up to 50.",
+    "Wrong — all elements are processed; they're just grouped.",
+    "Wrong — For Each remains sequential; parallelism needs Parallel For Each.",
+    "Wrong — the scopes are unrelated; batchSize is just chunking."
+   ],
+   "explanation": "For Each options: collection (any array expression, default #[payload]) and batchSize (chunked iterations — handy for bulk inserts without a full Batch Job)."
+  },
+  {
+   "id": "m1-204",
+   "section": "s11",
+   "level": "medium",
+   "q": "Read the log excerpt. What is the root cause?",
+   "exhibit": "ERROR 2026-07-01 09:14:22,101 [[MuleRuntime].uber.07: [orders-api].post:\\orders:api-config]\n******************************\nMessage               : Cannot coerce String (ABC) to Number\nError type            : MULE:EXPRESSION\nElement               : post:\\orders:api-config/processors/1 @ orders-api\n  (Transform Message)\n******************************",
+   "options": [
+    "The Transform Message (second processor of the POST /orders flow) tried to convert the string 'ABC' to a Number and failed",
+    "The HTTP Listener rejected the request",
+    "The database column has the wrong type",
+    "A missing Maven dependency"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — Error type MULE:EXPRESSION + the coercion message + Element pointing at processors/1 (the Transform) identify a DataWeave coercion failure.",
+    "Wrong — the failing Element is the Transform, not the listener; the request was routed fine.",
+    "Wrong — no DB element appears in the trace.",
+    "Wrong — dependency problems fail at BUILD/startup, not as EXPRESSION errors mid-flow."
+   ],
+   "explanation": "Log anatomy: Message (what) + Error type (classification) + Element (which processor in which flow). Read those three lines before anything else."
+  },
+  {
+   "id": "m1-205",
+   "section": "s11",
+   "level": "medium",
+   "q": "An application fails to start with the log shown. What is the fix?",
+   "exhibit": "ERROR ... Mule app deployment\norg.mule.runtime.api.exception.MuleRuntimeException:\nCouldn't find configuration property value for key ${db.password}",
+   "options": [
+    "Provide the missing property — e.g., add it to the environment's properties file or pass it as a system/deployment property",
+    "Reinstall the Mule runtime",
+    "Add the property inside the flow XML as a variable",
+    "Delete the ${db.password} reference"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — an unresolved ${placeholder} at startup means no source (file, -D, deployment property) defines it for this environment.",
+    "Wrong — this is app configuration, not a runtime installation issue.",
+    "Wrong — placeholders resolve from configuration sources, not flow variables.",
+    "Wrong — the connector needs the password; removing the reference breaks it differently."
+   ],
+   "explanation": "'Couldn't find configuration property value for key X' = the classic missing-environment-property startup failure — check the ${env}.yaml file loaded and deployment properties."
+  },
+  {
+   "id": "m1-206",
+   "section": "s11",
+   "level": "easy",
+   "q": "In the Studio debugger, execution is paused on a breakpoint at a Choice router. The developer wants to check what #[payload.total > 1000] would evaluate to. What is the fastest way?",
+   "options": [
+    "Type the expression into the debugger's expression evaluator against the paused event",
+    "Add a Logger, redeploy, and re-run",
+    "Read the raw bytes in the console",
+    "Expressions cannot be evaluated while paused"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — the Mule Debugger's expression evaluator runs arbitrary DataWeave against the current (paused) event.",
+    "Wrong — that works but costs a redeploy cycle; the evaluator answers instantly.",
+    "Wrong — raw console output doesn't evaluate expressions.",
+    "Wrong — evaluating expressions is a core debugger feature."
+   ],
+   "explanation": "The debugger's expression evaluator is the fast feedback loop: try selectors and conditions against the live event before writing them into components."
+  },
+  {
+   "id": "m1-207",
+   "section": "s11",
+   "level": "medium",
+   "q": "A Logger prints: 'org.mule.runtime.core.internal.streaming...ManagedCursorStreamProvider@3f2a'. Why, and what prints the actual content?",
+   "options": [
+    "The payload is a stream (cursor); logging it shows the wrapper object — use #[payload as String] (accepting that this consumes/loads the stream)",
+    "The payload is encrypted",
+    "The logger's level is too low",
+    "The payload is null"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — streamed payloads print as cursor providers; converting to String materializes the content (with the memory/consumption caveat).",
+    "Wrong — encryption isn't involved; it's lazy streaming.",
+    "Wrong — level affects whether the line prints, not what the object renders as.",
+    "Wrong — null prints as 'null', not a class name."
+   ],
+   "explanation": "Cursor/stream objects log as class names. #[payload as String] (or a prior transform) shows content — but materializes the stream; think before doing it with large payloads."
+  },
+  {
+   "id": "m1-208",
+   "section": "s11",
+   "level": "medium",
+   "q": "The app fails to start with: 'Address already in use: bind 0.0.0.0:8081'. What does it mean and what are valid remedies? (Select all that apply)",
+   "options": [
+    "Another process (often another Mule app in the same Studio) already listens on port 8081",
+    "Stop the other application, or change this app's http.port property",
+    "The HTTP Listener configuration is referencing a missing TLS context",
+    "Reinstalling Studio is required"
+   ],
+   "answers": [
+    0,
+    1
+   ],
+   "optionNotes": [
+    "Correct — the OS allows one listener per port; running two default-port apps collides.",
+    "Correct — free the port or parameterize/change it (${http.port}).",
+    "Wrong — TLS misconfiguration produces different errors, not a bind conflict.",
+    "Wrong — nothing is broken in Studio; it's a port conflict."
+   ],
+   "explanation": "Bind errors = port conflicts. In Studio it's usually a previous run still deployed; in shared runtimes, parameterize ports per app (or use a domain's shared listener)."
+  },
+  {
+   "id": "m1-209",
+   "section": "s11",
+   "level": "hard",
+   "q": "A breakpoint on the third processor never triggers, but the flow's error handler logs an error each request. What is the MOST likely explanation?",
+   "options": [
+    "An earlier processor (1 or 2) throws before execution reaches the breakpoint — the error jumps to the handler",
+    "Breakpoints only work on Transform Message components",
+    "The debugger port is wrong",
+    "The flow is not deployed"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — the handler firing proves the flow RUNS; not reaching processor 3 means the failure happens earlier. Move the breakpoint upstream (or break on exception).",
+    "Wrong — breakpoints attach to any processor.",
+    "Wrong — a wrong debug port would prevent ALL debugging, including seeing the app at all in the debugger.",
+    "Wrong — the error handler logging shows the flow executes."
+   ],
+   "explanation": "Debugging logic: handler activity + unreached breakpoint = failure upstream of the breakpoint. Step from the source, or use exception breakpoints to stop where the error is raised."
+  },
+  {
+   "id": "m1-210",
+   "section": "s11",
+   "level": "easy",
+   "q": "Where does a Mule application's Log4j 2 configuration live, and what does the Logger component's 'category' feed into?",
+   "options": [
+    "src/main/resources/log4j2.xml; the category matches logger names there to control level/appender per category",
+    "mule-artifact.json; categories are ignored",
+    "The Runtime Manager UI only",
+    "pom.xml"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — each app ships its log4j2.xml; Logger categories (e.g., com.acme.orders) are matched by <Logger name=...> rules for filtering and routing.",
+    "Wrong — mule-artifact.json is the app descriptor (minMuleVersion, secureProperties).",
+    "Wrong — platform log VIEWERS read output; configuration is in the app.",
+    "Wrong — pom.xml is the build, not logging config."
+   ],
+   "explanation": "log4j2.xml (in resources) defines appenders and per-category levels; meaningful Logger categories let operators tune verbosity without touching flows."
+  },
+  {
+   "id": "m1-211",
+   "section": "s11",
+   "level": "medium",
+   "q": "Maven fails with 'Could not resolve dependencies ... mule-http-connector'. Which checks are appropriate? (Select all that apply)",
+   "options": [
+    "Verify the dependency's version exists and the coordinates are correct",
+    "Check settings.xml credentials/repository access (corporate mirror or Exchange)",
+    "Force a refresh: mvn clean install -U (or Studio's Update project dependencies)",
+    "Delete the project and start over"
+   ],
+   "answers": [
+    0,
+    1,
+    2
+   ],
+   "optionNotes": [
+    "Correct — typo'd versions/coordinates are the first suspect.",
+    "Correct — unreachable or unauthenticated repositories cause resolution failures, especially behind mirrors.",
+    "Correct — -U retries cached failed lookups (Maven caches 'not found').",
+    "Wrong — the project isn't the problem; resolution config is."
+   ],
+   "explanation": "Dependency triage: coordinates/version → repository reachability/credentials (settings.xml) → -U to bust the negative cache."
+  },
+  {
+   "id": "m1-212",
+   "section": "s4",
+   "level": "hard",
+   "q": "Given the two property sources shown and a deployment with -Dhttp.port=9090, what is the value of ${http.port} at runtime?",
+   "exhibit": "config/dev.yaml (loaded via configuration-properties):\nhttp:\n  port: \"8081\"\n\nDeployment command:\nmvn ... -Denv=dev -Dhttp.port=9090",
+   "options": [
+    "9090 — system properties passed with -D override values from property files",
+    "8081 — files always win",
+    "Both are used on alternating requests",
+    "Deployment fails due to the conflict"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — precedence puts deployment/system properties above configuration files: 9090 wins.",
+    "Wrong — files are the DEFAULTS that higher-precedence sources override.",
+    "Wrong — properties resolve once at startup, deterministically.",
+    "Wrong — overriding is by design, not a conflict."
+   ],
+   "explanation": "Property precedence (high→low): deployment/system properties → environment-specific sources → packaged files. This enables build-once-deploy-many."
+  },
+  {
+   "id": "m1-213",
+   "section": "s4",
+   "level": "medium",
+   "q": "How does an application select dev.yaml vs prod.yaml at deploy time with ONE packaged artifact?",
+   "exhibit": "<configuration-properties file=\"config/${env}.yaml\"/>",
+   "options": [
+    "The file name is parameterized with ${env}; each deployment passes -Denv=dev or -Denv=prod",
+    "Both files load and merge automatically",
+    "The runtime detects the environment from the hostname",
+    "Two different JARs must be built"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — the properties FILE PATH itself is a placeholder resolved from the env system/deployment property.",
+    "Wrong — only the resolved file loads; there is no automatic merge of all environment files.",
+    "Wrong — no hostname magic exists; the property must be provided.",
+    "Wrong — defeating build-once is exactly what this pattern avoids."
+   ],
+   "explanation": "config/${env}.yaml + -Denv=<name> is the canonical environment-selection idiom — one artifact, environment decided at deployment."
+  },
+  {
+   "id": "m1-214",
+   "section": "s4",
+   "level": "medium",
+   "q": "A flow must reference the property db.host inside a DataWeave transform (not a config field). Which expression is correct?",
+   "options": [
+    "p('db.host')",
+    "${db.host}",
+    "vars.db.host",
+    "properties.db.host"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — the Mule::p() function reads configuration properties from DataWeave.",
+    "Wrong — ${} placeholders work in COMPONENT FIELDS (resolved at startup), not inside DataWeave scripts.",
+    "Wrong — properties are not variables.",
+    "Wrong — there is no 'properties' binding in DataWeave."
+   ],
+   "explanation": "Two access paths: ${prop} in XML attribute values; p('prop') inside DataWeave expressions/scripts."
+  },
+  {
+   "id": "m1-215",
+   "section": "s4",
+   "level": "hard",
+   "q": "An app has apis.xml (flows + HTTP Listener referencing 'httpConfig') and global.xml (the httpConfig listener config). What makes this work, and why structure it this way?",
+   "options": [
+    "All XML files in src/main/mule are combined into one application at deployment; separating globals centralizes reusable configuration",
+    "apis.xml must import global.xml with an <import> tag or it fails",
+    "It only works if the files are alphabetically ordered",
+    "Global elements must be redefined in every file that uses them"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — the runtime merges every configuration file; cross-file references (config-ref) resolve app-wide. Dedicated global.xml is a readability/reuse convention.",
+    "Wrong — no import mechanism is needed between an app's own config files.",
+    "Wrong — file naming/order does not affect resolution.",
+    "Wrong — one definition serves the whole application."
+   ],
+   "explanation": "An app's XML files form ONE configuration at deploy time; global elements defined anywhere are referenceable everywhere — hence the global.xml convention."
+  },
+  {
+   "id": "m1-216",
+   "section": "s4",
+   "level": "medium",
+   "q": "Which execution model differences apply when calling reusable logic via Flow Reference to a SUBFLOW vs posting to a VM queue consumed by another flow? (Select all that apply)",
+   "options": [
+    "Subflow call: synchronous, same event, caller waits for the result",
+    "VM publish (one-way): asynchronous, a NEW event is created for the consuming flow",
+    "Variables cross the VM queue automatically",
+    "Both behave identically"
+   ],
+   "answers": [
+    0,
+    1
+   ],
+   "optionNotes": [
+    "Correct — Flow References are in-line synchronous invocations sharing the event.",
+    "Correct — VM decouples: the consumer gets a new event (payload transferred; attributes/vars do not follow).",
+    "Wrong — the transport boundary strips vars/attributes; only the payload (and configured properties) crosses.",
+    "Wrong — synchronicity, event identity, and error propagation all differ."
+   ],
+   "explanation": "Flow Reference = synchronous call semantics. VM = messaging semantics (async decoupling, new event, no vars). Choosing between them is an architecture decision, not syntax."
+  },
+  {
+   "id": "m1-217",
+   "section": "s4",
+   "level": "easy",
+   "q": "Which project location holds DataWeave module files, property files, and other classpath resources?",
+   "options": [
+    "src/main/resources",
+    "src/main/mule",
+    "src/test/munit",
+    "target/classes"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — resources (yaml/properties, DW libraries, schemas, examples) live in src/main/resources.",
+    "Wrong — src/main/mule holds the Mule configuration XMLs.",
+    "Wrong — that's the MUnit test suite folder.",
+    "Wrong — target/ is generated build output, never source."
+   ],
+   "explanation": "Project layout: src/main/mule (flows), src/main/resources (classpath resources), src/test/munit (tests), pom.xml + mule-artifact.json (build/descriptor)."
+  },
+  {
+   "id": "m1-218",
+   "section": "s4",
+   "level": "medium",
+   "q": "Two teams each own a Mule app deployed to the SAME customer-hosted runtime, and both need to listen on port 8443 with the same TLS certificate. What enables this?",
+   "options": [
+    "A Mule domain project defining the shared HTTP Listener config (with TLS); both apps reference the domain",
+    "Both apps define listeners on 8443 — the runtime multiplexes automatically",
+    "Deploying one app inside the other",
+    "This requires CloudHub"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — domains share global configs (listener/port/TLS) across apps on one runtime; both apps bind through the shared listener.",
+    "Wrong — two independent binds on one port collide (Address already in use).",
+    "Wrong — apps don't nest.",
+    "Wrong — CloudHub doesn't even support domains; this is a customer-hosted feature."
+   ],
+   "explanation": "Domains = shared resources for co-located apps on customer-hosted runtimes: one port, one TLS config, many apps. Not available on CloudHub (isolated workers)."
+  },
+  {
+   "id": "m1-219",
+   "section": "s4",
+   "level": "medium",
+   "q": "What is the effect of marking properties as secure and referencing them as shown?",
+   "exhibit": "config file:\ndb:\n  password: \"![jd8sK2n...==]\"\n\nflow config field:\npassword=\"${secure::db.password}\"",
+   "options": [
+    "The encrypted value is decrypted at runtime with a key supplied at deployment; the secure:: prefix is required for properties in the secure configuration",
+    "The password is stored in plain text with a marker",
+    "secure:: makes Mule hash the value",
+    "The syntax is invalid"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — ![...] wraps the encrypted value; the Secure Configuration Properties module decrypts using the runtime-provided key; secure:: is the mandatory access prefix.",
+    "Wrong — the value is ciphertext, not marked plaintext.",
+    "Wrong — decryption (reversible with the key), not hashing.",
+    "Wrong — this is exactly the secure-properties syntax."
+   ],
+   "explanation": "Secure properties basics (deep-dive in MCD L2): encrypt values as ![...], reference via ${secure::...}, supply the key at deploy time — never packaged."
+  },
+  {
+   "id": "m1-220",
+   "section": "s12",
+   "level": "medium",
+   "q": "An API on CloudHub must keep serving requests while a worker is restarted by the platform, and must handle 3× current load next quarter. Which deployment change addresses BOTH?",
+   "options": [
+    "Scale horizontally to multiple workers — automatic load balancing provides both availability during restarts and added throughput capacity",
+    "One much larger worker",
+    "Enable persistent queues",
+    "Move the app to another region"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — 2+ workers = surviving instances keep serving (HA) AND capacity scales with count.",
+    "Wrong — a single worker of any size is still a single point of failure during restarts.",
+    "Wrong — persistent queues protect QUEUED MESSAGES, not HTTP availability.",
+    "Wrong — region choice affects latency/residency, not HA within the deployment."
+   ],
+   "explanation": "Horizontal scaling on CloudHub answers both availability (workers fail independently) and throughput (linear capacity for stateless apps)."
+  },
+  {
+   "id": "m1-221",
+   "section": "s12",
+   "level": "hard",
+   "q": "The exhibit shows an autodiscovery element. The API instance in API Manager stays 'Unregistered' after deploying to CloudHub. Which causes should be investigated? (Select all that apply)",
+   "exhibit": "<api-gateway:autodiscovery\n    apiId=\"${api.id}\"\n    flowRef=\"orders-main\"/>",
+   "options": [
+    "The api.id property resolves to the WRONG environment's instance id",
+    "The environment's Anypoint Platform client_id/client_secret are not configured for the deployment",
+    "The flowRef doesn't reference the flow containing the HTTP listener + router",
+    "The RAML has a typo in a documentation string"
+   ],
+   "answers": [
+    0,
+    1,
+    2
+   ],
+   "optionNotes": [
+    "Correct — instance ids are per environment; a dev id in prod pairs with nothing.",
+    "Correct — the runtime authenticates to the platform with environment credentials to register.",
+    "Correct — autodiscovery must point at the main (routed) flow.",
+    "Wrong — spec documentation has no effect on gateway pairing."
+   ],
+   "explanation": "Autodiscovery pairing checklist: correct per-environment api.id + platform client credentials on the runtime + flowRef to the main flow. Miss any and the instance stays Unregistered."
+  },
+  {
+   "id": "m1-222",
+   "section": "s12",
+   "level": "medium",
+   "q": "A rate-limiting policy must change from 100 to 500 requests/minute on a production API. What is required?",
+   "options": [
+    "Edit the policy configuration on the API instance in API Manager — no application redeployment; the gateway picks up the change",
+    "Rebuild and redeploy the Mule application",
+    "Edit the RAML and re-scaffold",
+    "Restart the CloudHub workers"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — policies are managed configuration: applied, changed, and removed at the instance level and pulled by gateways at runtime.",
+    "Wrong — policy config lives outside the application artifact.",
+    "Wrong — the spec documents the API; it doesn't carry runtime policy settings.",
+    "Wrong — no restart is needed for policy updates."
+   ],
+   "explanation": "Separation of concerns: implementation (deployed artifact) vs governance (API Manager policies). Policy changes are zero-deployment operations."
+  },
+  {
+   "id": "m1-223",
+   "section": "s12",
+   "level": "medium",
+   "q": "Order the steps a NEW consumer follows to call a production API governed with client ID enforcement and SLA tiers:\n(A) receive client_id/secret  (B) find the API in Exchange  (C) request access with a client app + tier  (D) send credentials on each request",
+   "options": [
+    "B → C → A → D",
+    "A → B → C → D",
+    "C → B → D → A",
+    "D → C → B → A"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — discover (Exchange) → request access (client app + tier → contract) → credentials issued → use them per the policy's configured mechanism.",
+    "Wrong — credentials don't exist before the access request creates the client app/contract.",
+    "Wrong — access is requested against an API you first discover.",
+    "Wrong — you cannot call before having credentials."
+   ],
+   "explanation": "The consumer journey: Exchange discovery → access request (tier/contract) → credentials → invocation. The gateway then enforces identity + tier per contract."
+  },
+  {
+   "id": "m1-224",
+   "section": "s12",
+   "level": "easy",
+   "q": "What does 'mvn clean package' produce for a Mule 4 project, and where?",
+   "options": [
+    "A deployable application JAR in the target/ directory (after running MUnit tests)",
+    "A WAR file in dist/",
+    "A ZIP in src/main/mule",
+    "Nothing without -DmuleDeploy"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — package builds the deployable archive (mule-application JAR) into target/, with the test phase running first.",
+    "Wrong — Mule 4 artifacts are JARs, not WARs, and output goes to target/.",
+    "Wrong — src/ is source; build output never lands there.",
+    "Wrong — -DmuleDeploy affects the DEPLOY phase, not packaging."
+   ],
+   "explanation": "mvn clean package = tests + deployable JAR in target/ — the artifact that deploys unchanged to CloudHub, Runtime Fabric, or customer-hosted runtimes."
+  },
+  {
+   "id": "m1-225",
+   "section": "s12",
+   "level": "medium",
+   "q": "Which platform component and mechanism HIDE a sensitive property value that operators set on a CloudHub application?",
+   "options": [
+    "Runtime Manager properties marked as hidden/protected (and listing the property in mule-artifact.json secureProperties masks it in the UI/API)",
+    "Encrypting the JAR file",
+    "Exchange access controls",
+    "Setting the property in the RAML"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — deployment properties can be hidden in Runtime Manager; secureProperties in mule-artifact.json masks named keys from display.",
+    "Wrong — artifact encryption isn't a platform feature and wouldn't affect property display.",
+    "Wrong — Exchange governs assets, not runtime properties.",
+    "Wrong — specs don't carry deployment configuration."
+   ],
+   "explanation": "Sensitive deploy-time values: set them as hidden Runtime Manager properties and/or list keys in mule-artifact.json's secureProperties so the platform masks them."
   }
  ],
  "sections": [
