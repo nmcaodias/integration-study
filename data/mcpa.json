@@ -1177,5 +1177,199 @@
    ],
    "notes": "\n<h3>Sources of monitoring data</h3>\n<table>\n<tr><th>Source</th><th>Data</th></tr>\n<tr><td>API Manager analytics (gateways)</td><td>Per-API-instance invocation data: requests, response codes, latency, policy violations, per-consumer (client id) attribution</td></tr>\n<tr><td>Anypoint Monitoring</td><td>App + API dashboards (throughput, response time, errors, JVM/CPU), custom dashboards, log management (Titanium), threshold alerts</td></tr>\n<tr><td>Runtime Manager</td><td>App/worker status, deployment events, basic metrics, operational alerts</td></tr>\n<tr><td>API Functional Monitoring (BAT)</td><td>Scheduled black-box calls asserting real behavior from public/private locations</td></tr>\n<tr><td>Anypoint Visualizer</td><td>The live application network graph built from actual traffic — dependencies, layers, troubleshooting blast radius</td></tr>\n<tr><td>Application logs</td><td>Business/technical events with correlation IDs (centralized via log management or external systems)</td></tr>\n</table>\n\n<h3>API invocation metrics and analytics</h3>\n<ul>\n<li>Core metrics per instance: <strong>request volume</strong> (trend = adoption; also the reuse KPI for the C4E), <strong>response times</strong> (p95/p99 vs SLA), <strong>error ratios</strong> (4xx = client/contract problems, 5xx = provider problems), <strong>policy violations</strong> (429s = tiers too tight or abuse), and <strong>per-consumer breakdowns</strong> (who drives load; who a breaking change affects).</li>\n<li>Analytics inform lifecycle decisions: which APIs to invest in, which versions can retire (traffic on deprecated instances), and chargeback/showback per consumer.</li>\n</ul>\n\n<h3>Alerts across the layers</h3>\n<p>Alert at EVERY layer of the network, aligned to each API's SLA — an Experience API breach may originate two layers down:</p>\n<ul>\n<li><strong>Per API instance (API Manager):</strong> response time thresholds, error-code ratios, request-count anomalies, policy violations.</li>\n<li><strong>Experience layer:</strong> tightest latency/error alerts (closest to user experience) + functional monitors simulating consumers.</li>\n<li><strong>Process/System layers:</strong> same metric alerts with layer-appropriate thresholds; System API alerts often reveal backend degradation first.</li>\n</ul>\n\n<h3>Alerts for Mule applications</h3>\n<ul>\n<li><strong>Runtime Manager:</strong> application down / not responding, worker not responding, deployment failed, secure-data gateway events, custom application notifications.</li>\n<li><strong>Anypoint Monitoring:</strong> threshold alerts on any collected metric (CPU, memory, error rate, response time) with notification channels.</li>\n<li>Design guidance: alert on symptoms tied to SLAs (latency, error ratio, availability), keep thresholds per environment, and route to owners (API owner vs platform ops) — an unowned alert is noise.</li>\n</ul>\n<p class=\"tip\"><strong>Exam tip:</strong> map the question to the source — \"which consumers call this API and how often?\" → API Manager analytics; \"is the app's JVM memory climbing?\" → Anypoint Monitoring; \"did the deployment fail last night?\" → Runtime Manager; \"is the API returning correct data right now?\" → functional monitoring (BAT); \"what depends on this System API?\" → Visualizer.</p>"
   }
+ ],
+ "cards": [
+  {
+   "id": "pa-c001",
+   "section": "p1",
+   "front": "Non-Mule service must be governed by API Manager — options?",
+   "back": "Front it with an API proxy (Mule proxy app) or FLEX GATEWAY (Envoy-based); policies execute at the gateway. Mule apps use the embedded gateway via autodiscovery."
+  },
+  {
+   "id": "pa-c002",
+   "section": "p1",
+   "front": "API instance — definition?",
+   "back": "A managed deployment of one API spec VERSION in one ENVIRONMENT: the unit carrying api.id, policies, SLA tiers, contracts, alerts, analytics."
+  },
+  {
+   "id": "pa-c003",
+   "section": "p1",
+   "front": "Layer placement clues in scenarios?",
+   "back": "Orchestrates/aggregates systems → Process. One backend, canonical CRUD → System. Channel-shaped output → Experience. Experience→backend directly = anti-pattern."
+  },
+  {
+   "id": "pa-c004",
+   "section": "p2",
+   "front": "C4E health KPIs?",
+   "back": "Consumption-based: % of projects reusing assets, consumers per API, time-to-first-API for new teams — NOT how much the C4E builds itself."
+  },
+  {
+   "id": "pa-c005",
+   "section": "p2",
+   "front": "MuleSoft Catalyst's three plays?",
+   "back": "Business outcomes, technology delivery, organizational enablement — with playbooks in the Catalyst Knowledge Hub."
+  },
+  {
+   "id": "pa-c006",
+   "section": "p2",
+   "front": "Data residency: what does the control plane see vs the runtime plane?",
+   "back": "Control plane: management METADATA only (choose US/EU control plane for its residency). Business payloads: runtime plane only. MQ/OSv2 data: regional runtime services."
+  },
+  {
+   "id": "pa-c007",
+   "section": "p3",
+   "front": "ETag + If-Match flow?",
+   "back": "Server returns ETag (entity version) → client sends If-Match on update → stale version rejected with 412 Precondition Failed. HTTP-native optimistic concurrency."
+  },
+  {
+   "id": "pa-c008",
+   "section": "p3",
+   "front": "What does Exchange auto-generate when a REST spec is published?",
+   "back": "API console/portal documentation, mocking service endpoint, and a REST Connect connector."
+  },
+  {
+   "id": "pa-c009",
+   "section": "p3",
+   "front": "Which spec changes force a MAJOR version?",
+   "back": "Remove/rename fields, type changes, optional→required, semantic changes — breaking. New optional fields/resources = MINOR; doc fixes = PATCH."
+  },
+  {
+   "id": "pa-c010",
+   "section": "p4",
+   "front": "When is Anypoint DataGraph the right answer? When not?",
+   "back": "Right: READ-ONLY aggregation across existing managed REST APIs with client-selected fields (one GraphQL query). Wrong: writes, business rules, orchestration → Process API."
+  },
+  {
+   "id": "pa-c011",
+   "section": "p4",
+   "front": "Where do reuse pressure and channel pressure push logic?",
+   "back": "Reuse pushes logic DOWN (Process/System APIs, once). Channel pressure pushes formatting UP (thin Experience APIs per channel)."
+  },
+  {
+   "id": "pa-c012",
+   "section": "p4",
+   "front": "A pure pass-through Process API — verdict?",
+   "back": "Question it: layers must earn their hop (latency + ops cost). Collapsing is a justified exception — API-led is guidance, not liturgy."
+  },
+  {
+   "id": "pa-c013",
+   "section": "p5",
+   "front": "Spike control vs rate limiting?",
+   "back": "Rate limiting REJECTS over-quota requests (429). Spike control SMOOTHS bursts (queues/delays) to protect the backend without hard rejection."
+  },
+  {
+   "id": "pa-c014",
+   "section": "p5",
+   "front": "Org-wide mandatory policies on every current AND future API?",
+   "back": "AUTOMATED POLICIES applied at organization/environment level — governance at scale, no reliance on each team remembering."
+  },
+  {
+   "id": "pa-c015",
+   "section": "p5",
+   "front": "Why not pass client_id/secret as query parameters?",
+   "back": "URLs leak into caches, proxies, access logs, browser history. Use custom HEADERS or Basic auth (configurable on the policy)."
+  },
+  {
+   "id": "pa-c016",
+   "section": "p5",
+   "front": "Consumer access flow to a governed API?",
+   "back": "Exchange: find API → request access with a CLIENT APPLICATION → choose SLA tier → contract approved → use issued client_id/secret. Gateway enforces per-contract limits."
+  },
+  {
+   "id": "pa-c017",
+   "section": "p5",
+   "front": "Custom policy — when justified?",
+   "back": "Requirement not covered by included policies (proprietary auth/signing, bespoke audit headers). Build, publish to Exchange, apply like any policy. Prefer included first."
+  },
+  {
+   "id": "pa-c018",
+   "section": "p6",
+   "front": "API instance shows 'Unregistered' — three usual causes?",
+   "back": "Wrong api.id for the environment; missing/wrong platform client credentials on the runtime; autodiscovery flowRef not pointing at the main flow."
+  },
+  {
+   "id": "pa-c019",
+   "section": "p6",
+   "front": "Requirements that force an Anypoint VPC?",
+   "back": "Private (corp-only) APIs, VPN/DirectConnect to on-prem, Dedicated Load Balancer (custom domain/mTLS), firewall control of worker access."
+  },
+  {
+   "id": "pa-c020",
+   "section": "p7",
+   "front": "Vertical vs horizontal worker scaling — when each?",
+   "back": "Vertical (bigger vCores): memory/CPU-heavy per-request work (large payloads). Horizontal (more workers): throughput + high availability; needs stateless design."
+  },
+  {
+   "id": "pa-c021",
+   "section": "p7",
+   "front": "CloudHub HA features you get by deploying ≥2 workers?",
+   "back": "Automatic load balancing, workers spread across availability zones, platform restarts unresponsive workers, zero-downtime redeploys."
+  },
+  {
+   "id": "pa-c022",
+   "section": "p7",
+   "front": "Which state survives a worker crash?",
+   "back": "Object Store v2 entries and persistent-queue messages. In-memory VM queues, in-flight events, worker memory: GONE. Persist-before-process for zero loss."
+  },
+  {
+   "id": "pa-c023",
+   "section": "p7",
+   "front": "Shared vs Dedicated LB quick contrast?",
+   "back": "SLB: *.cloudhub.io, MuleSoft cert, no client-cert validation, no mapping rules, free. DLB: custom domains + your certs + mTLS + mapping rules; needs VPC; scale instances for HA."
+  },
+  {
+   "id": "pa-c024",
+   "section": "p8",
+   "front": "HTTP Caching policy vs Cache scope?",
+   "back": "Policy: whole responses cached AT THE GATEWAY, configured in API Manager, no code change. Cache scope: any sub-result INSIDE the flow, developer-designed keys/TTL."
+  },
+  {
+   "id": "pa-c025",
+   "section": "p8",
+   "front": "State vs cache — the losability test?",
+   "back": "Cache: losable without correctness impact (memoized lookups, tokens). State: losing it breaks correctness (watermarks, dedup keys) → Object Store with deliberate TTL."
+  },
+  {
+   "id": "pa-c026",
+   "section": "p8",
+   "front": "Client resilience toolkit?",
+   "back": "Bounded timeouts everywhere; retries with backoff on IDEMPOTENT calls; circuit breaker (fail fast while unhealthy); fallback to last-known-good; maxConcurrency bulkheads."
+  },
+  {
+   "id": "pa-c027",
+   "section": "p8",
+   "front": "Does horizontal scaling reduce single-request latency?",
+   "back": "No — it raises THROUGHPUT and availability. Latency needs caching, parallel calls, or fewer hops."
+  },
+  {
+   "id": "pa-c028",
+   "section": "p9",
+   "front": "Monitoring source map: consumer breakdown / JVM trends / call graph / correctness now?",
+   "back": "API Manager analytics / Anypoint Monitoring / Visualizer / API Functional Monitoring (BAT)."
+  },
+  {
+   "id": "pa-c029",
+   "section": "p9",
+   "front": "Rising 429s in analytics — what does it mean?",
+   "back": "Consumers exceeding SLA tiers: either legitimate growth (resize tiers) or abuse (engage/restrict the client) — identify WHO via per-consumer analytics. Not a backend error."
+  },
+  {
+   "id": "pa-c030",
+   "section": "p9",
+   "front": "Why alert at every API layer, not just Experience?",
+   "back": "Layer-specific alerts LOCALIZE faults — a System API breach often precedes and explains the Experience-layer breach (backend degradation shows lowest first)."
+  },
+  {
+   "id": "pa-c031",
+   "section": "p9",
+   "front": "Runtime Manager vs API Manager alerts?",
+   "back": "RM: app/worker down, deployment failed (operational lifecycle). APIM: policy violations, response codes, latency thresholds per API instance."
+  },
+  {
+   "id": "pa-c032",
+   "section": "p9",
+   "front": "Business-level monitoring (orders/hour) — mechanism?",
+   "back": "Custom Business Events or structured log metrics feeding custom dashboards/alerts — technical health ≠ business health."
+  }
  ]
 }

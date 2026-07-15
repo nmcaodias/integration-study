@@ -1704,5 +1704,235 @@
    ],
    "notes": "\n<h3>Packaging</h3>\n<ul>\n<li>A Mule 4 app packages as a <strong>deployable JAR</strong>: <code>mvn clean package</code> (or Studio → Export → Anypoint Studio Project to Mule Deployable Archive). It bundles the app XMLs, resources, and dependencies; <code>mule-artifact.json</code> declares <code>minMuleVersion</code> and secure properties.</li>\n<li>The <strong>same JAR</strong> deploys to any target: CloudHub, Runtime Fabric, or customer-hosted runtimes (hybrid). Configuration differences come from properties, not rebuilds.</li>\n</ul>\n\n<h3>CloudHub deployment</h3>\n<ul>\n<li>Deploy from Studio (Anypoint Platform → Deploy), <strong>Runtime Manager</strong> (upload JAR), Anypoint CLI, or Maven. Choose: region, runtime version, <strong>worker size</strong> (0.1 / 0.2 / 1 / 2 / 4 … vCores) and <strong>number of workers</strong>.</li>\n<li><strong>Vertical scaling</strong> = bigger workers; <strong>horizontal scaling</strong> = more workers with automatic load balancing across them. Multiple workers also give high availability.</li>\n<li>App URL: <code>&lt;appname&gt;.&lt;region&gt;.cloudhub.io</code>; app names are unique per region. Set/override <strong>properties</strong> in Runtime Manager (Settings → Properties) — values there beat the packaged files; mark sensitive ones as hidden.</li>\n<li>Runtime Manager also provides: logs, restart/stop, static IPs, schedules management (manage Scheduler-triggered flows), and alerts (app down, deployment failed…).</li>\n</ul>\n\n<h3>Managing APIs — API Manager</h3>\n<p>API Manager governs <strong>API instances</strong> (an API spec version deployed to an environment). Two ways to bring an implementation under management:</p>\n<table>\n<tr><th></th><th>API proxy</th><th>Autodiscovery (basic endpoint)</th></tr>\n<tr><td>What runs</td><td>A separate proxy app generated and deployed by API Manager in front of the implementation</td><td>The implementation itself registers with API Manager</td></tr>\n<tr><td>Where policies execute</td><td>In the proxy</td><td>Inside the implementation app</td></tr>\n<tr><td>Code changes</td><td>None</td><td>Add an <strong>API Autodiscovery</strong> global element</td></tr>\n<tr><td>Use when</td><td>Implementation can't be modified / non-Mule backend</td><td>Mule implementation you control (avoids extra hop)</td></tr>\n</table>\n<p><strong>Autodiscovery requirements:</strong> the app declares <code>&lt;api-gateway:autodiscovery apiId=\"${api.id}\" flowRef=\"main-flow\"/&gt;</code> where the <code>apiId</code> matches the API instance in API Manager for THAT environment, and the runtime has Anypoint Platform <strong>client credentials</strong> (client id/secret of the environment, set as properties <code>anypoint.platform.client_id</code>/<code>client_secret</code> — automatic on CloudHub deployments from the same org). Status turns green (\"Active\") in API Manager when paired; policies are then pulled and enforced by the app.</p>\n\n<h3>Policies</h3>\n<table>\n<tr><th>Policy</th><th>Purpose</th></tr>\n<tr><td>Rate limiting / Rate limiting SLA-based</td><td>Cap requests per window (globally, or per client tier)</td></tr>\n<tr><td>Spike control</td><td>Smooth bursts (queue/delay instead of hard reject)</td></tr>\n<tr><td>Client ID enforcement</td><td>Require client_id/client_secret from registered consumers</td></tr>\n<tr><td>OAuth 2.0 / JWT validation / Basic auth</td><td>Authentication and authorization</td></tr>\n<tr><td>IP allowlist / blocklist</td><td>Network-level restriction</td></tr>\n<tr><td>CORS, Header injection/removal</td><td>Cross-origin support, header manipulation</td></tr>\n</table>\n<ul>\n<li>Policies are applied per API instance in API Manager — <strong>no redeployment of the app</strong> is needed; gateways poll and apply them. Custom policies can be published to Exchange.</li>\n<li><strong>Resource-level policies</strong> can target specific methods/paths instead of the whole API.</li>\n</ul>\n\n<h3>Client ID enforcement, contracts and SLA tiers</h3>\n<ol>\n<li>Define <strong>SLA tiers</strong> on the API instance (e.g. Gold: 1000 req/min auto-approved; Silver: 100 req/min manual approval).</li>\n<li>A consumer finds the API in <strong>Exchange</strong> and <strong>requests access</strong> with (or creating) a <em>client application</em>, choosing a tier → this creates a <strong>contract</strong> once approved, and the client app gets <strong>client_id + client_secret</strong>.</li>\n<li>With <strong>client ID enforcement</strong> (or SLA-based rate limiting) applied, requests must carry the credentials (headers or query params per policy config, e.g. <code>client_id</code>/<code>client_secret</code> headers); the gateway identifies the consumer, checks the contract, and applies the tier's limits. Violations → <strong>401</strong> (invalid credentials) or <strong>429</strong> (over the limit).</li>\n</ol>\n<p class=\"tip\"><strong>Exam tip:</strong> know the request-access flow order (Exchange → client app → tier → contract → credentials) and that SLA-based rate limiting REQUIRES a client-identifying policy. Also: policies apply per environment-specific API instance, and changing policies never requires redeploying the Mule app.</p>"
   }
+ ],
+ "cards": [
+  {
+   "id": "m1-c001",
+   "section": "s1",
+   "front": "What are the three layers of API-led connectivity, top to bottom?",
+   "back": "Experience APIs (channel-specific) → Process APIs (orchestration, business logic) → System APIs (unlock systems of record)."
+  },
+  {
+   "id": "m1-c002",
+   "section": "s1",
+   "front": "C4E vs traditional CoE — key difference?",
+   "back": "A C4E ENABLES other teams (publishes reusable assets, best practices, measures consumption). A CoE centralizes delivery and becomes a bottleneck."
+  },
+  {
+   "id": "m1-c003",
+   "section": "s1",
+   "front": "Which HTTP methods are idempotent?",
+   "back": "GET, PUT, DELETE (also HEAD/OPTIONS). POST is NOT idempotent."
+  },
+  {
+   "id": "m1-c004",
+   "section": "s1",
+   "front": "HTTP 401 vs 403?",
+   "back": "401 Unauthorized = not authenticated (bad/missing credentials). 403 Forbidden = authenticated but not allowed."
+  },
+  {
+   "id": "m1-c005",
+   "section": "s1",
+   "front": "Where do consumers discover APIs and request access? Where are policies applied?",
+   "back": "Discover/request access: Anypoint Exchange. Apply policies: API Manager."
+  },
+  {
+   "id": "m1-c006",
+   "section": "s2",
+   "front": "In RAML, when do you use a URI parameter vs a query parameter?",
+   "back": "URI parameter {id} identifies a SPECIFIC resource (/flights/{id}). Query parameter filters/sorts/paginates a collection (?destination=SFO)."
+  },
+  {
+   "id": "m1-c007",
+   "section": "s2",
+   "front": "RAML: trait vs resourceType?",
+   "back": "Trait = reusable METHOD-level pattern, applied with 'is:'. ResourceType = reusable RESOURCE-level pattern, applied with 'type:'."
+  },
+  {
+   "id": "m1-c008",
+   "section": "s2",
+   "front": "What does the mocking service do?",
+   "back": "Serves responses straight from the RAML/OAS examples so consumers can try the API before any implementation exists."
+  },
+  {
+   "id": "m1-c009",
+   "section": "s3",
+   "front": "What are the three parts of a Mule event?",
+   "back": "Mule message (payload + attributes) and variables. The event is immutable — each change creates a new instance."
+  },
+  {
+   "id": "m1-c010",
+   "section": "s3",
+   "front": "What happens to attributes after ANY connector operation (e.g., HTTP Request)?",
+   "back": "The whole message is replaced: payload = operation result AND attributes = metadata of that result. Original attributes are gone — save them to a var first."
+  },
+  {
+   "id": "m1-c011",
+   "section": "s3",
+   "front": "What does setting 'target' on a connector operation do?",
+   "back": "Stores the operation result in vars.<target> and leaves the current payload UNCHANGED (message enrichment)."
+  },
+  {
+   "id": "m1-c012",
+   "section": "s3",
+   "front": "DataWeave: how do you read query param 'code' and URI param 'id'?",
+   "back": "attributes.queryParams.code and attributes.uriParams.id"
+  },
+  {
+   "id": "m1-c013",
+   "section": "s4",
+   "front": "Property precedence: packaged file vs deployment/system property?",
+   "back": "Deployment and system properties (-D, Runtime Manager) OVERRIDE packaged property files — that's how one JAR serves all environments."
+  },
+  {
+   "id": "m1-c014",
+   "section": "s4",
+   "front": "Flow vs private flow vs subflow — error handling and sources?",
+   "back": "Flow: source + own error handling. Private flow: no source, own error handling. Subflow: no source, NO error handling (inherits caller's), slightly faster."
+  },
+  {
+   "id": "m1-c015",
+   "section": "s4",
+   "front": "Do variables cross a Flow Reference? An HTTP call to another app?",
+   "back": "Flow Reference: YES (whole event travels, changes return). HTTP to another app: NO — only the payload/headers cross the transport boundary."
+  },
+  {
+   "id": "m1-c016",
+   "section": "s4",
+   "front": "Where are Mule domains supported and what do they share?",
+   "back": "Customer-hosted runtimes only (NOT CloudHub). They share global configs — e.g., one HTTP listener/port across apps on the same runtime."
+  },
+  {
+   "id": "m1-c017",
+   "section": "s5",
+   "front": "APIkit flow naming convention for GET /flights with config 'api-config'?",
+   "back": "get:\\flights:api-config — the name IS the routing contract; renaming breaks routing (→ 501 NOT_IMPLEMENTED)."
+  },
+  {
+   "id": "m1-c018",
+   "section": "s5",
+   "front": "APIKIT error → HTTP status: BAD_REQUEST, NOT_FOUND, METHOD_NOT_ALLOWED, UNSUPPORTED_MEDIA_TYPE?",
+   "back": "400, 404, 405, 415 (also NOT_ACCEPTABLE→406, NOT_IMPLEMENTED→501)."
+  },
+  {
+   "id": "m1-c019",
+   "section": "s5",
+   "front": "What is REST Connect?",
+   "back": "When a REST spec is published to Exchange, a connector is auto-generated (one operation per method) that can be used in Mule apps instead of raw HTTP Request."
+  },
+  {
+   "id": "m1-c020",
+   "section": "s6",
+   "front": "Choice router: which route runs if several conditions are true?",
+   "back": "The FIRST matching route (top to bottom) — order conditions from most to least specific. No match + no otherwise = event continues unchanged."
+  },
+  {
+   "id": "m1-c021",
+   "section": "s6",
+   "front": "Scatter-Gather: execution model and resulting payload?",
+   "back": "All routes run CONCURRENTLY on a copy of the event; waits for all. Result = object keyed by route index ('0','1',...), each holding that route's full message."
+  },
+  {
+   "id": "m1-c022",
+   "section": "s6",
+   "front": "What do Validation module components do on failure?",
+   "back": "They THROW a typed error in the VALIDATION namespace (e.g., VALIDATION:INVALID_EMAIL). They don't return booleans."
+  },
+  {
+   "id": "m1-c023",
+   "section": "s7",
+   "front": "On Error Continue vs On Error Propagate — HTTP response to the client?",
+   "back": "Continue: flow 'succeeds' → 200 with the handler's payload. Propagate: error re-thrown → error response (500 by default)."
+  },
+  {
+   "id": "m1-c024",
+   "section": "s7",
+   "front": "Which error fields exist on the Mule error object?",
+   "back": "error.errorType (NAMESPACE:IDENTIFIER), error.description, error.cause, error.errorMessage (e.g., HTTP error body), error.childErrors."
+  },
+  {
+   "id": "m1-c025",
+   "section": "s7",
+   "front": "When does the app-level default error handler apply?",
+   "back": "Only for flows that define NO error handling of their own. It's a fallback, never an addition."
+  },
+  {
+   "id": "m1-c026",
+   "section": "s7",
+   "front": "System error vs messaging error?",
+   "back": "System: outside event processing (startup, idle connection lost) — NOT catchable by handlers. Messaging: during flow processing — handled by error handlers."
+  },
+  {
+   "id": "m1-c027",
+   "section": "s8",
+   "front": "DataWeave: output type of map, groupBy, pluck, mapObject, reduce?",
+   "back": "map → Array; groupBy → Object of arrays; pluck → Array; mapObject → Object; reduce → single value."
+  },
+  {
+   "id": "m1-c028",
+   "section": "s8",
+   "front": "DataWeave lambda shorthand: what are $ and $$ for arrays and for objects?",
+   "back": "Arrays: $ = value, $$ = index. Objects (mapObject/pluck): $ = value, $$ = key."
+  },
+  {
+   "id": "m1-c029",
+   "section": "s8",
+   "front": "Reformat '25/12/2025' to '2025-12-25' in DataWeave?",
+   "back": "('25/12/2025' as Date {format: 'dd/MM/yyyy'}) as String {format: 'yyyy-MM-dd'} — parse with input format, output with target format."
+  },
+  {
+   "id": "m1-c030",
+   "section": "s8",
+   "front": "Can lookup() call a subflow?",
+   "back": "No — lookup('flowName', payload) invokes FLOWS only (and returns the payload). Subflows are not callable from DataWeave."
+  },
+  {
+   "id": "m1-c031",
+   "section": "s9",
+   "front": "Why parameterize DB queries with :params?",
+   "back": "Prevents SQL injection and handles escaping/typing — input parameters separate SQL from data."
+  },
+  {
+   "id": "m1-c032",
+   "section": "s9",
+   "front": "JMS queue vs topic?",
+   "back": "Queue = point-to-point: each message to exactly ONE consumer. Topic = pub-sub: every subscriber gets a COPY."
+  },
+  {
+   "id": "m1-c033",
+   "section": "s10",
+   "front": "What is the payload AFTER a For Each? And what survives from inside it?",
+   "back": "The ORIGINAL payload (changes inside are discarded); variables set inside DO persist."
+  },
+  {
+   "id": "m1-c034",
+   "section": "s10",
+   "front": "Batch job: what payload does On Complete receive, and what is maxFailedRecords' default?",
+   "back": "A BatchJobResult (totalRecords, successfulRecords, failedRecords...) — NOT the original payload. maxFailedRecords defaults to 0 (stop on first failure); -1 = tolerate all."
+  },
+  {
+   "id": "m1-c035",
+   "section": "s10",
+   "front": "Batch step accept policies?",
+   "back": "ALL, NO_FAILURES (default), ONLY_FAILURES — a final step with ONLY_FAILURES handles failed records."
+  },
+  {
+   "id": "m1-c036",
+   "section": "s11",
+   "front": "Default Mule debugger port? What does a breakpoint show?",
+   "back": "Port 6666. The event AS IT ARRIVES at the selected processor (before it executes)."
+  },
+  {
+   "id": "m1-c037",
+   "section": "s12",
+   "front": "API proxy vs autodiscovery (basic endpoint)?",
+   "back": "Proxy: separate app in front, policies run there — for backends you can't modify. Autodiscovery: the Mule implementation registers itself, policies run inside it — no extra hop."
+  },
+  {
+   "id": "m1-c038",
+   "section": "s12",
+   "front": "Client sends invalid client_id vs exceeds its SLA tier — response codes?",
+   "back": "Invalid credentials → 401. Over the tier limit → 429 Too Many Requests."
+  }
  ]
 }

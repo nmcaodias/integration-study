@@ -1347,5 +1347,223 @@
    ],
    "notes": "\n<h3>Client metrics via JMX</h3>\n<ul>\n<li>All Kafka clients (producer, consumer, Streams, Connect) expose metrics through <strong>JMX MBeans</strong>; scrape them with your monitoring stack (Prometheus JMX exporter, etc.). Metrics exist per client, per topic, and per node.</li>\n<li>Kafka Streams adds thread/task/processor/state-store metrics (<code>metrics.recording.level</code> controls granularity); Connect exposes connector/task status and throughput metrics.</li>\n<li>Watch BOTH sides: client metrics tell you how YOUR app behaves; broker-side metrics (under-replicated partitions, request handler idle %) tell you about the cluster — a developer is expected to read the client side fluently.</li>\n</ul>\n\n<h3>Consumer lag — the number-one signal</h3>\n<ul>\n<li><strong>Lag = log end offset − committed/current offset</strong>, per partition: how far behind the consumer is. Growing lag means the app can't keep up (or stopped).</li>\n<li>Sources: consumer metric <code>records-lag-max</code>, <code>kafka-consumer-groups.sh --describe --group app</code> (shows CURRENT-OFFSET, LOG-END-OFFSET, LAG per partition), and external lag exporters (e.g. Burrow) for fleet-wide monitoring.</li>\n<li>Alert on <em>sustained growth</em>, not momentary spikes. Remedies: faster processing (batch/parallelize the work), more consumers (up to partition count), more partitions (planned!), or tuning <code>max.poll.records</code>/processing pipeline.</li>\n<li>Also watch <strong>rebalance metrics</strong> (rebalance rate, time-between-poll) — frequent rebalances often masquerade as lag problems.</li>\n</ul>\n\n<h3>Producer health metrics</h3>\n<table>\n<tr><th>Metric</th><th>What it tells you</th></tr>\n<tr><td><code>record-error-rate</code></td><td>Sends that ultimately FAILED (post-retries) — should be ~0; alert otherwise</td></tr>\n<tr><td><code>record-retry-rate</code></td><td>Transient trouble being retried — early warning of cluster/network issues</td></tr>\n<tr><td><code>request-latency-avg/max</code></td><td>Broker round-trip time — rising latency precedes buffer exhaustion</td></tr>\n<tr><td><code>batch-size-avg</code>, <code>records-per-request-avg</code>, <code>compression-rate-avg</code></td><td>Batching efficiency — small batches = tune linger.ms/batch.size</td></tr>\n<tr><td><code>buffer-available-bytes</code> / <code>bufferpool-wait-time</code></td><td>buffer.memory pressure — send() will start blocking (max.block.ms) when exhausted</td></tr>\n</table>\n\n<h3>Logging, tracing, and interceptors</h3>\n<ul>\n<li>Client logs (log4j/slf4j) surface warnings you should not ignore: rebalances, disconnections, expired transactions, slow commits.</li>\n<li><strong>Message headers</strong> carry correlation/trace IDs across the pipeline; standard practice is W3C/OpenTelemetry trace context propagated producer → consumer so one business transaction is traceable end to end.</li>\n<li><strong>Interceptors</strong> (<code>ProducerInterceptor</code> / <code>ConsumerInterceptor</code>) hook onSend/onConsume for cross-cutting telemetry (count, tag, trace) without touching business code — this is how Confluent Monitoring interceptors work.</li>\n<li>End-to-end latency = event timestamp vs processing time at the consumer — measure it; per-hop metrics alone hide pipeline delays.</li>\n</ul>\n\n<h3>Troubleshooting common scenarios</h3>\n<table>\n<tr><th>Symptom</th><th>Likely cause → check</th></tr>\n<tr><td>Lag grows on ALL partitions</td><td>Processing too slow overall → processing time per record, thread pool, downstream calls</td></tr>\n<tr><td>Lag grows on ONE partition</td><td>Hot key/skewed partitioning, or one stuck consumer → key distribution, that consumer's logs</td></tr>\n<tr><td>Consumer keeps leaving the group</td><td>poll() gaps exceed <code>max.poll.interval.ms</code> → reduce max.poll.records or speed up processing</td></tr>\n<tr><td>Duplicates downstream</td><td>At-least-once + rebalances/crashes between processing and commit → idempotent handling or EOS/transactions</td></tr>\n<tr><td>Producer TimeoutException, buffer full</td><td>Cluster slow/unreachable or produce rate &gt; capacity → request latency, cluster health, buffer.memory</td></tr>\n<tr><td>Consumer gets garbage / DeserializationException</td><td>Serializer/converter mismatch or schema change → producer serializer vs consumer deserializer, registry compatibility</td></tr>\n</table>\n<p class=\"tip\"><strong>Exam tip:</strong> consumer LAG is the metric the exam cares most about — know its definition, where to read it (metrics + kafka-consumer-groups.sh --describe), and the remediation options. Producer-side, record-error-rate vs record-retry-rate (failed vs retried) is the classic pair. And every \"consumer evicted from group\" scenario resolves to max.poll.interval.ms.</p>"
   }
+ ],
+ "cards": [
+  {
+   "id": "kk-c001",
+   "section": "k1",
+   "front": "Kafka ordering guarantee?",
+   "back": "Ordered ONLY within a partition. Same key → same partition (murmur2(key) % numPartitions) → per-key ordering."
+  },
+  {
+   "id": "kk-c002",
+   "section": "k1",
+   "front": "Consumer group with more consumers than partitions?",
+   "back": "Extras sit IDLE — each partition goes to exactly one consumer per group. Partition count = max parallelism."
+  },
+  {
+   "id": "kk-c003",
+   "section": "k1",
+   "front": "The canonical durable topic config?",
+   "back": "replication.factor=3, min.insync.replicas=2, producer acks=all — tolerates one broker down; every ack'd write on ≥2 replicas; NotEnoughReplicas if ISR < 2."
+  },
+  {
+   "id": "kk-c004",
+   "section": "k1",
+   "front": "What is the ISR?",
+   "back": "In-Sync Replicas: replicas fully caught up with the leader. New leaders are elected FROM the ISR (no data loss). Unclean leader election (non-ISR) is off by default."
+  },
+  {
+   "id": "kk-c005",
+   "section": "k1",
+   "front": "Log compaction semantics? Tombstone?",
+   "back": "cleanup.policy=compact keeps at least the LATEST value per key (changelog). A null-value record (tombstone) deletes the key after tombstone retention."
+  },
+  {
+   "id": "kk-c006",
+   "section": "k1",
+   "front": "Default retention for cleanup.policy=delete?",
+   "back": "7 days (retention.ms) or retention.bytes — deletion regardless of consumption; Kafka is a log, not a queue."
+  },
+  {
+   "id": "kk-c007",
+   "section": "k1",
+   "front": "Adding partitions to a keyed topic — consequence?",
+   "back": "hash % numPartitions changes → keys REMAP; per-key ordering breaks across the change. Partitions can never be removed."
+  },
+  {
+   "id": "kk-c008",
+   "section": "k1",
+   "front": "ACLs needed to consume topic T with group G?",
+   "back": "READ on topic T AND READ on group G (offset commits are group operations)."
+  },
+  {
+   "id": "kk-c009",
+   "section": "k1",
+   "front": "What replaced ZooKeeper?",
+   "back": "KRaft — an internal Raft controller quorum manages cluster metadata (default since Kafka 4.0). Client APIs unchanged."
+  },
+  {
+   "id": "kk-c010",
+   "section": "k2",
+   "front": "acks=0 / 1 / all — meaning?",
+   "back": "0: fire-and-forget. 1: leader wrote it (lost if leader dies pre-replication). all: all in-sync replicas have it (pair with min.insync.replicas)."
+  },
+  {
+   "id": "kk-c011",
+   "section": "k2",
+   "front": "enable.idempotence=true prevents what exactly?",
+   "back": "Duplicates from the producer's own RETRIES (broker dedupes by sequence number), preserving per-partition order. NOT app-level re-sends, NOT consumer duplicates."
+  },
+  {
+   "id": "kk-c012",
+   "section": "k2",
+   "front": "Exactly-once for consume-transform-produce requires?",
+   "back": "Transactions: transactional.id + initTransactions + beginTransaction + sendOffsetsToTransaction + commitTransaction; consumers read with isolation.level=read_committed."
+  },
+  {
+   "id": "kk-c013",
+   "section": "k2",
+   "front": "Producer throughput knobs (latency trade)?",
+   "back": "linger.ms (wait to fill batches) + batch.size + compression.type (whole-batch: zstd/lz4/snappy/gzip) — bigger batches compress and ship better."
+  },
+  {
+   "id": "kk-c014",
+   "section": "k2",
+   "front": "Auto-commit data-loss window?",
+   "back": "enable.auto.commit can commit offsets for records NOT yet processed → crash loses them. At-least-once = process first, then commitSync/commitAsync."
+  },
+  {
+   "id": "kk-c015",
+   "section": "k2",
+   "front": "Consumer keeps getting kicked from the group during slow processing — which setting?",
+   "back": "max.poll.interval.ms exceeded (time between poll() calls; default 5 min). Raise it or reduce max.poll.records. Heartbeats (session.timeout.ms) run on a background thread."
+  },
+  {
+   "id": "kk-c016",
+   "section": "k2",
+   "front": "When does auto.offset.reset apply?",
+   "back": "ONLY when the group has no valid committed offset (new group, expired, out-of-range). earliest/latest/none."
+  },
+  {
+   "id": "kk-c017",
+   "section": "k2",
+   "front": "Confluent wire format for Avro?",
+   "back": "Magic byte + 4-byte SCHEMA ID + payload. Consumers fetch the writer's schema by ID from Schema Registry (cached)."
+  },
+  {
+   "id": "kk-c018",
+   "section": "k2",
+   "front": "BACKWARD vs FORWARD compatibility — who upgrades first?",
+   "back": "BACKWARD (default): new schema reads OLD data → CONSUMERS first. FORWARD: old schema reads NEW data → PRODUCERS first. FULL: both."
+  },
+  {
+   "id": "kk-c019",
+   "section": "k2",
+   "front": "Retriable vs non-retriable producer errors — examples?",
+   "back": "Retriable: NotLeaderForPartition, NetworkException, NotEnoughReplicas (transient). Non-retriable: SerializationException, RecordTooLargeException, AuthorizationException."
+  },
+  {
+   "id": "kk-c020",
+   "section": "k2",
+   "front": "CLI to see a group's lag per partition?",
+   "back": "kafka-consumer-groups.sh --describe --group <name> → CURRENT-OFFSET, LOG-END-OFFSET, LAG (also --reset-offsets)."
+  },
+  {
+   "id": "kk-c021",
+   "section": "k3",
+   "front": "Kafka Streams parallelism model?",
+   "back": "One TASK per input partition; tasks spread across threads/instances sharing application.id (= consumer group id). Instances beyond partition count idle."
+  },
+  {
+   "id": "kk-c022",
+   "section": "k3",
+   "front": "KStream vs KTable vs GlobalKTable?",
+   "back": "KStream: every record an event. KTable: latest value per key (changelog). GlobalKTable: fully replicated to each instance; joins need NO co-partitioning."
+  },
+  {
+   "id": "kk-c023",
+   "section": "k3",
+   "front": "What backs a state store for fault tolerance?",
+   "back": "A compacted CHANGELOG topic; state is restored by replay; num.standby.replicas keeps warm copies for fast failover."
+  },
+  {
+   "id": "kk-c024",
+   "section": "k3",
+   "front": "Window types quick map?",
+   "back": "Tumbling: fixed, no overlap. Hopping: fixed size + smaller advance (overlap). Sliding: pairs within a time difference. Session: closed by inactivity gap."
+  },
+  {
+   "id": "kk-c025",
+   "section": "k3",
+   "front": "One-line exactly-once switch in Streams?",
+   "back": "processing.guarantee=exactly_once_v2 (wraps consume-process-produce + changelogs in transactions; brokers ≥ 2.5)."
+  },
+  {
+   "id": "kk-c026",
+   "section": "k3",
+   "front": "Emit only the FINAL result per window?",
+   "back": "suppress(untilWindowCloses) — buffers intermediate updates until the window + grace period end."
+  },
+  {
+   "id": "kk-c027",
+   "section": "k4",
+   "front": "Connect distributed mode: where is state stored, how is it managed?",
+   "back": "Config/offsets/status in internal KAFKA topics; managed via the REST API; tasks rebalance across workers on failure. Standalone = local files, no fault tolerance."
+  },
+  {
+   "id": "kk-c028",
+   "section": "k4",
+   "front": "Connector vs task?",
+   "back": "Connector = logical job definition; TASKS are the parallel data-copying units (bounded by tasks.max and partitions/tables)."
+  },
+  {
+   "id": "kk-c029",
+   "section": "k4",
+   "front": "Converters — role and the classic mistake?",
+   "back": "key/value.converter translate Connect records ↔ bytes (Avro/JSON Schema/Protobuf need schema.registry.url). Independent of the connector. Mismatch with the topic's actual format = garbage/deserialization errors."
+  },
+  {
+   "id": "kk-c030",
+   "section": "k4",
+   "front": "Connect error tolerance + DLQ — configs and limitation?",
+   "back": "errors.tolerance=all + errors.deadletterqueue.topic.name (+context.headers.enable). DLQs are a SINK connector feature."
+  },
+  {
+   "id": "kk-c031",
+   "section": "k4",
+   "front": "Log-based CDC vs JDBC polling?",
+   "back": "CDC (Debezium) reads the DB transaction log: captures DELETEs, low latency, no table load. Polling misses deletes, loads the DB, latency = poll interval."
+  },
+  {
+   "id": "kk-c032",
+   "section": "k5",
+   "front": "Test tools by layer: client logic / Streams topology / real-broker concerns?",
+   "back": "MockProducer & MockConsumer / TopologyTestDriver (TestInputTopic, TestOutputTopic, state stores, time control) / Testcontainers or embedded Kafka."
+  },
+  {
+   "id": "kk-c033",
+   "section": "k5",
+   "front": "Prevent schema changes breaking consumers — where?",
+   "back": "In CI: validate candidate schemas against the registry's compatibility mode (REST check or schema-registry:test-compatibility Maven goal)."
+  },
+  {
+   "id": "kk-c034",
+   "section": "k6",
+   "front": "Consumer lag — definition and reading?",
+   "back": "LOG-END-OFFSET − committed/current offset per partition. Watch records-lag-max metric or kafka-consumer-groups.sh; alert on SUSTAINED growth."
+  },
+  {
+   "id": "kk-c035",
+   "section": "k6",
+   "front": "record-error-rate vs record-retry-rate?",
+   "back": "error-rate = sends that FAILED after retries (data loss — alert on non-zero). retry-rate = transient trouble being retried (early warning)."
+  },
+  {
+   "id": "kk-c036",
+   "section": "k6",
+   "front": "Cross-service tracing through Kafka — where does trace context travel?",
+   "back": "In message HEADERS (W3C/OpenTelemetry context), injected on produce and extracted on consume — never in the key (would change partitioning)."
+  }
  ]
 }

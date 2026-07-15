@@ -1484,5 +1484,211 @@
    ],
    "notes": "\n<h3>CI/CD pipelines with MuleSoft Maven plugins</h3>\n<p>The canonical pipeline (tool-agnostic — Jenkins/GitHub Actions/Azure DevOps all drive the same Maven core):</p>\n<ol>\n<li><strong>Commit</strong> → trigger build.</li>\n<li><strong>Build & unit test:</strong> <code>mvn clean package</code> — compiles, runs <strong>MUnit</strong> via munit-maven-plugin, enforces coverage gates (fail the build), produces the deployable JAR once.</li>\n<li><strong>Publish:</strong> version the artifact (semver) and <code>mvn deploy</code> it to a repository (<strong>Exchange</strong> as Maven repo, groupId = org ID, or Nexus/Artifactory).</li>\n<li><strong>Deploy per environment:</strong> <code>mvn deploy -DmuleDeploy</code> with the <strong>mule-maven-plugin</strong>'s target config (cloudHubDeployment / cloudhub2Deployment / rtfDeployment / armDeployment / standaloneDeployment), injecting environment properties and secure keys from the pipeline's secret store. Same artifact promoted dev→test→prod — never rebuilt.</li>\n<li><strong>Post-deploy:</strong> smoke/integration tests, then promote.</li>\n</ol>\n<ul>\n<li>Authenticate as a <strong>Connected App</strong> (client_credentials) in <code>settings.xml</code>/plugin config — no personal accounts in automation.</li>\n<li>API lifecycle in the pipeline: publish the spec to Exchange, create/configure the API instance and policies via automation, pair the app by autodiscovery (api.id per environment).</li>\n</ul>\n\n<h3>Automating interactions with the platform</h3>\n<table>\n<tr><th>Tool</th><th>Use for</th></tr>\n<tr><td><strong>Anypoint Platform APIs</strong> (REST)</td><td>Everything the UI does: ARM (Runtime Manager), API Manager, Exchange, Access Management — the foundation all other tools call</td></tr>\n<tr><td><strong>Anypoint CLI</strong></td><td>Scriptable command-line access (deployments, API instances, policies, VPCs) for pipelines and ops scripts</td></tr>\n<tr><td><strong>Maven plugins</strong></td><td>mule-maven-plugin (package/deploy), munit-maven-plugin (test/coverage), exchange publication</td></tr>\n<tr><td>Provider ecosystems</td><td>Terraform-style IaC and CI plugins built on the platform APIs (recognize the concept)</td></tr>\n</table>\n\n<h3>Logging configurations across deployment options</h3>\n<ul>\n<li>Every app ships <code>log4j2.xml</code>: appenders + per-category levels; <strong>async loggers</strong> for throughput (accepting small crash-loss risk) vs sync for audit-grade logs. Correlation IDs in patterns; JSON layouts for machine parsing (details in MCD L2 d4).</li>\n<li><strong>CloudHub:</strong> platform captures console output (retention/size limits, searchable in Runtime Manager). For enterprise log aggregation, either use Anypoint Monitoring log management (Titanium) or <em>disable CloudHub logging</em> (org permission required) and ship logs with a custom appender (Splunk/ELK/HTTP).</li>\n<li><strong>Runtime Fabric:</strong> app logs go to the container stdout and are forwarded by the cluster's log forwarding setup (e.g. to ELK/Splunk); Anypoint Monitoring agents can publish metrics/logs to the control plane.</li>\n<li><strong>Customer-hosted:</strong> you own everything: file appenders + rotation, forwarders/agents into your central logging, and disk housekeeping.</li>\n</ul>\n\n<h3>Anypoint Monitoring across deployment options</h3>\n<ul>\n<li><strong>Built-in dashboards</strong> (all targets, agent-based on hybrid/RTF): app metrics — inbound/outbound throughput, response times, errors, JVM/CPU/memory; API analytics from gateways.</li>\n<li><strong>Custom dashboards & alerts:</strong> compose metrics, set threshold alerts (error ratio, response time, CPU) with notification channels.</li>\n<li><strong>Log management</strong> (Titanium subscription): centralized search over app logs with longer retention.</li>\n<li><strong>Functional monitoring (BAT):</strong> scheduled black-box API checks from public/private locations validating real behavior in production.</li>\n<li>Complementary: <strong>Runtime Manager alerts</strong> (app down, worker unresponsive, deployment failed), <strong>API Manager alerts</strong> (policy violations, response codes), <strong>Visualizer</strong> (live dependency graph of the application network).</li>\n</ul>\n<p class=\"tip\"><strong>Exam tip:</strong> pipeline questions almost always test: build ONCE and promote the same artifact; MUnit+coverage gates in the build stage; Connected App credentials; environment differences via properties, not rebuilds. Operations questions: know which tool answers \"app down?\" (RM alert), \"API abused?\" (API Manager alert/analytics), \"search all prod logs\" (Anypoint Monitoring log management), \"is the API functionally OK right now?\" (BAT).</p>"
   }
+ ],
+ "cards": [
+  {
+   "id": "ia-c001",
+   "section": "a1",
+   "front": "Control plane vs runtime plane — what runs where?",
+   "back": "Control plane: design/deploy/manage/monitor (Design Center, Exchange, Management Center) — METADATA only. Runtime plane: Mule apps executing — ALL business data."
+  },
+  {
+   "id": "ia-c002",
+   "section": "a1",
+   "front": "When is Anypoint Platform PCE the answer?",
+   "back": "When even the CONTROL PLANE must be customer-hosted (strict data residency / air-gapped). Reduced feature set."
+  },
+  {
+   "id": "ia-c003",
+   "section": "a1",
+   "front": "Runtime Fabric in one sentence?",
+   "back": "Container-based runtime plane on CUSTOMER infrastructure (K8s: EKS/AKS/GKE or VMs), orchestrated from the Anypoint control plane; supports Anypoint Security edge."
+  },
+  {
+   "id": "ia-c004",
+   "section": "a1",
+   "front": "Functional vs non-functional requirement — quick test?",
+   "back": "Functional = WHAT it does (sync orders to SAP). NFR = HOW WELL (latency, throughput, availability, RTO/RPO, security). NFRs drive the architecture."
+  },
+  {
+   "id": "ia-c005",
+   "section": "a2",
+   "front": "Queue vs topic/exchange delivery semantics?",
+   "back": "Queue: each message to exactly ONE consumer (competing consumers scale). Topic/exchange: each subscriber gets a COPY (pub-sub)."
+  },
+  {
+   "id": "ia-c006",
+   "section": "a2",
+   "front": "Async request-reply over queues: how does the requester match replies?",
+   "back": "A CORRELATION ID carried on the messages (request queue + reply queue); the requester matches reply.correlationId to its request."
+  },
+  {
+   "id": "ia-c007",
+   "section": "a2",
+   "front": "Claim check pattern?",
+   "back": "Store the large payload externally (S3/DB/file), send only a reference through the broker; consumer redeems the reference."
+  },
+  {
+   "id": "ia-c008",
+   "section": "a2",
+   "front": "At-least-once delivery implies what for consumers?",
+   "back": "DUPLICATES are possible — consumers must be idempotent (Idempotent Message Validator with a SHARED object store, or naturally idempotent operations)."
+  },
+  {
+   "id": "ia-c009",
+   "section": "a3",
+   "front": "Salesforce Connector: mass data load vs real-time changes?",
+   "back": "Mass load: Bulk API v2 jobs. Real-time inbound: Subscribe Channel (platform events / CDC) with replay IDs. Upsert by EXTERNAL ID for sync-by-business-key."
+  },
+  {
+   "id": "ia-c010",
+   "section": "a3",
+   "front": "Enterprise Data Model vs bounded contexts — default recommendation?",
+   "back": "Bounded-context models per domain (Exchange fragments), translated at API boundaries. One giant EDM = slow governance, bloated types; only for small orgs/few core entities."
+  },
+  {
+   "id": "ia-c011",
+   "section": "a4",
+   "front": "Object Store v2 hard limits to design around?",
+   "back": "Max TTL 30 days, ~10 MB values, rate-limited API, REGIONAL (no cross-region replication), shared across an app's workers."
+  },
+  {
+   "id": "ia-c012",
+   "section": "a4",
+   "front": "Idempotent Message Validator on multiple nodes/workers — requirement?",
+   "back": "The backing object store must be SHARED (cluster grid on-prem, OSv2 on CloudHub). Per-node in-memory stores let duplicates through."
+  },
+  {
+   "id": "ia-c013",
+   "section": "a4",
+   "front": "Persistent VM queues on CloudHub 2.0?",
+   "back": "NOT supported — use Anypoint MQ for durable messaging on CH2. (CH 1.0 has the persistent queues feature.)"
+  },
+  {
+   "id": "ia-c014",
+   "section": "a5",
+   "front": "Cluster vs server group?",
+   "back": "Cluster: distributed shared memory grid (VM queues, object stores, locks) + primary node election. Server group: N INDEPENDENT servers, no shared state, no primary."
+  },
+  {
+   "id": "ia-c015",
+   "section": "a5",
+   "front": "What runs only on a cluster's primary node?",
+   "back": "Schedulers and primaryNodeOnly sources (JMS topics, Salesforce streaming, file/DB polling) — prevents duplicate triggering; re-election on failure."
+  },
+  {
+   "id": "ia-c016",
+   "section": "a5",
+   "front": "Cluster node communication ports? Quorum purpose?",
+   "back": "TCP 5701–5703 (+UDP multicast optional). Quorum prevents split-brain: only the majority partition keeps working (object store ops)."
+  },
+  {
+   "id": "ia-c017",
+   "section": "a5",
+   "front": "CloudHub worker ports: public vs VPC-internal?",
+   "back": "Public via shared LB: 8081 (http)/8082 (https) = ${http.port}. VPC-internal only: 8091/8092 = ${http.private.port}, via mule-worker-internal-... DNS."
+  },
+  {
+   "id": "ia-c018",
+   "section": "a5",
+   "front": "What requires a Dedicated Load Balancer?",
+   "back": "Custom domains, YOUR TLS certificates, two-way TLS from clients, URL mapping rules. DLB requires an Anypoint VPC."
+  },
+  {
+   "id": "ia-c019",
+   "section": "a5",
+   "front": "Mule 4 execution engine: processing types?",
+   "back": "CPU_LITE (quick non-blocking), CPU_INTENSIVE (heavy compute), BLOCKING_IO (waits) — scheduled on the shared self-tuning UBER pool; back-pressure returns 503 when saturated."
+  },
+  {
+   "id": "ia-c020",
+   "section": "a5",
+   "front": "Blocking code inside CPU_LITE — consequence?",
+   "back": "Starves the SHARED thread pools, stalling unrelated flows. Declare BLOCKING_IO or use non-blocking clients; shape concurrency with maxConcurrency."
+  },
+  {
+   "id": "ia-c021",
+   "section": "a7",
+   "front": "HA vs DR, and their metrics?",
+   "back": "HA = redundancy within a deployment (worker/AZ failure). DR = restore service after site/REGION loss, measured by RTO (time to recover) and RPO (data-loss tolerance)."
+  },
+  {
+   "id": "ia-c022",
+   "section": "a7",
+   "front": "Saga / compensation pattern — when?",
+   "back": "Long multi-system processes over non-transactional APIs: each step has an UNDO action executed if a later step fails (cancel flight if hotel fails). XA is impossible over HTTP."
+  },
+  {
+   "id": "ia-c023",
+   "section": "a7",
+   "front": "Zero message loss across an app crash — what's required?",
+   "back": "Persist BEFORE ack (persistent queue/broker), consume transactionally or with manual acks. Until Successful alone holds the event in MEMORY — lost on crash."
+  },
+  {
+   "id": "ia-c024",
+   "section": "a8",
+   "front": "Backend can only take 50 concurrent requests; Mule receives thousands. Response?",
+   "back": "Throttle TOWARD the backend: maxConcurrency on the flow/operation or queue-based buffering at its safe rate. More Mule workers make it WORSE."
+  },
+  {
+   "id": "ia-c025",
+   "section": "a8",
+   "front": "Millions of records nightly, restart-safe, per-record error tolerance — which construct?",
+   "back": "Batch Job: persistent record queues, parallel steps, maxFailedRecords tolerance, resumes after crash. (EE only.)"
+  },
+  {
+   "id": "ia-c026",
+   "section": "a9",
+   "front": "Identity management vs client management?",
+   "back": "Identity mgmt = HUMAN platform users via SAML/OIDC SSO. Client mgmt = API CONSUMERS get credentials/tokens from an external OAuth provider (Okta/Azure AD); policies validate them."
+  },
+  {
+   "id": "ia-c027",
+   "section": "a9",
+   "front": "CI/CD credentials for Anypoint Platform — what and why?",
+   "back": "Connected Apps (client_credentials grant, narrow scopes): machine identity — rotatable, auditable, not tied to a person."
+  },
+  {
+   "id": "ia-c028",
+   "section": "a9",
+   "front": "Anypoint Security provides what, where?",
+   "back": "Edge policies (DoS, IP allowlists, HTTP limits, WAF), Secrets Manager, tokenization — Runtime Fabric-targeted, separately licensed."
+  },
+  {
+   "id": "ia-c029",
+   "section": "a9",
+   "front": "\"Who changed the prod policy last month?\" — where's the answer?",
+   "back": "The Anypoint Platform AUDIT LOG (Access Management UI or query API; exportable to SIEM). App logs cover runtime traffic, not admin actions."
+  },
+  {
+   "id": "ia-c030",
+   "section": "a10",
+   "front": "Canonical CI/CD pipeline for Mule apps?",
+   "back": "mvn clean package (MUnit + coverage gates) → publish versioned artifact (Exchange) → mvn deploy -DmuleDeploy per environment with injected properties → smoke tests → promote SAME artifact."
+  },
+  {
+   "id": "ia-c031",
+   "section": "a10",
+   "front": "Scriptable automation options for the platform?",
+   "back": "Anypoint Platform REST APIs (the foundation), Anypoint CLI, and the Maven plugins — all authenticated via connected apps."
+  },
+  {
+   "id": "ia-c032",
+   "section": "a10",
+   "front": "CloudHub logs to corporate Splunk — standard approach?",
+   "back": "Disable CloudHub logging for the app (org permission needed) + custom log4j2 appender shipping to Splunk; or Anypoint Monitoring log tooling (Titanium)."
+  },
+  {
+   "id": "ia-c033",
+   "section": "a6",
+   "front": "MUnit vs integration vs performance testing — one-line split?",
+   "back": "MUnit: flow logic with mocked dependencies. Integration: deployed app against REAL dependencies (TLS, auth, contracts). Performance: quantitative NFRs on production-like sizing."
+  },
+  {
+   "id": "ia-c034",
+   "section": "a6",
+   "front": "What is BAT / API Functional Monitoring?",
+   "back": "Scheduled black-box tests calling deployed APIs from public/private locations, asserting on real responses — continuous functional verification."
+  }
  ]
 }

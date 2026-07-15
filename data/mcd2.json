@@ -1468,5 +1468,211 @@
    ],
    "notes": "\n<h3>MUnit test structure</h3>\n<p>Suites are XML files in <code>src/test/munit</code>; each test has three blocks — <strong>Behavior</strong> (arrange), <strong>Execution</strong> (act), <strong>Validation</strong> (assert):</p>\n<pre><code>&lt;munit:test name=\"getFlights-returns-200\"&gt;\n  &lt;munit:behavior&gt;\n    &lt;munit-tools:mock-when processor=\"db:select\"&gt;\n      &lt;munit-tools:with-attributes&gt;\n        &lt;munit-tools:with-attribute attributeName=\"doc:name\" whereValue=\"Select flights\"/&gt;\n      &lt;/munit-tools:with-attributes&gt;\n      &lt;munit-tools:then-return&gt;\n        &lt;munit-tools:payload value='#[[{\"code\":\"ER38sd\"},{\"code\":\"ER45if\"}]]'/&gt;\n      &lt;/munit-tools:then-return&gt;\n    &lt;/munit-tools:mock-when&gt;\n  &lt;/munit:behavior&gt;\n  &lt;munit:execution&gt;\n    &lt;flow-ref name=\"getFlightsFlow\"/&gt;\n  &lt;/munit:execution&gt;\n  &lt;munit:validation&gt;\n    &lt;munit-tools:assert-that expression=\"#[sizeOf(payload)]\"\n        is=\"#[MunitTools::equalTo(2)]\"/&gt;\n  &lt;/munit:validation&gt;\n&lt;/munit:test&gt;</code></pre>\n<table>\n<tr><th>Component</th><th>Purpose</th></tr>\n<tr><td><strong>Mock When</strong></td><td>Replace a processor (matched by name + attributes like <code>doc:name</code>) with a canned payload/attributes/variables — or <strong>Then throw</strong> an error (typeId e.g. <code>HTTP:CONNECTIVITY</code>) to drive error handlers deterministically</td></tr>\n<tr><td><strong>Spy</strong></td><td>Assert on the event <em>before</em> and/or <em>after</em> a real processor runs, without replacing it</td></tr>\n<tr><td><strong>Verify Call</strong></td><td>Assert a processor was invoked N times / at least / at most</td></tr>\n<tr><td><strong>Assert That / Assert Equals / Fail</strong></td><td>Assertions with <code>MunitTools</code> matchers: <code>equalTo</code>, <code>notNullValue</code>, <code>hasSize</code>, <code>containsString</code>, <code>hasKey</code>…</td></tr>\n<tr><td><strong>Before/After Suite &amp; Before/After Test</strong></td><td>One-time vs per-test setup/teardown</td></tr>\n<tr><td><strong>Set Event</strong></td><td>Build the input event (payload, attributes, vars) for the flow under test</td></tr>\n</table>\n<ul>\n<li>Testing an HTTP-triggered flow: either flow-ref the flow directly with a Set Event that mimics listener attributes, or <em>enable flow sources</em> and call the real endpoint with an HTTP Request inside the test.</li>\n<li>Tests can be tagged, ignored, or <strong>parameterized</strong> (run the same suite over multiple input files).</li>\n</ul>\n\n<h3>Coverage and the Maven build</h3>\n<pre><code>&lt;plugin&gt;\n  &lt;groupId&gt;com.mulesoft.munit.tools&lt;/groupId&gt;\n  &lt;artifactId&gt;munit-maven-plugin&lt;/artifactId&gt;\n  &lt;configuration&gt;\n    &lt;coverage&gt;\n      &lt;runCoverage&gt;true&lt;/runCoverage&gt;\n      &lt;failBuild&gt;true&lt;/failBuild&gt;\n      &lt;requiredApplicationCoverage&gt;80&lt;/requiredApplicationCoverage&gt;\n      &lt;requiredResourceCoverage&gt;70&lt;/requiredResourceCoverage&gt;\n      &lt;requiredFlowCoverage&gt;60&lt;/requiredFlowCoverage&gt;\n      &lt;formats&gt;&lt;format&gt;html&lt;/format&gt;&lt;format&gt;json&lt;/format&gt;&lt;/formats&gt;\n    &lt;/coverage&gt;\n  &lt;/configuration&gt;\n&lt;/plugin&gt;</code></pre>\n<ul>\n<li>MUnit runs in the <strong>test</strong> phase (<code>mvn test</code>); coverage thresholds at application/resource/flow level can <strong>fail the build</strong> — the standard CI quality gate. Tests are excluded from the deployable JAR.</li>\n<li>Typical pipeline: commit → <code>mvn clean package</code> (compiles + MUnit + coverage) → publish artifact/spec to Exchange → <code>mvn deploy -DmuleDeploy</code> per environment with injected properties/secrets → smoke/functional tests → promote. Same artifact every stage; Connected App credentials; secure keys from the secret store.</li>\n</ul>\n\n<h3>Production readiness checklist</h3>\n<ul>\n<li><strong>One API instance per environment</strong> in API Manager; the app pairs via <strong>autodiscovery</strong> with an environment-specific <code>api.id</code> property. Policies/SLAs configured per instance.</li>\n<li>Baseline policies: an identity policy (client ID enforcement / OAuth / JWT) + rate limiting or spike control; TLS on all endpoints; secure properties for secrets.</li>\n<li><strong>Exchange documentation</strong>: portal pages, examples, terms; enable the mocking service for evaluation; consumers self-serve access via contracts and SLA tiers.</li>\n<li>Operational: alerts (RM + API Manager), dashboards, correlation-friendly logging, health endpoint, scaling plan (workers/replicas), and MUnit coverage gate in CI.</li>\n</ul>\n\n<h3>Versioning and deprecation</h3>\n<ul>\n<li>Only <strong>MAJOR</strong> versions surface to consumers (URL segment <code>/v2</code> or new instance); MINOR/PATCH stay backwards-compatible. Additive changes (new optional field/resource) must not break clients; contract-breaking changes require a new major version.</li>\n<li><strong>Deprecation flow:</strong> release v2 alongside v1 → mark v1 <em>deprecated</em> in Exchange/API Manager (blocks/flags new access requests, signals consumers) → notify contract holders with a sunset date → monitor v1 traffic → retire after the window. Never silently redirect or delete while contracts are active.</li>\n</ul>\n<p class=\"tip\"><strong>Exam tip:</strong> Mock When vs Spy vs Verify is the most-tested MUnit distinction: replace = Mock, observe without replacing = Spy, count calls = Verify. Also memorize the coverage config knobs (<code>failBuild</code>, <code>requiredApplicationCoverage</code>) and that MUnit binds to the Maven <em>test</em> phase.</p>"
   }
+ ],
+ "cards": [
+  {
+   "id": "m2-c001",
+   "section": "d1",
+   "front": "Repeatable file-stored stream: default in-memory buffer and edition?",
+   "back": "512 KB buffer, then overflow to disk. Default on Enterprise Edition."
+  },
+  {
+   "id": "m2-c002",
+   "section": "d1",
+   "front": "Repeatable in-memory stream: defaults and failure mode?",
+   "back": "Initial 512 KB, +512 KB increments up to maxInMemorySize; exceeding it raises STREAM_MAXIMUM_SIZE_EXCEEDED. Default on Community Edition/Kernel."
+  },
+  {
+   "id": "m2-c003",
+   "section": "d1",
+   "front": "Streamed OBJECTS (auto-paging connectors): default buffer size?",
+   "back": "500 objects (in-memory, +100 increments); EE file-store variant serializes overflow with Kryo."
+  },
+  {
+   "id": "m2-c004",
+   "section": "d1",
+   "front": "DataWeave streaming: reader and writer properties?",
+   "back": "Reader: streaming=true (sequential single-pass). Writer: deferred=true (stream output downstream)."
+  },
+  {
+   "id": "m2-c005",
+   "section": "d1",
+   "front": "Can VM queues connect two different Mule applications?",
+   "back": "NO — VM queues are intra-application only. Use Anypoint MQ or JMS between apps."
+  },
+  {
+   "id": "m2-c006",
+   "section": "d1",
+   "front": "Anypoint MQ: FIFO queues, exchanges, ack modes?",
+   "back": "FIFO queues = ordering; message exchanges = pub/sub fan-out; ack modes IMMEDIATE / AUTO / MANUAL; DLQ routing by delivery count."
+  },
+  {
+   "id": "m2-c007",
+   "section": "d1",
+   "front": "Local (single resource) transaction constraints?",
+   "back": "All operations from the SAME connector using the SAME global config; no nesting. XA (two-phase commit) spans multiple resources, supports nesting, slower."
+  },
+  {
+   "id": "m2-c008",
+   "section": "d1",
+   "front": "Which connectors are transactional? Which are NOT?",
+   "back": "Transactional: JMS, VM, Database (JDBC). NOT: HTTP, File, SFTP."
+  },
+  {
+   "id": "m2-c009",
+   "section": "d1",
+   "front": "Error reaches On Error CONTINUE inside a transactional flow — what happens to the transaction?",
+   "back": "It stays alive and COMMITS (handler even runs inside it). Propagate at the tx-owning level → ROLLBACK. Continue can silently commit partial work!"
+  },
+  {
+   "id": "m2-c010",
+   "section": "d1",
+   "front": "Reconnection strategy vs Until Successful vs redelivery policy?",
+   "back": "Reconnection = CONNECTION-level retry (connector config). Until Successful = retries wrapped OPERATIONS in memory (RETRY_EXHAUSTED). Redelivery policy = per-MESSAGE failure count on a source (REDELIVERY_EXHAUSTED → DLQ)."
+  },
+  {
+   "id": "m2-c011",
+   "section": "d1",
+   "front": "Transactional actions: ALWAYS_BEGIN vs BEGIN_OR_JOIN vs ALWAYS_JOIN?",
+   "back": "ALWAYS_BEGIN: start new (error if nesting single-resource tx). BEGIN_OR_JOIN: join if present else start. ALWAYS_JOIN: must join existing, error if none."
+  },
+  {
+   "id": "m2-c012",
+   "section": "d2",
+   "front": "A JDBC driver added as a normal dependency throws ClassNotFoundException in the connector. Why + fix?",
+   "back": "Mule 4 classloader isolation hides app JARs from connectors. Declare it under sharedLibraries in the mule-maven-plugin."
+  },
+  {
+   "id": "m2-c013",
+   "section": "d2",
+   "front": "mvn deploy vs mvn deploy -DmuleDeploy?",
+   "back": "Plain: publish artifact to the Maven repository (e.g., Exchange). With -DmuleDeploy: deploy the APP to the configured target (CloudHub/RTF/etc.)."
+  },
+  {
+   "id": "m2-c014",
+   "section": "d2",
+   "front": "Maven lifecycle: which phase runs MUnit?",
+   "back": "test (via munit-maven-plugin) — so mvn package already runs tests and coverage gates."
+  },
+  {
+   "id": "m2-c015",
+   "section": "d2",
+   "front": "groupId when publishing to Exchange? Classifier for connectors?",
+   "back": "groupId = your Anypoint ORGANIZATION ID. Connectors/modules use classifier 'mule-plugin'."
+  },
+  {
+   "id": "m2-c016",
+   "section": "d2",
+   "front": "Semver: adding an optional field vs renaming a field?",
+   "back": "Optional addition = MINOR (backwards compatible). Rename/remove/retype = MAJOR (breaking — new /v2 instance)."
+  },
+  {
+   "id": "m2-c017",
+   "section": "d2",
+   "front": "What does mule-artifact.json declare?",
+   "back": "minMuleVersion (deploy fails fast on older runtimes) and secureProperties (masked in Runtime Manager UI/API)."
+  },
+  {
+   "id": "m2-c018",
+   "section": "d3",
+   "front": "Keystore vs truststore?",
+   "back": "Keystore = YOUR identity (private key + cert). Truststore = who you TRUST (public certs/CAs). Default keystore type: JKS."
+  },
+  {
+   "id": "m2-c019",
+   "section": "d3",
+   "front": "One-way vs two-way TLS: who needs what?",
+   "back": "One-way: server keystore; client truststore (only if cert not publicly trusted). Two-way: BOTH sides have keystore + truststore; server requires client certs."
+  },
+  {
+   "id": "m2-c020",
+   "section": "d3",
+   "front": "What does insecure=\"true\" on a truststore do?",
+   "back": "Disables certificate validation entirely — prototyping/testing ONLY, never production."
+  },
+  {
+   "id": "m2-c021",
+   "section": "d3",
+   "front": "Secure properties: value wrapper syntax, prefix, and default cipher mode?",
+   "back": "Encrypted values wrapped as ![...] (no trailing spaces!). Reference with mandatory secure:: prefix (all props in a secure file). Default mode CBC; typical algorithm AES."
+  },
+  {
+   "id": "m2-c022",
+   "section": "d3",
+   "front": "Where should the secure-properties decryption key come from?",
+   "back": "Deploy time: -Dsecure.key VM arg, hidden Runtime Manager property, or CI-injected secret — NEVER packaged with the app."
+  },
+  {
+   "id": "m2-c023",
+   "section": "d3",
+   "front": "A file must stay encrypted at rest on a partner's SFTP. TLS enough?",
+   "back": "No — TLS protects transit only. PGP-encrypt the payload (Cryptography module) with the partner's PUBLIC key; only their private key decrypts."
+  },
+  {
+   "id": "m2-c024",
+   "section": "d3",
+   "front": "JWT validation policy vs OAuth token enforcement?",
+   "back": "JWT: validated LOCALLY (signature via JWKS, expiry, claims) — no per-request round trip. OAuth enforcement: introspects the token against the authorization server each request."
+  },
+  {
+   "id": "m2-c025",
+   "section": "d4",
+   "front": "Async loggers: benefit and trade-off?",
+   "back": "Higher throughput/lower latency, BUT buffered entries can be lost on a crash and strict ordering weakens. Keep audit-critical logs synchronous."
+  },
+  {
+   "id": "m2-c026",
+   "section": "d4",
+   "front": "How does the correlation ID cross apps? Where do you see it?",
+   "back": "Propagated automatically via the X-Correlation-ID HTTP header; included in default log patterns — search it in centralized logs to trace one transaction."
+  },
+  {
+   "id": "m2-c027",
+   "section": "d4",
+   "front": "Where to configure: app-down alert / policy-violation alert / cross-app log search?",
+   "back": "App down: Runtime Manager. Policy violation & API response codes: API Manager. Log search across apps: Anypoint Monitoring log management (Titanium for long retention)."
+  },
+  {
+   "id": "m2-c028",
+   "section": "d4",
+   "front": "What is the Custom Business Event component for?",
+   "back": "Publishing named business milestones (e.g., 'OrderPlaced') with key/value metadata — business-level tracking independent of technical logs."
+  },
+  {
+   "id": "m2-c029",
+   "section": "d5",
+   "front": "MUnit: Mock When vs Spy vs Verify Call?",
+   "back": "Mock When = REPLACE a processor (then-return / then-throw). Spy = observe before/after WITHOUT replacing. Verify Call = assert invocation count (times/atLeast/atMost)."
+  },
+  {
+   "id": "m2-c030",
+   "section": "d5",
+   "front": "MUnit test structure blocks?",
+   "back": "Behavior (arrange: mocks, set event) → Execution (act: flow-ref) → Validation (assert-that with MunitTools matchers)."
+  },
+  {
+   "id": "m2-c031",
+   "section": "d5",
+   "front": "How to force an error path in MUnit deterministically?",
+   "back": "Mock When on the processor with 'Then throw', raising a typed error (e.g., typeId HTTP:CONNECTIVITY)."
+  },
+  {
+   "id": "m2-c032",
+   "section": "d5",
+   "front": "Coverage build gate configuration?",
+   "back": "munit-maven-plugin coverage block: runCoverage, failBuild=true, requiredApplicationCoverage / requiredResourceCoverage / requiredFlowCoverage."
+  },
+  {
+   "id": "m2-c033",
+   "section": "d5",
+   "front": "Build-once principle in CI/CD?",
+   "back": "Build and test ONE artifact, publish it, and promote the SAME JAR through environments — env differences come from externalized properties/secrets at deploy time."
+  },
+  {
+   "id": "m2-c034",
+   "section": "d5",
+   "front": "Deprecation flow for a breaking API change?",
+   "back": "Release v2 as a NEW instance alongside v1 → mark v1 deprecated (Exchange/API Manager) → notify contract holders with a sunset date → monitor traffic → retire."
+  }
  ]
 }
