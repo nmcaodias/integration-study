@@ -51,6 +51,14 @@
 
   // multi-select support: a question has either `answer` (number) or `answers` (array)
   function isMulti(q) { return Array.isArray(q.answers); }
+  function levelOf(q) { return q.level || "medium"; }
+  const LEVEL_PILL = { easy: "ok", medium: "info", hard: "warn" };
+  function levelPill(q) {
+    return q.level ? `<span class="pill ${LEVEL_PILL[levelOf(q)]}">${levelOf(q)}</span>` : "";
+  }
+  function exhibitHtml(q) {
+    return q.exhibit ? `<pre class="exhibit"><code>${esc(q.exhibit)}</code></pre>` : "";
+  }
   function answerSet(q) { return isMulti(q) ? q.answers : [q.answer]; }
   function setEq(a, b) {
     if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
@@ -122,7 +130,7 @@
       if (!q) return null;
       return {
         id: cardId, section: q.section, auto: true,
-        front: q.q + "\n\n" + q.options.map((o, i) => letters[i] + ". " + o).join("\n"),
+        front: q.q + (q.exhibit ? "\n\n" + q.exhibit : "") + "\n\n" + q.options.map((o, i) => letters[i] + ". " + o).join("\n"),
         back: "Answer: " + answerSet(q).map(i => letters[i] + ". " + q.options[i]).join(" · ") + "\n\n" + q.explanation
       };
     }
@@ -402,6 +410,15 @@
           </select>
         </div>
         <div class="setup-field">
+          <label for="quiz-level">Difficulty</label>
+          <select id="quiz-level">
+            <option value="all">All levels</option>
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </div>
+        <div class="setup-field">
           <label for="quiz-count">Number of questions (0 = all available)</label>
           <input type="number" id="quiz-count" min="0" max="${cert.questions.length}" value="10">
         </div>
@@ -411,15 +428,18 @@
     document.getElementById("quiz-start").onclick = () => {
       const topic = document.getElementById("quiz-topic").value;
       const count = parseInt(document.getElementById("quiz-count").value, 10) || 0;
-      startQuiz(certId, topic === "all" ? null : topic, count);
+      const level = document.getElementById("quiz-level").value;
+      startQuiz(certId, topic === "all" ? null : topic, count, null, level === "all" ? null : level);
     };
   }
 
-  function startQuiz(certId, sectionId, count, prebuiltPool) {
+  function startQuiz(certId, sectionId, count, prebuiltPool, level) {
     const cert = CERTS[certId];
     let pool = prebuiltPool
       ? prebuiltPool.slice()
       : shuffle(sectionId ? cert.questions.filter(q => q.section === sectionId) : cert.questions.slice());
+    if (level) pool = pool.filter(q => levelOf(q) === level);
+    if (!pool.length) { alert("No questions match that topic/difficulty combination."); return; }
     if (count > 0) pool = pool.slice(0, count);
     session = {
       mode: "quiz", certId, questions: pool, idx: 0,
@@ -474,7 +494,9 @@
       } else if (multi && s.picked.includes(origIdx)) {
         cls += " selected";
       }
-      return `<button class="${cls}" data-i="${origIdx}" ${dis}><span class="letter">${letters[pos]}.</span><span>${esc(q.options[origIdx])}</span></button>`;
+      const note = s.revealed && q.optionNotes && q.optionNotes[origIdx]
+        ? `<small class="opt-note">${esc(q.optionNotes[origIdx])}</small>` : "";
+      return `<button class="${cls}" data-i="${origIdx}" ${dis}><span class="letter">${letters[pos]}.</span><span>${esc(q.options[origIdx])}${note}</span></button>`;
     }).join("");
 
     const wasCorrect = multi ? setEq(chosen || [], answerSet(q)) : chosen === q.answer;
@@ -485,8 +507,9 @@
         <span>Score: ${s.correctCount}/${s.idx + (s.revealed ? 1 : 0)}</span>
       </div>
       <div class="card">
-        <div class="q-section-tag"><span class="pill info">${esc(sec.title)}</span>${multi ? ` <span class="pill warn">Select all that apply (${answerSet(q).length})</span>` : ""}</div>
+        <div class="q-section-tag"><span class="pill info">${esc(sec.title)}</span> ${levelPill(q)}${multi ? ` <span class="pill warn">Select all that apply (${answerSet(q).length})</span>` : ""}</div>
         <div class="q-text">${esc(q.q)}</div>
+        ${exhibitHtml(q)}
         <div class="options">${optionsHtml}</div>
         ${s.revealed ? `
           <div class="explanation">
@@ -664,7 +687,8 @@
         <div class="q-progress"><span>Question ${s.idx + 1} of ${s.questions.length}</span>
           <button class="btn secondary" id="flag-btn" style="padding:.25rem .7rem">${s.flags[s.idx] ? "🚩 Unflag" : "🏳️ Flag for review"}</button>
         </div>
-        <div class="q-text">${multi ? `<span class="pill warn">Select all that apply (${answerSet(q).length})</span><br>` : ""}${esc(q.q)}</div>
+        <div class="q-text">${multi ? `<span class="pill warn">Select all that apply (${answerSet(q).length})</span> ` : ""}${levelPill(q)}${multi || q.level ? "<br>" : ""}${esc(q.q)}</div>
+        ${exhibitHtml(q)}
         <div class="options">${optionsHtml}</div>
         <div class="btn-row">
           <button class="btn secondary" id="prev-btn" ${s.idx === 0 ? "disabled" : ""}>← Previous</button>
@@ -785,10 +809,13 @@
     const reviewHtml = review.length ? review.map(r => `
       <div class="review-item">
         <div class="q-text" style="font-size:.98rem">${esc(r.q.q)}</div>
+        ${exhibitHtml(r.q)}
         <p>${r.chosen === null
           ? '<span class="pill warn">Not answered</span>'
           : `<span class="pill bad">Your answer: ${(Array.isArray(r.chosen) ? r.chosen : [r.chosen]).map(c => letters[c] + ". " + esc(r.q.options[c])).join(" · ")}</span>`}</p>
         <p><span class="pill ok">Correct: ${answerSet(r.q).map(c => letters[c] + ". " + esc(r.q.options[c])).join(" · ")}</span></p>
+        ${r.q.optionNotes ? `<ul class="opt-note-list">${r.q.options.map((o, i) =>
+          `<li><strong>${letters[i]}.</strong> ${esc(r.q.optionNotes[i])}</li>`).join("")}</ul>` : ""}
         <div class="explanation">${esc(r.q.explanation)}</div>
       </div>`).join("") : "<p class='muted'>Perfect — nothing to review! 🎉</p>";
 

@@ -40,6 +40,9 @@ cross-device progress sync through a private GitHub Gist.
   a per-topic score report, and a review of every incorrect answer. Attempts are saved.
 - **Realistic questions** — answer options are shuffled on every attempt, and banks include
   multi-select ("select all that apply") questions scored all-or-nothing like real exams.
+  Detailed exam-style questions add code/config **exhibits**, per-option explanations of
+  why each answer is right or wrong, and difficulty tags (with a difficulty filter in the
+  quiz setup).
 - **Keyboard shortcuts** (desktop) — 1–9 select/toggle options, Enter next/check,
   ←/→ navigate the exam, F flags a question.
 - **Cross-device sync** — see below.
@@ -91,6 +94,15 @@ Integration Architect `a1`–`a10`, CCDAK `k1`–`k6`, Platform Architect `p1`�
 is the 0-based index of the correct option. For a multi-select question, replace `answer`
 with `"answers": [0, 2]` (array of correct indexes — scored all-or-nothing). A whole new
 certification = a new JSON file with the same shape plus an entry in `data/certs.json`.
+
+Optional question fields for detailed exam-style questions:
+
+- `"exhibit"` — a code/config/log block (string, newlines preserved) shown between the
+  question text and the options.
+- `"optionNotes"` — array (same length as `options`) explaining why each option is
+  right or wrong; shown after answering in quizzes and in the exam review.
+- `"level"` — `"easy"`, `"medium"`, or `"hard"` (untagged questions count as medium for
+  the quiz difficulty filter).
 
 Flashcards live in each file's optional `cards` array:
 

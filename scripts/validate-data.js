@@ -85,6 +85,19 @@ for (const id of manifest.certs) {
       }
     }
     if (!q.q || !q.explanation) fail(`${id}/${q.id}: missing question text or explanation`);
+    if ("exhibit" in q && (typeof q.exhibit !== "string" || !q.exhibit.trim())) {
+      fail(`${id}/${q.id}: exhibit must be a non-empty string`);
+    }
+    if ("optionNotes" in q) {
+      if (!Array.isArray(q.optionNotes) || q.optionNotes.length !== optCount) {
+        fail(`${id}/${q.id}: optionNotes must match options length (${optCount})`);
+      } else if (q.optionNotes.some(n => typeof n !== "string" || !n.trim())) {
+        fail(`${id}/${q.id}: optionNotes entries must be non-empty strings`);
+      }
+    }
+    if ("level" in q && !["easy", "medium", "hard"].includes(q.level)) {
+      fail(`${id}/${q.id}: level must be easy, medium, or hard`);
+    }
   }
 
   const cardIds = new Set();

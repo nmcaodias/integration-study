@@ -122,6 +122,29 @@ pre code { background: none; padding: 0; }
   font-size: .95rem;
 }
 
+/* ---------- Question exhibits & option notes ---------- */
+.exhibit {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: .8rem .9rem;
+  margin: 0 0 1rem;
+  overflow-x: auto;
+  font-size: .84rem;
+  line-height: 1.5;
+}
+.exhibit code { background: none; padding: 0; white-space: pre; }
+.opt-note {
+  display: block;
+  margin-top: .3rem;
+  font-size: .8rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+.option.correct .opt-note, .option.wrong .opt-note { color: inherit; opacity: .85; }
+.opt-note-list { margin: .5rem 0 .5rem 1.2rem; font-size: .86rem; color: var(--text-muted); }
+.opt-note-list li { margin-bottom: .25rem; }
+
 /* ---------- Flashcards ---------- */
 .flash-card { max-width: 720px; margin: 0 auto 1rem; }
 .flash-face {
