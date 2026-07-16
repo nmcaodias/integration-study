@@ -29,8 +29,15 @@
     }
   }
   let state = null;
+  let saveWarned = false;
   function save() {
-    localStorage.setItem(STORE_KEY, JSON.stringify(state));
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify(state));
+    } catch (e) {
+      // quota / private mode: keep the in-memory session usable instead of
+      // throwing inside the click handler that called us
+      if (!saveWarned) { saveWarned = true; console.warn("Could not persist progress:", e); }
+    }
     if (window.SYNC) SYNC.schedulePush();
   }
 
@@ -293,16 +300,24 @@
       btn.onclick = (e) => {
         e.stopPropagation();
         const group = btn.parentElement;
-        topnav.querySelectorAll(".nav-group.open").forEach(x => { if (x !== group) x.classList.remove("open"); });
-        group.classList.toggle("open");
-        btn.setAttribute("aria-expanded", group.classList.contains("open"));
+        const wasOpen = group.classList.contains("open");
+        closeNavMenus();
+        if (!wasOpen) {
+          group.classList.add("open");
+          btn.setAttribute("aria-expanded", "true");
+        }
       };
     });
   }
+  function closeNavMenus() {
+    topnav.querySelectorAll(".nav-group.open").forEach(x => {
+      x.classList.remove("open");
+      const b = x.querySelector(".nav-drop");
+      if (b) b.setAttribute("aria-expanded", "false");
+    });
+  }
   // any click outside the nav closes open menus (navigating re-renders the nav anyway)
-  document.addEventListener("click", () => {
-    topnav.querySelectorAll(".nav-group.open").forEach(x => x.classList.remove("open"));
-  });
+  document.addEventListener("click", closeNavMenus);
 
   /* ---------------- Views ---------------- */
   function renderHome() {
@@ -416,10 +431,11 @@
 
     const doReset = (fields, label) => {
       if (!confirm(`Reset ${label} for ${cert.short}? This also applies to your other synced devices.`)) return;
+      const live = state[certId]; // re-read: a background sync merge may have replaced `state` since render
       const now = Date.now();
       fields.forEach(f => {
-        cs[f] = f === "exams" ? [] : {};
-        cs.resets[f] = now;
+        live[f] = f === "exams" ? [] : {};
+        live.resets[f] = now;
       });
       save();
       renderCert(certId);
@@ -474,8 +490,16 @@
     }
 
     document.getElementById("mark-read").onclick = () => {
-      if (state[certId].read[sid]) delete state[certId].read[sid];
-      else state[certId].read[sid] = Date.now(); // timestamp lets sync merges honour topic resets
+      const cs = state[certId];
+      if (cs.read[sid]) {
+        delete cs.read[sid];
+        // tombstone, or the sync merge resurrects the mark from another device
+        // (topic stamps only affect read marks in the merge, never quiz stats)
+        cs.resets.topics = cs.resets.topics || {};
+        cs.resets.topics[sid] = Date.now();
+      } else {
+        cs.read[sid] = Date.now(); // timestamp lets sync merges honour topic resets
+      }
       save();
       renderNotes(certId, sid);
     };
@@ -671,8 +695,11 @@
     app.innerHTML = `
       <div class="card">
         <div class="score-hero">
+          ${answered ? `
           <div class="big ${pct >= cert.exam.passPct ? "pass" : "fail"}">${pct}%</div>
-          <p class="muted">${s.correctCount} of ${answered} answered correctly</p>
+          <p class="muted">${s.correctCount} of ${answered} answered correctly</p>` : `
+          <div class="big">–</div>
+          <p class="muted">No questions answered</p>`}
         </div>
         <div class="btn-row" style="justify-content:center">
           <a class="btn" href="#/quiz/${s.certId}">Another quiz</a>
@@ -738,16 +765,26 @@
       orders: makeOrders(drawn),
       idx: 0,
       answers: {}, flags: {},
-      secondsLeft: cert.exam.minutes * 60,
+      // fixed deadline (not a decremented counter) so time keeps running even
+      // if the user navigates away from the exam and comes back
+      endAt: Date.now() + cert.exam.minutes * 60 * 1000,
       startedAt: Date.now()
     };
     go("#/examrun");
     if (location.hash === "#/examrun") renderExamQuestion();
   }
 
+  function examSecondsLeft(s) {
+    return Math.max(0, Math.ceil((s.endAt - Date.now()) / 1000));
+  }
+
   function renderExamQuestion() {
     const s = session;
     const cert = CERTS[s.certId];
+    if (examSecondsLeft(s) <= 0) { // deadline passed while away from the exam
+      alert("Time is up! The exam will be submitted.");
+      return finishExam();
+    }
     const q = s.questions[s.idx];
     const chosen = s.answers[s.idx];
     const order = s.orders[s.idx];
@@ -772,7 +809,7 @@
     app.innerHTML = `
       <div class="exam-header">
         <span class="pill info">${esc(cert.short)} exam · ${answeredCount}/${s.questions.length} answered</span>
-        <span class="timer" id="timer">${fmtTime(s.secondsLeft)}</span>
+        <span class="timer" id="timer">${fmtTime(examSecondsLeft(s))}</span>
       </div>
       <div class="card">
         <div class="q-progress"><span>Question ${s.idx + 1} of ${s.questions.length}</span>
@@ -829,13 +866,13 @@
     // (re)start the countdown
     stopTimer();
     timerHandle = setInterval(() => {
-      s.secondsLeft--;
+      const left = examSecondsLeft(s);
       const el = document.getElementById("timer");
       if (el) {
-        el.textContent = fmtTime(s.secondsLeft);
-        if (s.secondsLeft <= 300) el.classList.add("low");
+        el.textContent = fmtTime(left);
+        if (left <= 300) el.classList.add("low");
       }
-      if (s.secondsLeft <= 0) {
+      if (left <= 0) {
         stopTimer();
         alert("Time is up! The exam will be submitted.");
         finishExam();
@@ -859,7 +896,7 @@
       perSection[q.section].t++;
       if (ok) { correct++; perSection[q.section].c++; }
       else {
-        review.push({ q, chosen: chosen === undefined ? null : chosen });
+        review.push({ q, chosen: chosen === undefined ? null : chosen, order: s.orders[i] });
         enqueueMissedQuestion(s.certId, q.id);
       }
       // exam answers also feed question stats
@@ -898,18 +935,23 @@
       </div>`;
     }).join("");
 
-    const reviewHtml = review.length ? review.map(r => `
+    // label with the letters the user actually saw (options were displayed
+    // shuffled during the exam, in r.order)
+    const reviewHtml = review.length ? review.map(r => {
+      const letterOf = origIdx => letters[r.order.indexOf(origIdx)];
+      return `
       <div class="review-item">
         <div class="q-text" style="font-size:.98rem">${esc(r.q.q)}</div>
         ${exhibitHtml(r.q)}
         <p>${r.chosen === null
           ? '<span class="pill warn">Not answered</span>'
-          : `<span class="pill bad">Your answer: ${(Array.isArray(r.chosen) ? r.chosen : [r.chosen]).map(c => letters[c] + ". " + esc(r.q.options[c])).join(" · ")}</span>`}</p>
-        <p><span class="pill ok">Correct: ${answerSet(r.q).map(c => letters[c] + ". " + esc(r.q.options[c])).join(" · ")}</span></p>
-        ${r.q.optionNotes ? `<ul class="opt-note-list">${r.q.options.map((o, i) =>
-          `<li><strong>${letters[i]}.</strong> ${esc(r.q.optionNotes[i])}</li>`).join("")}</ul>` : ""}
+          : `<span class="pill bad">Your answer: ${(Array.isArray(r.chosen) ? r.chosen : [r.chosen]).map(c => letterOf(c) + ". " + esc(r.q.options[c])).join(" · ")}</span>`}</p>
+        <p><span class="pill ok">Correct: ${answerSet(r.q).map(c => letterOf(c) + ". " + esc(r.q.options[c])).join(" · ")}</span></p>
+        ${r.q.optionNotes ? `<ul class="opt-note-list">${r.order.map((origIdx, pos) =>
+          `<li><strong>${letters[pos]}.</strong> ${esc(r.q.optionNotes[origIdx])}</li>`).join("")}</ul>` : ""}
         <div class="explanation">${esc(r.q.explanation)}</div>
-      </div>`).join("") : "<p class='muted'>Perfect — nothing to review! 🎉</p>";
+      </div>`;
+    }).join("") : "<p class='muted'>Perfect — nothing to review! 🎉</p>";
 
     app.innerHTML = `
       <div class="card">
@@ -960,7 +1002,9 @@
     const clearBtn = document.getElementById("clear-history");
     if (clearBtn) clearBtn.onclick = () => {
       if (confirm("Delete all exam attempts for " + cert.short + "?")) {
-        state[certId].exams = [];
+        const cs = state[certId];
+        cs.exams = [];
+        cs.resets.exams = Date.now(); // stamp, or the sync merge restores the attempts
         save();
         renderHistory(certId);
       }
@@ -974,9 +1018,10 @@
     setNav(certId);
     const cert = CERTS[certId];
     if (!cert) return go("#/");
-    if (!flashSession || flashSession.certId !== certId) {
-      flashSession = { certId, queue: buildFlashQueue(certId), revealed: false, done: 0 };
-    }
+    // always start a fresh queue on entering the route — mid-session reviews
+    // never re-enter it (rateFlash renders directly), and a kept-around session
+    // would hide cards that became due since it was built
+    flashSession = { certId, queue: buildFlashQueue(certId), revealed: false, done: 0 };
     renderFlashCard();
   }
 
@@ -1174,11 +1219,14 @@
   const THEME_KEY = "mulesoft-study-theme";
   function applyTheme(t) {
     document.documentElement.setAttribute("data-theme", t);
-    localStorage.setItem(THEME_KEY, t);
+    // storage may be unavailable (private mode / policy); the theme still
+    // applies to this page and a failed write must not kill the app at load
+    try { localStorage.setItem(THEME_KEY, t); } catch (e) { /* not persisted */ }
   }
-  const savedTheme = localStorage.getItem(THEME_KEY) ||
-    (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-  applyTheme(savedTheme);
+  let savedTheme = null;
+  try { savedTheme = localStorage.getItem(THEME_KEY); } catch (e) { /* unavailable */ }
+  applyTheme(savedTheme ||
+    (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
   document.getElementById("theme-toggle").onclick = () => {
     applyTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
   };
@@ -1186,6 +1234,7 @@
   /* ---------------- Keyboard shortcuts ---------------- */
   document.addEventListener("keydown", (e) => {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key === "Escape") { closeNavMenus(); return; }
     const t = e.target;
     if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT")) return;
 
@@ -1259,6 +1308,9 @@
       return;
     }
     if (window.SYNC) {
+      // background flushes now pull-merge before pushing; refresh in-memory
+      // state whenever a merge rewrites localStorage
+      SYNC.onMerged = () => { if (state) state = loadState(); };
       SYNC.initStatus();
       if (SYNC.isConnected()) {
         try { await SYNC.pullAndMerge(); } catch (e) { /* status shows the error; app still works locally */ }

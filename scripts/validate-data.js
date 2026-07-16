@@ -73,6 +73,7 @@ for (const id of manifest.certs) {
     qIds.add(q.id);
     if (!secIds.has(q.section)) fail(`${id}/${q.id}: unknown section '${q.section}'`);
     if (!Array.isArray(q.options) || q.options.length < 2) fail(`${id}/${q.id}: needs at least 2 options`);
+    if (Array.isArray(q.options) && q.options.length > 5) fail(`${id}/${q.id}: at most 5 options (the app labels options A-E)`);
     const optCount = (q.options || []).length;
     const hasSingle = typeof q.answer === "number";
     const hasMulti = Array.isArray(q.answers);

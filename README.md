@@ -61,8 +61,9 @@ can mirror it into a **private GitHub Gist** you own:
    `integration-study-progress` and merges its contents with local progress.
 4. Repeat on each device with the same token (or another token of the same account).
 
-Changes are pushed automatically a few seconds after each answer/exam; other devices merge on
-load. The token is stored only in each browser's localStorage and is used exclusively for the
+Changes are merged with the Gist and pushed automatically a few seconds after each
+answer/exam (so simultaneous progress from another device is never overwritten); other
+devices also merge on load. The token is stored only in each browser's localStorage and is used exclusively for the
 Gist API. The Sync page also offers **export/import** of a progress file — handy as a backup
 or to migrate progress from an old local copy.
 
