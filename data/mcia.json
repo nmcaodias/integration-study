@@ -2,6 +2,7 @@
  "id": "mcia",
  "name": "MuleSoft Platform Integration Architect",
  "short": "MC Integration Architect",
+ "vendor": "MuleSoft",
  "exam": {
   "questions": 60,
   "minutes": 120,
@@ -1302,6 +1303,509 @@
    ],
    "answer": 1,
    "explanation": "RTF apps log to container stdout; the platform/cluster forwards them to configured external log systems, and Anypoint Monitoring agents can additionally publish metrics/logs to the control plane."
+  },
+  {
+   "id": "ia-098",
+   "section": "a1",
+   "level": "medium",
+   "q": "A European insurance company is onboarding to Anypoint Platform. Regulators require that all metadata handled by the control plane (API definitions, deployment metadata, monitoring data) stay within the EU. Application data flows only between the company's own data centers. Which platform decision satisfies the requirement?",
+   "options": [
+    "Select the EU control plane when the Anypoint Platform organization is provisioned",
+    "Deploy all Mule applications to CloudHub workers in the eu-central-1 region only",
+    "Enable end-to-end TLS so control plane location becomes irrelevant",
+    "Use the US control plane but restrict logins to EU IP addresses"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. The control plane region is chosen at organization provisioning (US, EU, or gov). The EU control plane keeps platform metadata — design assets, deployment metadata, monitoring — hosted in the EU, which is exactly what the regulator constrains.",
+    "Worker region governs where the runtime plane (application data processing) runs; the control plane metadata would still live wherever the organization was provisioned.",
+    "TLS protects data in transit; it does not change where the control plane stores metadata.",
+    "IP-restricting logins does not relocate stored metadata."
+   ],
+   "explanation": "Anypoint Platform separates control plane (management metadata) from runtime plane (where apps run). Data-residency requirements on metadata are satisfied by provisioning the organization on the appropriate control plane instance — a decision made at onboarding and hard to change later."
+  },
+  {
+   "id": "ia-099",
+   "section": "a2",
+   "level": "medium",
+   "q": "An order-capture API must keep accepting customer orders even when the downstream ERP is offline for maintenance windows of up to four hours. Orders must eventually reach the ERP exactly in the order received per customer. Which integration approach fits?",
+   "options": [
+    "Synchronous request-reply from the API to the ERP with a four-hour HTTP timeout",
+    "Publish accepted orders to a persistent message queue (e.g. Anypoint MQ FIFO) consumed by an ERP-facing application",
+    "Have the API retry the ERP call in a loop inside the request thread",
+    "Return an error to customers whenever the ERP is down"
+   ],
+   "answer": 1,
+   "optionNotes": [
+    "A four-hour open HTTP connection is unusable — clients time out, threads and memory are held hostage.",
+    "Correct. Queue-based decoupling turns temporal coupling into an asynchronous hand-off: the API acknowledges after enqueueing, the consumer drains the queue when the ERP returns, and a FIFO queue preserves per-group ordering.",
+    "Retrying in the request thread still forces callers to wait and collapses under load during the outage.",
+    "Rejecting orders violates the core requirement of continuing to accept them."
+   ],
+   "explanation": "This is the classic case for messaging over request-reply: availability of the whole must not depend on availability of every part. A persistent FIFO queue absorbs the outage and preserves ordering, and the API's contract becomes 'accepted', not 'processed'."
+  },
+  {
+   "id": "ia-100",
+   "section": "a2",
+   "level": "medium",
+   "q": "When a product price changes in the PIM system, three independent downstream systems (e-commerce, mobile backend, data warehouse) must each react in their own way. New consumers are expected to be added next year without changing the PIM integration. Which pattern should the architecture use?",
+   "options": [
+    "Publish-subscribe: the PIM integration publishes a price-changed event to a topic/exchange; each consumer subscribes independently",
+    "Point-to-point queues from the PIM integration to each of the three systems",
+    "A scheduled batch job in each downstream system polling the PIM database",
+    "One orchestration flow that calls the three systems sequentially"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Pub-sub decouples the producer from the set of consumers: the PIM side publishes once (e.g. to an Anypoint MQ message exchange), each subscriber gets its own copy, and adding a fourth consumer is just a new subscription — no producer change.",
+    "Point-to-point requires the producer to know and address every consumer; adding one means changing the PIM integration.",
+    "Direct database polling couples consumers to the PIM's internal schema and adds latency.",
+    "Sequential orchestration couples the producer to every consumer's availability and must be edited for each new one."
+   ],
+   "explanation": "One event, many independent reactions, open-ended consumer list — the definition of publish-subscribe. In Anypoint MQ this is a message exchange with per-subscriber queues; the producer stays ignorant of who consumes."
+  },
+  {
+   "id": "ia-101",
+   "section": "a2",
+   "level": "easy",
+   "q": "A finance team needs 4 million ledger records reconciled between two systems every night; results are needed by 6 AM and no user is waiting on individual records. Which processing paradigm is appropriate?",
+   "options": [
+    "Real-time synchronous APIs invoked once per record",
+    "Batch processing on a schedule",
+    "Webhooks pushed per record as changes occur",
+    "Streaming each record through a chat-ops channel for review"
+   ],
+   "answer": 1,
+   "optionNotes": [
+    "Four million synchronous calls per night adds enormous overhead for no benefit — nobody is waiting per record.",
+    "Correct. Large volume, time-window driven, latency-insensitive, throughput-sensitive: the profile of scheduled batch processing (e.g. a Mule batch job with streaming input).",
+    "Webhooks address near-real-time change propagation, not periodic full reconciliation.",
+    "Not a serious integration paradigm for volume reconciliation."
+   ],
+   "explanation": "Paradigm choice follows the requirements: bounded nightly window + high volume + no per-record latency requirement = batch. Real-time patterns earn their overhead only when someone or something waits on each event."
+  },
+  {
+   "id": "ia-102",
+   "section": "a3",
+   "level": "hard",
+   "q": "Refer to the exhibit. During execution, the request to the loyalty service fails with a connectivity error while the inventory request succeeds. There is no error handler in the flow. What is the outcome?",
+   "exhibit": "<scatter-gather>\n  <route>\n    <http:request config-ref=\"Inventory_API\" path=\"/stock\"/>\n  </route>\n  <route>\n    <http:request config-ref=\"Loyalty_API\" path=\"/points\"/>\n  </route>\n</scatter-gather>",
+   "options": [
+    "The flow fails with a MULE:COMPOSITE_ROUTING error that carries the per-route results and failures",
+    "The scatter-gather returns only the successful inventory result and logs the loyalty failure",
+    "The scatter-gather retries the failed route once before continuing",
+    "Only the first route's error is ever reported, so the flow fails with HTTP:CONNECTIVITY"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Scatter-Gather waits for all routes; if any fail it raises MULE:COMPOSITE_ROUTING, whose errorMessage contains a map of successes and failures by route. Handling partial failure means catching that error and inspecting the per-route entries.",
+    "There is no built-in 'return the successes' behaviour — that must be implemented by handling COMPOSITE_ROUTING.",
+    "Scatter-Gather has no retry semantics of its own (retries would come from a reconnection strategy or Until Successful).",
+    "The composite error wraps route errors regardless of which route failed; HTTP:CONNECTIVITY appears inside it, not as the flow error type."
+   ],
+   "explanation": "Scatter-Gather aggregates parallel route outcomes. Any route failure produces MULE:COMPOSITE_ROUTING with per-route results attached — the architect must decide explicitly whether partial results are acceptable and code that in an error handler."
+  },
+  {
+   "id": "ia-103",
+   "section": "a3",
+   "level": "medium",
+   "q": "A Mule application must import a nightly 3-million-row CSV, transform each row, write valid rows to a database, and report all invalid rows at the end without stopping the run. Which construct fits these requirements best?",
+   "options": [
+    "A For Each scope over the parsed CSV",
+    "A Batch Job with streaming input, record-level error handling, and an on-complete report",
+    "A Parallel For Each scope with maxConcurrency tuned high",
+    "A recursive flow that processes 1000 rows per invocation"
+   ],
+   "answer": 1,
+   "optionNotes": [
+    "For Each is sequential, holds no per-record failure bookkeeping, and by default stops at the first error.",
+    "Correct. Batch jobs are built for exactly this: streamed record queues that spill to disk, per-record failure isolation (max-failed-records), accepted/failed counts, and an On Complete phase for the summary report.",
+    "Parallel For Each materializes results in memory and lacks record-level failure reporting; 3M rows would strain heap.",
+    "Recursion adds complexity and stack risk without providing any batch bookkeeping."
+   ],
+   "explanation": "Large dataset + record-level fault isolation + end-of-run reporting are the three signature features of the Mule Batch Job. It streams records through phases, tolerates failures per record, and hands aggregate statistics to On Complete."
+  },
+  {
+   "id": "ia-104",
+   "section": "a3",
+   "level": "hard",
+   "q": "An API consumes messages from a queue and calls a payment service that is NOT idempotent. The queue guarantees at-least-once delivery, so duplicates are possible. How should the architect prevent double payments?",
+   "options": [
+    "Implement an idempotent receiver: record each message's unique ID in Object Store and skip messages whose ID was already processed",
+    "Switch the queue to fire-and-forget so each message is delivered at most once",
+    "Wrap the payment call in Until Successful",
+    "Lower the consumer's prefetch so duplicates arrive more slowly"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. With at-least-once delivery and a non-idempotent downstream, deduplication must happen at the consumer: check-and-store the business/message ID (Object Store v2, or the Idempotent Message Validator) before invoking the payment, atomically enough for the concurrency in play.",
+    "'At-most-once' trades duplicates for loss — losing payment instructions is worse, and most brokers do not offer a simple toggle.",
+    "Until Successful adds retries — it increases the chance of duplicate side effects rather than preventing them.",
+    "Prefetch shapes throughput; duplicates still arrive and still pay twice."
+   ],
+   "explanation": "The idempotent receiver pattern makes a non-idempotent operation safe behind at-least-once messaging: persist processed message IDs and drop repeats. In Mule that is the Idempotent Message Validator or an explicit Object Store contains/store check."
+  },
+  {
+   "id": "ia-105",
+   "section": "a3",
+   "level": "medium",
+   "q": "Twelve Mule applications built by different teams must apply the company's standard error-response format and logging behaviour. Copy-pasting the error-handler XML between projects has already caused divergence. What is the recommended remedy?",
+   "options": [
+    "Package the shared error handling as a common Mule plugin/library published to Exchange and reference it from each application",
+    "Create one giant Mule application containing all twelve integrations so the handler exists once",
+    "Enforce the format only in code review",
+    "Move all error handling to the client applications"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Shared behaviour belongs in a versioned, reusable asset: a common library (packaged as a mule-plugin with the error-handler configuration, referenced via errorHandlerRef / imported config) published to Exchange. Teams consume a version; fixes roll out by version bump.",
+    "Merging unrelated integrations into a monolith trades a small duplication problem for coupling, deployment, and ownership problems.",
+    "Review-time enforcement of copy-paste still diverges over time — the root cause remains duplication.",
+    "Clients cannot standardize the providers' error responses; the responsibility is on the API side."
+   ],
+   "explanation": "Cross-team consistency is achieved with published, versioned reuse — a common Mule library on Exchange containing the global error handler (and logging config) that applications import — not with duplication or manual policing."
+  },
+  {
+   "id": "ia-106",
+   "section": "a4",
+   "level": "medium",
+   "q": "A CloudHub Mule application consumes from a VM queue. Operations require that messages already accepted but not yet processed survive an unexpected worker restart. Which platform capability addresses this?",
+   "options": [
+    "Enable persistent queues for the application in Runtime Manager",
+    "Increase the worker size so restarts are less likely",
+    "Set the VM queue to transient mode with a larger buffer",
+    "Store every message in a flow variable before processing"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. On CloudHub, enabling persistent queues backs VM queues with replicated cloud storage, so in-flight queued messages survive worker crashes and restarts (at the cost of some throughput).",
+    "Sizing does not eliminate restarts (deployments, platform maintenance, crashes) and does nothing for messages in memory when one happens.",
+    "Transient VM queues are memory-only — exactly what loses messages on restart.",
+    "Flow variables live inside an event in the same memory that a restart wipes."
+   ],
+   "explanation": "VM queues are in-memory by default on CloudHub. The 'Persistent queues' application setting moves them to durable, replicated storage so accepted work survives worker failure — a core reliability lever for queue-decoupled designs on CloudHub."
+  },
+  {
+   "id": "ia-107",
+   "section": "a4",
+   "level": "medium",
+   "q": "Refer to the exhibit. A scheduled flow syncs changed accounts from a CRM. The watermark must be correct even if the app is redeployed or the CloudHub worker is replaced between runs. Where should lastSyncTime be persisted?",
+   "exhibit": "Every 15 minutes:\n  1. read lastSyncTime\n  2. GET /accounts?modifiedSince={lastSyncTime}\n  3. upsert results into the data warehouse\n  4. store new lastSyncTime = now()",
+   "options": [
+    "Object Store v2, which persists independently of workers and deployments",
+    "A flow variable initialized when the application starts",
+    "An in-memory Object Store for faster reads",
+    "A constant in the DataWeave script updated on each release"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. OS v2 is external to the worker: the watermark survives restarts, redeployments, and worker replacement, and is shared if the app scales to multiple workers.",
+    "Flow variables do not even survive between scheduler ticks, let alone restarts.",
+    "In-memory stores vanish with the JVM — precisely the failure mode to avoid.",
+    "A hard-coded constant cannot advance between runs at all."
+   ],
+   "explanation": "Watermarks are durable state by definition. On CloudHub the right home is Object Store v2 — persistent, worker-independent, shared — so a sync never repeats or skips a window because infrastructure changed underneath it."
+  },
+  {
+   "id": "ia-108",
+   "section": "a4",
+   "level": "hard",
+   "q": "A design calls for caching partner reference data in Object Store v2 for 45 days, refreshed only when a partner record changes. Which OS v2 characteristic forces a design change?",
+   "options": [
+    "Object Store v2 entries have a maximum time-to-live of 30 days",
+    "Object Store v2 cannot store JSON values",
+    "Object Store v2 is wiped on every application redeployment",
+    "Object Store v2 allows a maximum of 100 keys per application"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. OS v2 caps entry TTL at 30 days (each write/update resets the clock). A 45-day requirement means either re-writing entries before expiry, accepting refresh-on-miss from the source system, or using an external store.",
+    "Values are stored as serialized data; JSON strings and Java objects are both fine.",
+    "OS v2 data persists across redeployments — that is one of its main features.",
+    "There is no such key-count limit at that scale (limits concern value size ~10 MB and request rates)."
+   ],
+   "explanation": "The 30-day maximum TTL is the OS v2 constraint architects trip over: it is a cache-flavoured store, not an archival database. Designs needing longer retention must refresh entries periodically or persist in a real database."
+  },
+  {
+   "id": "ia-109",
+   "section": "a5",
+   "level": "medium",
+   "q": "APIs deployed to CloudHub inside an Anypoint VPC must be reachable by partners at https://api.acme.com with paths routed to different Mule applications, and the apps' default cloudhub.io endpoints must not be exposed publicly. Which component provides this?",
+   "options": [
+    "A Dedicated Load Balancer (DLB) attached to the VPC with a vanity-domain certificate and path-based mapping rules",
+    "The CloudHub Shared Load Balancer with a CNAME record",
+    "An API proxy deployed to each application's worker",
+    "Anypoint MQ as the entry point for HTTP traffic"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. A DLB terminates TLS for the custom domain (own certificate), lives in the VPC, and its mapping rules route URL paths to specific applications listening on the internal 8091/8092 ports, while workers stop exposing the shared LB endpoints.",
+    "The shared LB cannot host custom TLS certificates for a vanity domain, offers no custom routing rules, and keeps traffic on public cloudhub.io infrastructure.",
+    "Proxies govern APIs; they do not provide domain TLS termination or cross-application path routing at the network entry point.",
+    "Anypoint MQ is a message broker, not an HTTP ingress."
+   ],
+   "explanation": "Custom domain + custom TLS + path routing to multiple CloudHub apps inside a VPC is the Dedicated Load Balancer's job description. Mapping rules translate external paths to internal app endpoints, and apps can then refuse direct shared-LB traffic."
+  },
+  {
+   "id": "ia-110",
+   "section": "a5",
+   "level": "medium",
+   "q": "A bank must run Mule workloads on its own Kubernetes clusters in its data centers for data-sovereignty reasons, while still managing deployments, monitoring, and policies from the Anypoint control plane. Which runtime plane option fits?",
+   "options": [
+    "Runtime Fabric deployed on the bank's Kubernetes infrastructure",
+    "CloudHub 2.0 private spaces",
+    "Standalone Mule runtimes with no platform connection",
+    "CloudHub 1.0 workers pinned to the nearest region"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Runtime Fabric is the self-managed runtime plane: it installs on customer-controlled infrastructure (their Kubernetes), keeps application data on-premises, and registers with the Anypoint control plane for deployment, management, and monitoring.",
+    "CloudHub 2.0 private spaces still run in MuleSoft-managed cloud infrastructure — data leaves the bank's data centers.",
+    "Fully disconnected standalone runtimes forfeit the required central management.",
+    "Any CloudHub flavour is MuleSoft-hosted, violating the sovereignty constraint."
+   ],
+   "explanation": "Runtime Fabric = customer-hosted runtime plane + MuleSoft-hosted control plane. It is the option when regulation demands workloads and data stay on infrastructure the customer owns, without giving up centralized platform management."
+  },
+  {
+   "id": "ia-111",
+   "section": "a5",
+   "level": "hard",
+   "q": "A Mule application on a two-node customer-hosted cluster has a flow with a File connector 'On New or Updated File' listener against a shared NFS mount. Without special configuration, what problem does clustering introduce, and what is the standard remedy?",
+   "options": [
+    "Both nodes poll the directory and can process the same file twice; configure the source with primaryNodeOnly=\"true\" so only the primary node polls",
+    "Neither node polls because file sources are disabled in clusters; move the flow to a separate standalone runtime",
+    "The nodes corrupt each other's Hazelcast state; disable the distributed object store",
+    "Files are locked forever by the first node; set the poll frequency higher"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. In a Mule cluster, polling message sources run on every node unless told otherwise; two nodes watching one directory means duplicate pickup. Setting primaryNodeOnly=true on the listener confines polling to the cluster's primary node, with automatic takeover on failover.",
+    "File sources are not disabled in clusters; they simply need the primary-node constraint.",
+    "Hazelcast state sharing is unrelated to duplicate file pickup.",
+    "There is no permanent cross-node file lock; frequency does not address duplication."
+   ],
+   "explanation": "Cluster rule of thumb: any polling source (file, FTP, scheduler-driven pollers) should declare primaryNodeOnly=true unless duplicate triggering is acceptable. The cluster elects a new primary on failure, preserving both single-pickup semantics and high availability."
+  },
+  {
+   "id": "ia-112",
+   "section": "a5",
+   "level": "medium",
+   "q": "During business-hours peaks, a CPU-bound CloudHub application saturates its single 1-vCore worker. Off-peak it idles. The team wants both headroom at peak and fault tolerance. Which change addresses both concerns?",
+   "options": [
+    "Scale horizontally to multiple workers behind the load balancer",
+    "Scale vertically to one 4-vCore worker",
+    "Move all processing into one Async scope",
+    "Raise the JVM heap via a deployment property"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Multiple workers add CPU capacity in parallel and remove the single point of failure — CloudHub distributes HTTP load across workers and replaces failed ones. One big worker adds capacity but keeps all eggs in one basket.",
+    "Vertical scaling helps CPU but a single worker remains a single point of failure — half the requirement.",
+    "Async moves work between threads on the same starved CPU; total capacity is unchanged.",
+    "Heap size does not add CPU cycles, and the app is CPU-bound, not memory-bound."
+   ],
+   "explanation": "Fault tolerance on CloudHub comes from worker count, capacity can come from either axis. When both are required, horizontal scaling is the answer: n smaller workers beat one large one the moment availability matters."
+  },
+  {
+   "id": "ia-113",
+   "section": "a6",
+   "level": "medium",
+   "q": "An architect defines the test strategy for a program of 30 Mule APIs. Which division of responsibilities between MUnit tests and integration tests is most appropriate?",
+   "options": [
+    "MUnit with mocked externals runs in every CI build for fast functional coverage; a smaller integration suite runs against deployed sandbox systems before promotion",
+    "Only integration tests against real systems, since mocks prove nothing",
+    "Only MUnit tests, since sandbox environments are unreliable",
+    "Manual exploratory testing after each production release"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. The test pyramid applied to Mule: fast, deterministic MUnit suites (externals mocked) gate every commit and measure coverage; slower environment-dependent integration tests verify real connectivity, contracts, and configuration at promotion time.",
+    "Real-system-only testing is slow, flaky, and blocks CI on sandbox availability; mocked tests absolutely prove flow logic.",
+    "Skipping integration testing means connectivity and configuration errors surface in production first.",
+    "Testing after release inverts the entire purpose of a quality gate."
+   ],
+   "explanation": "Layered testing is the architect's answer: MUnit for logic (fast, isolated, coverage-gated in CI) and a thinner integration layer for the things mocks cannot prove — credentials, network paths, real contract behaviour — run before each environment promotion."
+  },
+  {
+   "id": "ia-114",
+   "section": "a7",
+   "level": "hard",
+   "q": "Refer to the exhibit. What reliability property does this design provide, and what is its name?",
+   "exhibit": "Flow 1 (HTTP API):\n  receive order -> validate -> publish to Anypoint MQ 'orders' queue -> return 202 Accepted\n\nFlow 2 (worker):\n  subscribe 'orders' (manual ack) -> call ERP -> ack message\n  on error: message returns to queue / DLQ after max redeliveries",
+   "options": [
+    "The reliability (reliable acquisition) pattern: once the caller gets 202, the order cannot be lost even if processing or the ERP fails afterwards",
+    "The circuit breaker pattern: the ERP is protected from overload",
+    "The saga pattern: distributed transactions with compensation",
+    "The strangler pattern: incremental replacement of the ERP"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. This is MuleSoft's reliability pattern: a minimal acquisition flow persists the event to a reliable channel before acknowledging, and a separate delivery flow with manual acks + redelivery/DLQ guarantees the message survives any downstream failure.",
+    "Nothing here trips open on repeated failure — there is no circuit state.",
+    "No multi-step compensating transactions are involved.",
+    "Nothing is being incrementally replaced."
+   ],
+   "explanation": "Reliable acquisition separates 'accepting' from 'processing': acknowledge the caller only after the event is safely on a persistent queue, then process asynchronously with acks and a DLQ. The 202 becomes a real promise — accepted means it will not be lost."
+  },
+  {
+   "id": "ia-115",
+   "section": "a7",
+   "level": "hard",
+   "q": "A flow must consume a JMS message and insert derived rows into an Oracle database so that both operations commit or roll back together — a failure after the DB insert must also return the message to the queue. What does this require in Mule?",
+   "options": [
+    "An XA transaction spanning the JMS consume and the Database operation, with both connectors configured for XA",
+    "A local (single-resource) transaction on the JMS connector only",
+    "Two separate Try scopes with independent transactions",
+    "Enabling 'Persistent queues' on the application"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Atomicity across two different transactional resources (JMS broker + relational DB) is exactly what XA/two-phase commit provides. Mule supports XA transactions (with a transaction manager such as Bitronix) when both connectors participate with transactionalAction/XA-enabled configs.",
+    "A local transaction covers one resource; the DB insert would sit outside it, allowing commit/rollback divergence.",
+    "Independent transactions can still land in the half-committed state the requirement forbids.",
+    "CloudHub persistent queues concern VM queue durability, not cross-resource atomicity."
+   ],
+   "explanation": "Two transactional resources, one atomic outcome = XA (two-phase commit). It is heavier than local transactions — an architect should first ask whether idempotency + at-least-once could avoid it — but when true atomicity across JMS and JDBC is mandated, XA is the mechanism Mule provides."
+  },
+  {
+   "id": "ia-116",
+   "section": "a7",
+   "level": "medium",
+   "q": "An Anypoint MQ subscriber repeatedly fails to process a malformed message, which is redelivered forever and blocks meaningful throughput ('poison message'). Which broker-side configuration handles this systematically?",
+   "options": [
+    "Assign a dead-letter queue and set a maximum delivery attempts threshold, after which the broker moves the message to the DLQ",
+    "Increase the acknowledgement timeout so the message is redelivered less often",
+    "Have the subscriber catch all errors and silently drop failures",
+    "Poll the queue less frequently"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Anypoint MQ queues can bind a DLQ with a max-deliveries setting: after N failed deliveries the broker parks the message on the DLQ for inspection and replay, unblocking the main queue without losing the message.",
+    "Longer timeouts slow the poison loop but never end it.",
+    "Swallowing errors loses messages — including transient failures that deserved a retry.",
+    "Polling frequency changes pacing, not the endless redelivery."
+   ],
+   "explanation": "Dead-letter queues are the standard poison-message answer: bounded redelivery, then quarantine. The failed message is preserved for diagnosis and manual/automated replay while healthy traffic keeps flowing."
+  },
+  {
+   "id": "ia-117",
+   "section": "a8",
+   "level": "medium",
+   "q": "A Mule 4.4 application shows high latency under load. A developer proposes hand-tuning thread pool sizes per flow as was common in Mule 3. What should the architect advise?",
+   "options": [
+    "Mule 4 uses a self-tuning, centralized (UBER) scheduler — investigate actual bottlenecks (blocking I/O, backend latency, sizing) rather than micro-tuning pools",
+    "Set one dedicated thread pool per flow in the app's XML",
+    "Reduce every flow's maxConcurrency to 1 to eliminate contention",
+    "Move all processors into Async scopes to force parallelism"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. The Mule 4 execution engine schedules work on centralized self-tuning pools and picks thread types per operation (CPU-light/CPU-intensive/blocking). Manual pool surgery is rarely the fix; profiling usually reveals blocking calls, slow backends, or undersized workers.",
+    "Mule 4 deliberately removed per-flow pool configuration from the application model.",
+    "Serializing everything trades latency for even worse throughput.",
+    "Blanket Async wrapping adds queueing overhead and complexity without addressing the actual constraint."
+   ],
+   "explanation": "Mule 4's reactive engine made Mule 3-style thread tuning obsolete: work-stealing, self-tuning schedulers allocate threads automatically. Performance work should target evidence — where time is actually spent — not pool arithmetic."
+  },
+  {
+   "id": "ia-118",
+   "section": "a8",
+   "level": "medium",
+   "q": "A process API calls a system API for country/currency reference data that changes at most monthly. The system API accounts for 60% of the process API's response time. What is the most effective first optimization?",
+   "options": [
+    "Cache the reference data responses (e.g. Cache scope or HTTP Caching policy) with an appropriate TTL",
+    "Double the process API's workers",
+    "Convert the call to a Parallel For Each",
+    "Move the system API to a bigger worker"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Nearly-static data fetched on 100% of requests is the canonical caching case: a Cache scope in the flow or an HTTP Caching policy at the gateway eliminates most of the 60% at trivial cost, with a TTL that tolerates monthly change.",
+    "More workers multiply capacity, not per-request latency — every request still waits on the same call.",
+    "There is one call, not a collection to parallelize.",
+    "Speeding the downstream shaves some latency but still pays a network round trip per request that caching removes entirely."
+   ],
+   "explanation": "Latency dominated by a repeated fetch of slow-changing data is solved by caching, not scaling. TTL-based invalidation matched to the data's monthly volatility keeps correctness while removing the round trip from the hot path."
+  },
+  {
+   "id": "ia-119",
+   "section": "a9",
+   "level": "medium",
+   "q": "For APIs exposed to external partners through a Dedicated Load Balancer, security requires: partner client authentication with certificates, platform-managed API access control, and no cleartext anywhere. Which combination delivers this defense in depth?",
+   "options": [
+    "Two-way TLS at the DLB, client ID enforcement (or OAuth) policies on the APIs, and TLS from DLB to workers",
+    "One-way TLS at the DLB and IP allowlisting only",
+    "Basic authentication over HTTP inside the VPC, TLS outside",
+    "A VPN with all API policies disabled as redundant"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Layered controls: the DLB validates partner client certificates (mutual TLS) at the edge; API Manager policies (client ID enforcement/OAuth) give per-consumer, revocable application-level access control; TLS on the internal leg removes the last cleartext segment.",
+    "One-way TLS never authenticates the partner, and IP lists are coarse, spoofable-adjacent, and painful to maintain.",
+    "'Cleartext inside the perimeter' contradicts the stated requirement and modern zero-trust practice.",
+    "Network-level tunnels do not replace application-level authorization — policies remain necessary."
+   ],
+   "explanation": "Defense in depth stacks transport-layer identity (mTLS at the DLB), application-layer authorization (API policies), and encryption on every hop. Each layer covers failure modes the others miss."
+  },
+  {
+   "id": "ia-120",
+   "section": "a9",
+   "level": "medium",
+   "q": "Security audits find database credentials in plaintext in properties files committed to Git across many Mule projects. Which remediation aligns with MuleSoft best practice?",
+   "options": [
+    "Encrypt sensitive values with the Secure Properties module, keep the encryption key out of the repository, and mark deployment-time secrets as protected/hidden platform properties",
+    "Move the plaintext credentials from .properties files into the flow XML",
+    "Rename the properties files so they are harder to find",
+    "Restrict the Git repository to senior developers only"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. The standard layered fix: ciphertext (![...]) in committed files via Secure Properties, decryption key supplied only at deploy/runtime (never committed), and platform-level secrets entered as hidden/protected properties so they are masked and encrypted at rest.",
+    "Credentials in XML are still plaintext in Git — the same finding in a different file.",
+    "Obscurity is not a control; scanners find secrets by content, not filename.",
+    "Fewer people seeing plaintext secrets is still plaintext secrets, and repo history retains them."
+   ],
+   "explanation": "Secrets hygiene in MuleSoft projects: encrypt what must live in the repo, externalize the key, and use the platform's protected properties for deploy-time injection. Rotation of the already-exposed credentials completes the remediation."
+  },
+  {
+   "id": "ia-121",
+   "section": "a10",
+   "level": "medium",
+   "q": "A release pipeline rebuilds a Mule application from source separately for DEV, TEST, and PROD, and testers occasionally see PROD behave differently from what was tested. Which CI/CD principle is being violated and what is the fix?",
+   "options": [
+    "Build once, deploy many: build a single versioned artifact, promote that exact artifact through environments, and externalize environment differences into properties",
+    "Trunk-based development: all work must happen on one branch",
+    "Blue-green deployment: two production environments must exist",
+    "Shift-left testing: tests must run earlier in the pipeline"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Rebuilding per environment means PROD runs bits that were never tested (different dependency resolution, timestamps, plugin versions). The remedy: one immutable artifact (versioned in a repository/Exchange), promoted unchanged, with per-environment configuration supplied as deployment properties.",
+    "Branching strategy is orthogonal to the rebuild-per-environment problem.",
+    "Blue-green addresses cutover downtime, not artifact consistency.",
+    "Earlier testing does not help when the deployed artifact differs from the tested one."
+   ],
+   "explanation": "'Build once, deploy many' is the promotion principle: identical artifact everywhere, environment differences confined to externalized configuration. It makes 'tested' mean something about what production actually runs."
+  },
+  {
+   "id": "ia-122",
+   "section": "a10",
+   "level": "medium",
+   "q": "Operations wants to detect that a business-critical API has stopped returning correct results — even when infrastructure metrics (CPU, memory, HTTP availability) all look healthy. Which practice addresses this gap?",
+   "options": [
+    "Functional monitoring: scheduled synthetic transactions that call the API and assert on the correctness of responses",
+    "Raising the CPU alert threshold to be more sensitive",
+    "Enabling debug-level logging permanently in production",
+    "Reviewing dashboards manually every morning"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Synthetic/functional monitoring (e.g. Anypoint Functional Monitoring or equivalent scheduled checks) exercises the API like a real consumer and validates response content, catching logical failures — wrong data, broken dependency semantics — that resource metrics cannot see.",
+    "CPU alerts still measure the machine, not the correctness of answers.",
+    "Permanent debug logging drowns signal in noise and degrades performance; it detects nothing by itself.",
+    "Manual review is periodic and human-dependent; failures between glances go unnoticed."
+   ],
+   "explanation": "Infrastructure health and functional health are different dimensions. Synthetic transactions with assertions monitor the latter continuously — the API answers correctly, from the consumer's point of view — and alert the moment it stops."
   }
  ],
  "sections": [

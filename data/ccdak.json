@@ -2,6 +2,7 @@
  "id": "ccdak",
  "name": "Confluent Certified Developer for Apache Kafka",
  "short": "CCDAK",
+ "vendor": "Confluent",
  "exam": {
   "questions": 60,
   "minutes": 90,
@@ -1211,6 +1212,515 @@
    ],
    "answer": 1,
    "explanation": "Each hop can be fast while records WAIT in topics between hops. Event-timestamp-to-processing-time deltas per stage (or per-group lag) expose which queue is absorbing the 45 seconds."
+  },
+  {
+   "id": "kk-091",
+   "section": "k1",
+   "level": "hard",
+   "q": "Refer to the exhibit. The cluster has 3 brokers. Broker 2 crashes. Shortly afterwards broker 3 also crashes. What happens to producers writing to this topic with the configuration shown?",
+   "exhibit": "Topic: payments\n  partitions: 3\n  replication.factor: 3\n  min.insync.replicas: 2\n\nProducer:\n  acks=all",
+   "options": [
+    "Writes succeeded with one broker down, but with two brokers down they fail with NotEnoughReplicasException",
+    "Writes continue normally with any single broker alive because the leader can always acknowledge alone",
+    "All writes stopped as soon as the first broker crashed",
+    "The topic is deleted once fewer brokers than the replication factor remain"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. With acks=all, the leader acknowledges only when all in-sync replicas have the record, and min.insync.replicas=2 requires at least 2 ISR members. One broker down leaves 2 in-sync replicas — fine. Two down leaves only the leader (1 < 2), so produce requests fail with NotEnoughReplicas(AfterAppend)Exception.",
+    "min.insync.replicas=2 explicitly forbids acknowledging with a lone leader when acks=all.",
+    "Losing one of three replicas still satisfies min.insync.replicas=2, so writes kept working.",
+    "Topics are never deleted due to broker failures; partitions just become under-replicated or unavailable."
+   ],
+   "explanation": "acks=all + min.insync.replicas=2 + RF=3 is the standard durability recipe: it tolerates one broker failure while guaranteeing every acknowledged record exists on at least two brokers. The trade-off is availability: a second failure makes the partition reject writes rather than risk data loss."
+  },
+  {
+   "id": "kk-092",
+   "section": "k1",
+   "level": "medium",
+   "q": "A topic has 3 partitions. A consumer group subscribed to it starts a 4th consumer instance. What is the resulting assignment?",
+   "options": [
+    "One consumer remains idle: partitions cannot be shared, so at most 3 consumers in the group receive an assignment",
+    "Each of the 4 consumers gets 75% of one partition",
+    "The 4th consumer triggers automatic creation of a 4th partition",
+    "All 4 consumers receive all records (broadcast)"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Within a group, a partition is consumed by exactly one member. Three partitions can occupy at most three consumers; the fourth stays idle as a hot standby that takes over on a rebalance.",
+    "Partitions are the atomic unit of assignment — they are never split among group members.",
+    "Consumers never change topic partition counts; that is an administrative operation.",
+    "Broadcast happens across different groups, not within one group."
+   ],
+   "explanation": "Partition count caps a consumer group's parallelism. Extra members beyond the partition count sit idle (useful only as standby), which is why partition count is sized with target consumer parallelism in mind."
+  },
+  {
+   "id": "kk-093",
+   "section": "k1",
+   "level": "medium",
+   "q": "An application produces click events for user sessions to a 6-partition topic and requires that all events of one session are consumed in the order they were produced. How is this achieved?",
+   "options": [
+    "Use the session ID as the record key so all of a session's events land in the same partition",
+    "Set acks=all on the producer",
+    "Use a single consumer with a large fetch size",
+    "Enable log compaction on the topic"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Kafka guarantees order only within a partition. Keying by session ID makes the default partitioner hash every event of that session to the same partition, preserving per-session order while keeping 6-way parallelism across sessions.",
+    "acks controls durability of acknowledgement, not routing or ordering.",
+    "One consumer still reads 6 partitions in interleaved order; cross-partition order remains undefined.",
+    "Compaction controls retention of latest values per key; it does not create ordering guarantees."
+   ],
+   "explanation": "Ordering in Kafka is a per-partition property. The idiom for entity-level ordering is: key by the entity ID, let the hash partitioner give each entity a stable partition, and order within the entity follows automatically."
+  },
+  {
+   "id": "kk-094",
+   "section": "k1",
+   "level": "easy",
+   "q": "Where does a Kafka consumer group's committed offset information live by default?",
+   "options": [
+    "In the internal __consumer_offsets topic on the Kafka cluster",
+    "In a local file on each consumer host",
+    "In ZooKeeper znodes, in all modern Kafka versions",
+    "In the first record of each partition"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Committed offsets are written to the compacted internal topic __consumer_offsets, keyed by (group, topic, partition) — replicated and durable like any other topic data.",
+    "Local files would be lost with the host and could not survive consumer replacement.",
+    "ZooKeeper-based offsets are legacy (pre-0.9); modern clients commit to the internal topic, and new clusters run without ZooKeeper entirely (KRaft).",
+    "Offsets are consumer-side bookkeeping, not part of partition data."
+   ],
+   "explanation": "__consumer_offsets is a compacted internal topic holding the latest committed offset per group-topic-partition. Compaction keeps exactly the newest commit per key, which is all a group needs to resume."
+  },
+  {
+   "id": "kk-095",
+   "section": "k1",
+   "level": "hard",
+   "q": "Refer to the exhibit. After compaction has run on this topic, which records can a new consumer reading from the beginning still receive?",
+   "exhibit": "Topic config: cleanup.policy=compact\n\nProduced (oldest -> newest):\n  offset 0: key=userA value={city: \"Lisbon\"}\n  offset 1: key=userB value={city: \"Porto\"}\n  offset 2: key=userA value={city: \"Faro\"}\n  offset 3: key=userC value={city: \"Braga\"}\n  offset 4: key=userB value=null        (tombstone)",
+   "options": [
+    "userA=Faro and userC=Braga; the older userA record is removed and the tombstone eventually deletes userB entirely",
+    "All five records, because compaction never deletes anything",
+    "Only the tombstone, because compaction keeps the newest record overall",
+    "userA=Lisbon and userB=Porto, because compaction keeps the oldest record per key"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Compaction retains at least the latest value per key: userA's Lisbon record is superseded by Faro; userC keeps Braga. A null value is a tombstone — it marks userB deleted and, after delete.retention.ms, the tombstone itself is purged, removing userB from the log.",
+    "Compaction exists precisely to delete superseded values per key.",
+    "Compaction is per key, not global; each key's newest value survives.",
+    "It keeps the newest per key, not the oldest."
+   ],
+   "explanation": "Log compaction turns a topic into a durable latest-value-per-key changelog: superseded values are removed, and null-value tombstones delete keys (remaining visible for delete.retention.ms so consumers can observe the deletion). Ideal for state snapshots like the tables backing Kafka Streams."
+  },
+  {
+   "id": "kk-096",
+   "section": "k1",
+   "level": "medium",
+   "q": "The leader replica of a partition fails. unclean.leader.election.enable is false (the default). Which replica may become the new leader, and what does this protect against?",
+   "options": [
+    "Only a replica from the in-sync replica set; this prevents losing records that were acknowledged by the failed leader",
+    "Any replica, including lagging ones; this maximizes availability",
+    "No replica — the partition stays offline until the original leader returns",
+    "The replica on the broker with the lowest ID, regardless of sync state"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. With unclean election disabled, leadership can pass only to an ISR member — a replica guaranteed to have every committed record. This preserves acknowledged data at the cost of availability if the whole ISR is gone.",
+    "Electing an out-of-sync replica is exactly the 'unclean' election that the false setting forbids, because it silently discards committed records.",
+    "If other ISR members exist, one takes over immediately; the partition goes offline only when no ISR replica survives.",
+    "Broker ID plays no role in eligibility; sync state does."
+   ],
+   "explanation": "The ISR is the set of replicas caught up with the leader. Restricting elections to it (unclean.leader.election.enable=false) is the consistency-over-availability stance: committed records survive leader failure, but losing the entire ISR renders the partition unavailable rather than lossy."
+  },
+  {
+   "id": "kk-097",
+   "section": "k2",
+   "level": "hard",
+   "q": "Refer to the exhibit. What behaviour does this producer configuration provide?",
+   "exhibit": "enable.idempotence=true\nacks=all\nretries=2147483647\nmax.in.flight.requests.per.connection=5",
+   "options": [
+    "Retries can no longer introduce duplicates or reordering within a partition: each record is written exactly once to the log",
+    "Exactly-once delivery to consumers, end to end, with no further configuration",
+    "The producer stops batching records and sends one at a time",
+    "Duplicates are still written on retry, but consumers deduplicate them automatically"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Idempotence gives each producer a PID and per-partition sequence numbers; brokers discard duplicates from retries and, with in-flight ≤ 5, preserve ordering. Acknowledged records land exactly once in the partition log.",
+    "Idempotence covers the produce path only. End-to-end exactly-once additionally needs transactions on the producer and read_committed consumers (or Streams EOS).",
+    "Batching (batch.size/linger.ms) is unaffected by idempotence.",
+    "The whole point is that brokers reject the duplicates; consumers never see them."
+   ],
+   "explanation": "The idempotent producer eliminates the classic retry hazards — duplicates and reordering — using producer IDs and sequence numbers checked by the broker. It is produce-side exactly-once; cross-application exactly-once requires the transactional API on top."
+  },
+  {
+   "id": "kk-098",
+   "section": "k2",
+   "level": "medium",
+   "q": "Refer to the exhibit. Which delivery semantics does this consumer implement?",
+   "exhibit": "props.put(\"enable.auto.commit\", \"false\");\n...\nwhile (true) {\n  ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(500));\n  for (ConsumerRecord<String, String> r : records) {\n    process(r);                      // writes to the database\n  }\n  consumer.commitSync();             // after processing the batch\n}",
+   "options": [
+    "At-least-once: a crash between process() and commitSync() causes the batch to be reprocessed after restart",
+    "At-most-once: records can be lost but never reprocessed",
+    "Exactly-once, because commitSync is atomic with processing",
+    "No delivery guarantee, because auto-commit is disabled"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Offsets are committed only after processing succeeds. If the consumer dies mid-batch, the last commit still points before the batch, so those records are delivered again — duplicates are possible, loss is not. process() should therefore be idempotent.",
+    "At-most-once is the opposite pattern: commit before processing, risking loss instead of duplication.",
+    "commitSync commits offsets; it cannot atomically include an external database write. Exactly-once needs transactions or idempotent sinks.",
+    "Disabling auto-commit and committing manually after processing is precisely how a guarantee (at-least-once) is established."
+   ],
+   "explanation": "Commit-after-process = at-least-once; commit-before-process = at-most-once. The gap between an external side effect and the offset commit can never be closed by the consumer API alone — that is what idempotent processing or the transactional/EOS machinery addresses."
+  },
+  {
+   "id": "kk-099",
+   "section": "k2",
+   "level": "hard",
+   "q": "A consumer processes records in a loop that sometimes takes 8 minutes per batch. With max.poll.interval.ms at its default of 300000 (5 minutes), what happens, and what are the two standard remedies?",
+   "options": [
+    "The group coordinator evicts the consumer and rebalances its partitions; fix by raising max.poll.interval.ms or reducing max.poll.records so each poll's work fits the interval",
+    "The broker throttles the consumer's fetches until it speeds up; fix by raising fetch.max.bytes",
+    "Nothing — max.poll.interval.ms only applies to consumers using auto-commit",
+    "The consumer crashes with an OutOfMemoryError; fix by increasing heap"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Failing to call poll() within max.poll.interval.ms tells the coordinator the consumer is stuck: it is removed from the group and its partitions are reassigned (often causing duplicate processing). Remedies: allow a longer interval, or shrink the per-poll workload (max.poll.records) — or hand off heavy work to another thread while the poll loop keeps polling.",
+    "There is no such throttling mechanism tied to poll cadence.",
+    "The liveness check applies regardless of the commit mode.",
+    "Slow processing does not by itself exhaust memory."
+   ],
+   "explanation": "max.poll.interval.ms is the processing-liveness contract: poll at least this often or be presumed dead. Long-running batches must either fit within it (fewer records per poll) or the interval must be raised — otherwise rebalance storms and duplicate work follow."
+  },
+  {
+   "id": "kk-100",
+   "section": "k2",
+   "level": "medium",
+   "q": "A producer writes records with StringSerializer for both key and value. A consumer reads the topic configured with IntegerDeserializer for the value. What happens at the consumer?",
+   "options": [
+    "Deserialization fails (SerializationException) because the bytes are not a 4-byte integer encoding",
+    "Kafka converts the string to an integer automatically on the broker",
+    "The consumer receives the string's hash code as an integer",
+    "The record is silently skipped by the client library"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Brokers store and return opaque bytes; interpretation happens entirely in the client. UTF-8 string bytes are not a valid fixed-width integer encoding, so the deserializer throws, typically breaking the poll loop unless handled (or unless an error-tolerant wrapper is used).",
+    "Brokers never inspect or convert payload bytes — serialization is a client-side contract.",
+    "Deserializers parse bytes; they do not fall back to hashing.",
+    "Plain consumers do not skip undeserializable records by default; the exception surfaces to the application."
+   ],
+   "explanation": "Serialization is an agreement between producers and consumers that Kafka itself never enforces — brokers ship bytes. Mismatched serializers therefore fail at deserialization time, which is exactly the failure mode schema registries and contracts exist to prevent."
+  },
+  {
+   "id": "kk-101",
+   "section": "k2",
+   "level": "medium",
+   "q": "Refer to the exhibit. What is the difference between the two produce calls?",
+   "exhibit": "// A\nproducer.send(record);\n\n// B\nproducer.send(record).get();",
+   "options": [
+    "A is asynchronous (send returns a Future and batching proceeds in the background); B blocks the calling thread until the broker acknowledges or fails, at a heavy throughput cost",
+    "A discards delivery errors, while B is the only way to detect them",
+    "A sends without a key; B includes the key",
+    "They are identical because get() is a no-op on completed futures"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. send() always hands the record to the background sender and returns a Future immediately; calling get() waits synchronously for the RecordMetadata (or exception). Blocking per record forfeits batching and pipelining — throughput drops dramatically.",
+    "A does not discard errors — attach a callback (send(record, callback)) to observe results without blocking.",
+    "Keys come from the ProducerRecord, not from how the future is consumed.",
+    "get() materially changes behaviour: it blocks until the send completes."
+   ],
+   "explanation": "The producer is asynchronous by design; per-record .get() turns it into a slow synchronous client. The idiomatic way to handle outcomes at full speed is the completion callback, reserving blocking waits for cases that truly need per-record confirmation."
+  },
+  {
+   "id": "kk-102",
+   "section": "k2",
+   "level": "easy",
+   "q": "Records are produced to a 4-partition topic with a null key. How does the default partitioner distribute them (Kafka 2.4+)?",
+   "options": [
+    "Sticky batching: records fill a batch to one random partition, then switch to another, evening out over time",
+    "All null-key records go to partition 0",
+    "The broker rejects records without a key",
+    "Strictly one record per partition in round-robin order"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. The sticky partitioner sends consecutive null-key records to one partition until its batch is full or sent, then picks another — better batching (fewer, fuller requests) than per-record round-robin, with even long-run distribution.",
+    "Null-key traffic is spread across partitions, not pinned to one.",
+    "Keys are optional; null keys simply forgo per-key placement.",
+    "Per-record round-robin was the old behaviour; it fragmented batches and was replaced."
+   ],
+   "explanation": "With no key there is no placement contract, so the partitioner optimizes for throughput: the sticky strategy batches consecutive records to the same partition and rotates between batches, balancing load without sacrificing batch efficiency."
+  },
+  {
+   "id": "kk-103",
+   "section": "k2",
+   "level": "hard",
+   "q": "Refer to the exhibit. What guarantee does this combination provide that the idempotent producer alone does not?",
+   "exhibit": "Producer:\n  transactional.id=orders-processor-1\n  producer.initTransactions();\n  producer.beginTransaction();\n  producer.send(outputRecord);\n  producer.sendOffsetsToTransaction(offsets, groupMetadata);\n  producer.commitTransaction();\n\nDownstream consumer:\n  isolation.level=read_committed",
+   "options": [
+    "Atomic consume-transform-produce: the output records and the input offset commit succeed or abort together, and read_committed consumers never see aborted data",
+    "Faster producing, because transactions skip broker acknowledgements",
+    "Encryption of the records inside the transaction",
+    "Ordering across different partitions of the output topic"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. The transactional API binds the produced records and the consumed offsets into one atomic unit: on failure both are aborted, so reprocessing produces no observable duplicates. read_committed consumers only ever see committed transactional data — this is Kafka's exactly-once processing pattern.",
+    "Transactions add coordinator round-trips; they cost a little latency rather than saving it.",
+    "Transactions are about atomicity, not confidentiality — encryption is TLS/at-rest configuration.",
+    "Kafka never orders across partitions; transactions do not change that."
+   ],
+   "explanation": "Idempotence deduplicates a single producer's retries; transactions extend that to atomic multi-partition writes tied to the consumed offsets. Together with read_committed readers this closes the consume-transform-produce loop into exactly-once semantics — the machinery behind Streams EOS."
+  },
+  {
+   "id": "kk-104",
+   "section": "k2",
+   "level": "medium",
+   "q": "A producer sends many small records, and profiling shows one network request per record. Which two settings are tuned together to improve throughput via batching, and what is the trade-off?",
+   "options": [
+    "batch.size (bytes per batch) and linger.ms (how long to wait for a batch to fill); the trade-off is up to linger.ms of added latency per record",
+    "fetch.min.bytes and session.timeout.ms; the trade-off is slower group rebalances",
+    "acks and retries; the trade-off is durability",
+    "max.poll.records and heartbeat.interval.ms; the trade-off is consumer lag"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. A non-zero linger.ms makes the producer wait briefly so batches (bounded by batch.size) fill before sending — fewer, larger requests, better compression, higher throughput, at the cost of that small wait. linger=0 sends as fast as possible with tiny batches.",
+    "Those are consumer/group settings, unrelated to producer batching.",
+    "acks/retries govern durability semantics, not batch formation.",
+    "Also consumer-side settings; the question is about the producer's request pattern."
+   ],
+   "explanation": "Producer batching is the linger.ms/batch.size dial: trade microseconds-to-milliseconds of latency for dramatically fewer requests and better compression. It is the first tuning knob for small-record, high-rate producers."
+  },
+  {
+   "id": "kk-105",
+   "section": "k3",
+   "level": "medium",
+   "q": "In Kafka Streams, what is the semantic difference between reading a topic as a KStream versus as a KTable?",
+   "options": [
+    "A KStream treats every record as an independent event; a KTable treats records as upserts, keeping only the latest value per key",
+    "A KStream is bounded; a KTable is infinite",
+    "KTables cannot be joined, only aggregated",
+    "A KStream stores data on disk while a KTable is memory-only"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. KStream = record stream: two records with the same key are two facts (e.g. two purchases). KTable = changelog view: a later record with the same key replaces the earlier one (e.g. current address), and null values delete the key.",
+    "Both abstractions are unbounded; the difference is interpretation, not size.",
+    "KTables join in several ways (table-table, stream-table enrichment).",
+    "Both are backed by topics; tables additionally materialize into (disk-backed RocksDB) state stores."
+   ],
+   "explanation": "The stream/table duality: a stream is a sequence of immutable events, a table is the evolving latest-state per key that such a sequence implies. Choosing the right reading of a topic (events vs upserts) drives which joins and aggregations make sense."
+  },
+  {
+   "id": "kk-106",
+   "section": "k3",
+   "level": "hard",
+   "q": "Refer to the exhibit. Why does this topology create an internal repartition topic, and what would avoid it?",
+   "exhibit": "builder.stream(\"orders\")                    // key = orderId\n  .groupBy((orderId, order) -> order.customerId)\n  .count();",
+   "options": [
+    "groupBy changes the grouping key, so records must be redistributed by customerId before counting; grouping by the existing key (groupByKey) — or keying the topic by customerId upstream — avoids the repartition",
+    "count() always requires a repartition topic regardless of keys",
+    "The topology is invalid; groupBy cannot be followed by count()",
+    "Repartition topics appear only when exactly-once is enabled"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Aggregations are computed per key within partitions. Since the new key (customerId) does not match the current partitioning (by orderId), Streams inserts a repartition topic to co-locate each customer's records on one task. If the data were already keyed by customerId, groupByKey() would aggregate with no shuffle.",
+    "count() after groupByKey() on an unchanged key needs no repartitioning.",
+    "groupBy(...).count() is a perfectly standard aggregation.",
+    "EOS changes transactional behaviour, not shuffle topology."
+   ],
+   "explanation": "Any key-changing operation (groupBy, selectKey, map that alters the key) followed by a stateful operation forces a shuffle through an internal repartition topic, doubling the write path. Designing topic keys to match downstream aggregation keys is the main lever for avoiding it."
+  },
+  {
+   "id": "kk-107",
+   "section": "k3",
+   "level": "medium",
+   "q": "A Kafka Streams application must guarantee that its stateful processing produces no duplicated results in its output topics, even across failures and restarts. Which single configuration enables this?",
+   "options": [
+    "processing.guarantee=exactly_once_v2",
+    "enable.auto.commit=false",
+    "cleanup.policy=compact on the output topics",
+    "num.stream.threads=1"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. exactly_once_v2 makes Streams wrap consuming, state-store updates (changelogs), and producing in Kafka transactions, so each input record's effects are committed atomically exactly once — the supported EOS switch for modern brokers.",
+    "Streams manages its own commits; this consumer flag is not how Streams EOS is configured.",
+    "Compaction shapes retention of the output; it neither prevents nor removes duplicated aggregate results.",
+    "Single-threading reduces parallelism but failures and restarts can still replay uncommitted work."
+   ],
+   "explanation": "Streams exposes exactly-once as one setting: processing.guarantee=exactly_once_v2. Under the hood it is the transactional producer + offsets-in-transaction + read_committed pattern, applied automatically to the whole topology including state store changelogs."
+  },
+  {
+   "id": "kk-108",
+   "section": "k3",
+   "level": "easy",
+   "q": "A Kafka Streams application consumes one input topic with 8 partitions. The team deploys 12 identical instances of the application. How many instances actively process data?",
+   "options": [
+    "8 — parallelism is bounded by the number of input partitions (tasks); the other 4 instances stay idle as standbys",
+    "12 — Streams splits partitions among all instances",
+    "1 — only the first instance receives tasks",
+    "12 — but each processes every record (broadcast)"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Streams creates one task per input partition (8 tasks here) and distributes tasks across instances/threads. With more instances than tasks, the surplus get nothing to do — useful only as warm spares.",
+    "There are only 8 units of work to hand out; 12 instances cannot all be busy.",
+    "Tasks are balanced across available instances, not concentrated on one.",
+    "Within the application (one consumer group), records are partitioned, never broadcast."
+   ],
+   "explanation": "Task count = input partition count is the scaling law of Kafka Streams. Capacity planning starts with partitions: to use 12 instances productively, the input topic needs at least 12 partitions."
+  },
+  {
+   "id": "kk-109",
+   "section": "k4",
+   "level": "medium",
+   "q": "Refer to the exhibit. What does this Kafka Connect configuration do?",
+   "exhibit": "{\n  \"name\": \"customers-source\",\n  \"config\": {\n    \"connector.class\": \"io.confluent.connect.jdbc.JdbcSourceConnector\",\n    \"connection.url\": \"jdbc:postgresql://db:5432/crm\",\n    \"mode\": \"incrementing\",\n    \"incrementing.column.name\": \"id\",\n    \"topic.prefix\": \"crm-\",\n    \"table.whitelist\": \"customers\"\n  }\n}",
+   "options": [
+    "Polls the customers table and publishes rows with an id greater than the last one seen to the topic crm-customers — new rows are captured, but updates to existing rows are missed",
+    "Streams every change (inserts, updates, deletes) from the table using the database's transaction log",
+    "Copies records from the topic crm-customers into the customers table",
+    "Takes a one-time snapshot of the table and then stops"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. A JDBC source in incrementing mode tracks the highest id it has published and selects only rows above it on each poll. That captures inserts only; updates don't change id and are invisible (timestamp or timestamp+incrementing mode addresses that; true CDC needs a log-based connector such as Debezium).",
+    "Log-based change data capture is a different connector family; the JDBC source only polls with queries.",
+    "Topic-to-table is a sink connector; this is a source.",
+    "The connector keeps polling on its interval, continuously picking up new rows."
+   ],
+   "explanation": "JDBC source modes matter: incrementing = inserts only (monotonic column), timestamp = rows whose timestamp advanced, timestamp+incrementing = both. Query-based capture always trails and misses deletes — the standard reason to step up to log-based CDC."
+  },
+  {
+   "id": "kk-110",
+   "section": "k4",
+   "level": "medium",
+   "q": "How does Kafka Connect in distributed mode store its configuration, progress, and status — and how is a connector's throughput scaled?",
+   "options": [
+    "In internal Kafka topics (config, offsets, status); throughput scales by raising tasks.max so the connector splits work across more tasks on the worker cluster",
+    "In a shared filesystem visible to all workers; throughput scales by adding CPU to one worker",
+    "In ZooKeeper; throughput scales by adding partitions to the source database",
+    "In each worker's local RocksDB; throughput cannot be scaled without downtime"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Distributed Connect keeps connector configs, source offsets, and statuses in three internal topics, so any worker can take over any task. Parallelism comes from tasks: tasks.max lets the connector partition its work (tables, topic partitions) into up to that many tasks balanced across workers.",
+    "No shared filesystem is involved; state lives in Kafka itself.",
+    "Connect does not use ZooKeeper for its state.",
+    "Task counts can be changed by reconfiguring the connector at runtime via the REST API."
+   ],
+   "explanation": "Distributed Connect is a stateless worker cluster whose shared memory is Kafka: config/offset/status topics make workers interchangeable and failover automatic. tasks.max is the parallelism dial, subject to how far the specific connector can actually split its workload."
+  },
+  {
+   "id": "kk-111",
+   "section": "k4",
+   "level": "hard",
+   "q": "Each record flowing through a sink connector needs a field removed and the event routed to a topic-per-region before delivery. The team debates implementing this inside Connect. What is the appropriate guidance?",
+   "options": [
+    "Light per-record modifications like these are what Single Message Transforms (SMTs) are for; anything heavier — joins, aggregations, external lookups — belongs in a stream processor before Connect",
+    "Connect cannot modify records at all; a Streams app must rewrite the data first",
+    "Fork the connector's source code and add the logic to its put() method",
+    "SMTs support aggregations and joins, so all processing can move into the connector"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. SMTs are stateless, per-record transformations chained in connector config (e.g. ReplaceField to drop a field, RegexRouter/TimestampRouter to redirect topics) — a perfect fit here. They deliberately cannot hold state, so multi-record logic belongs in Kafka Streams/ksqlDB upstream.",
+    "SMTs exist precisely to modify records in the Connect pipeline.",
+    "Forking a connector for config-expressible logic creates a maintenance burden SMTs avoid.",
+    "SMTs see one record at a time; stateful operations are out of their scope by design."
+   ],
+   "explanation": "The dividing line: SMT for stateless single-record tweaks declared in configuration; stream processing for anything stateful or multi-record. Keeping that boundary keeps connectors reusable and pipelines debuggable."
+  },
+  {
+   "id": "kk-112",
+   "section": "k5",
+   "level": "medium",
+   "q": "A team wants fast unit tests for a Kafka Streams topology — verifying that given input records, the expected output records and state are produced — without starting any broker. Which tool is designed for this?",
+   "options": [
+    "TopologyTestDriver with TestInputTopic and TestOutputTopic",
+    "A production-like three-broker cluster in a staging environment",
+    "MockProducer from kafka-clients",
+    "kafka-console-consumer run in a shell script"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. TopologyTestDriver executes the topology synchronously in-process: pipe records in via TestInputTopic, read results from TestOutputTopic, inspect state stores, and even advance the mocked wall clock for windowing tests — milliseconds per test, no cluster.",
+    "Real clusters are for integration tests; they are far too slow and flaky to be the unit-test loop.",
+    "MockProducer stubs the plain producer client; it knows nothing about Streams topologies.",
+    "Console tools are for manual inspection, not automated assertions."
+   ],
+   "explanation": "TopologyTestDriver is the Streams unit-testing harness: deterministic, in-JVM, broker-free, with control over event time and access to state stores. Save real brokers (Testcontainers/embedded) for integration coverage."
+  },
+  {
+   "id": "kk-113",
+   "section": "k5",
+   "level": "medium",
+   "q": "A service class wraps a KafkaProducer and adds business logic before sending. How can its behaviour — including how it handles send failures — be unit-tested without a broker?",
+   "options": [
+    "Inject a MockProducer, which records sent records for assertions and can be told to complete sends successfully or with an exception",
+    "Point the real producer at localhost and assert nothing is thrown",
+    "Use reflection to verify the producer's private buffer",
+    "Skip unit tests; only integration tests can cover producer code"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. MockProducer implements the Producer interface in memory: tests assert on history() to check what was sent (topic, key, value) and use errorNext(exception) to simulate broker failures, exercising the error-handling paths deterministically.",
+    "A real client with no broker just fails on metadata — it proves nothing about the logic and makes tests environment-dependent.",
+    "Reflection against internals is brittle and tests the client library, not your code.",
+    "The clients ship mock implementations precisely so this code can be unit-tested."
+   ],
+   "explanation": "Program against the Producer/Consumer interfaces and inject MockProducer/MockConsumer in tests: sends are captured for assertion and failures are scriptable — fast, deterministic coverage of both happy and error paths."
+  },
+  {
+   "id": "kk-114",
+   "section": "k6",
+   "level": "medium",
+   "q": "Refer to the exhibit. What does this output indicate, and which metric quantifies it?",
+   "exhibit": "$ kafka-consumer-groups --bootstrap-server broker:9092 \\\n    --describe --group invoice-processor\n\nTOPIC     PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG\ninvoices  0          182300          195450          13150\ninvoices  1          182410          195600          13190\ninvoices  2          182150          195510          13360",
+   "options": [
+    "The group is falling behind: consumers have processed ~13k fewer records than produced per partition; consumer lag (e.g. records-lag-max) is the metric to monitor and alert on",
+    "The brokers are dropping records; the metric is under-replicated-partitions",
+    "The producers are throttled; the metric is produce-throttle-time",
+    "The topic is over-partitioned; the metric is partition-count"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. LAG = log-end-offset − committed offset: the number of records waiting per partition. Growing lag means consumption is slower than production — the primary consumer health signal, exposed as records-lag/records-lag-max on the consumer's fetch metrics (and by external lag monitors).",
+    "Nothing here concerns replication; records are safely stored and simply not yet consumed.",
+    "Producer throttling is unrelated to a consumer group's committed offsets.",
+    "Even lag across three partitions says nothing about having too many partitions."
+   ],
+   "explanation": "Consumer lag is the queue depth of Kafka consumption. Watching its trend (per partition, via kafka-consumer-groups, JMX records-lag-max, or dedicated exporters) distinguishes a healthy steady state from a group that will never catch up and needs scaling or faster processing."
+  },
+  {
+   "id": "kk-115",
+   "section": "k6",
+   "level": "medium",
+   "q": "After a deployment, invoices intermittently fail to appear downstream, yet application logs show no errors: the producer code ignores send outcomes. Which producer-side JMX metrics would have revealed the problem, and what code change makes failures visible?",
+   "options": [
+    "record-error-rate (and record-retry-rate) rising above zero; add a send callback (or check the Future) so failed sends are logged and handled",
+    "consumer records-lag-max; switch the consumer to read_committed",
+    "under-min-isr-partition-count on the broker; raise replication factor",
+    "request-latency-avg; enable compression to lower it"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. The producer exposes record-error-rate (records that ultimately failed) and record-retry-rate (transient failures being retried). Fire-and-forget send() without a callback silently drops those errors on the floor — the callback (metadata, exception) -> {...} is where failures must be logged, alerted, or routed for retry.",
+    "Consumer lag cannot detect records that were never successfully produced.",
+    "Broker ISR health is one possible cause, but the observability gap described is on the producer, and the records may fail for many other reasons.",
+    "Latency metrics do not surface silent record loss."
+   ],
+   "explanation": "A producer that ignores send results is blind to its own failures. record-error-rate is the canary in monitoring, and the completion callback is the code-level fix — every production producer should have both."
   }
  ],
  "sections": [

@@ -2,6 +2,7 @@
  "id": "mcpa",
  "name": "MuleSoft Platform Architect",
  "short": "MC Platform Architect",
+ "vendor": "MuleSoft",
  "exam": {
   "questions": 65,
   "minutes": 120,
@@ -1000,6 +1001,512 @@
    ],
    "answer": 1,
    "explanation": "Monitoring pays off through ownership and feedback loops: SLA-derived thresholds, owned alerts, and post-incident adjustments. Unowned dashboards and silenced alerts are monitoring theater."
+  },
+  {
+   "id": "pa-073",
+   "section": "p1",
+   "level": "medium",
+   "q": "A new mobile project delivers in 6 weeks instead of the estimated 16 because the team discovered existing Customer and Order APIs in Exchange and consumed them without involving the teams that built them. Which property of an application network does this illustrate?",
+   "options": [
+    "Self-service reuse of discoverable assets, which makes delivery faster with each API added to the network",
+    "Point-to-point integration, which minimizes the number of APIs",
+    "Centralized delivery, where one team builds all integrations",
+    "The network effect of adding more middleware servers"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. The defining benefit of an application network: production-ready, discoverable, self-serve APIs become building blocks, so each new consumer project starts from what exists instead of from zero — and delivery accelerates as the network grows.",
+    "Point-to-point is the anti-pattern the application network replaces; nothing here is point-to-point.",
+    "The scenario shows the opposite: the consuming team helped itself without a central bottleneck.",
+    "The value comes from reusable APIs and discoverability, not from infrastructure count."
+   ],
+   "explanation": "An application network is an emergent structure: nodes are APIs on Anypoint Platform, discoverability comes from Exchange, and consumption is self-service under governance. Its compounding payoff is exactly this scenario — later projects go faster because earlier ones left reusable assets behind."
+  },
+  {
+   "id": "pa-074",
+   "section": "p2",
+   "level": "medium",
+   "q": "A conglomerate has two divisions whose teams must manage their own APIs, environments, and client applications without seeing each other's assets, while central IT retains overall administration. How should Anypoint Platform be organized?",
+   "options": [
+    "One organization with a business group per division, each with its own environments, permissions, and (optionally) vCore allocations",
+    "Two entirely separate Anypoint organizations with separate contracts",
+    "One organization and one environment, separated by naming conventions",
+    "A shared DESIGN environment with production access granted by ticket"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Business groups partition one organization into administrative subtrees: each division gets isolated assets, environments, team permissions, and resource allocations, while the root organization keeps central governance — the intended multi-LOB structure.",
+    "Two organizations double the administration and licensing surface and break central IT's single pane of glass.",
+    "Naming conventions provide zero access isolation; everyone still sees and can touch everything.",
+    "Environments separate deployment stages, not organizational ownership."
+   ],
+   "explanation": "Business groups are Anypoint Platform's answer to organizational federation: autonomy at the edge (each LOB owns its assets and environments) with governance at the root — precisely the balance a multi-division enterprise needs."
+  },
+  {
+   "id": "pa-075",
+   "section": "p2",
+   "level": "medium",
+   "q": "A Center for Enablement (C4E) has operated for a year. Which measurement best indicates it is fulfilling its purpose?",
+   "options": [
+    "A rising ratio of API consumption to API creation — existing assets are being reused by teams other than their authors",
+    "The C4E team itself built more integrations than any other team",
+    "The number of change-approval meetings held per month",
+    "A decrease in the number of assets published to Exchange"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. A C4E succeeds by enabling others: templates, standards, and reusable assets that LOB teams consume on their own. Reuse/consumption metrics (asset consumption vs creation, consumers per asset) are the canonical KPIs of that flywheel.",
+    "A C4E that does the building has become the old central-IT bottleneck under a new name.",
+    "Meeting volume measures process weight, not enablement.",
+    "Fewer published assets means a shrinking network — the opposite of the goal."
+   ],
+   "explanation": "The C4E model shifts IT from delivery bottleneck to enabler. Its health is read off the application network's reuse metrics: are decentralized teams discovering, consuming, and contributing assets without hand-holding?"
+  },
+  {
+   "id": "pa-076",
+   "section": "p3",
+   "level": "medium",
+   "q": "Refer to the exhibit. What kind of RAML construct is 'pageable', and why is it defined this way?",
+   "exhibit": "#%RAML 1.0 Trait\nusage: Apply to any collection GET\nqueryParameters:\n  offset:\n    type: integer\n    default: 0\n  limit:\n    type: integer\n    maximum: 200\n    default: 50",
+   "options": [
+    "A trait — a reusable fragment applied to methods (is: [pageable]) so pagination is defined once and shared, e.g. via Exchange, across APIs",
+    "A resourceType — it defines a complete resource with its methods",
+    "A securityScheme — it restricts who may call the method",
+    "An annotation — metadata with no effect on the contract"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Traits capture cross-cutting method-level behaviour (pagination, sorting, common headers). Published as an API fragment to Exchange, the same trait is imported by every API in the organization — one definition, uniform contract.",
+    "resourceTypes template entire resources (their URIs and methods); this fragment only adds query parameters to a method.",
+    "Security schemes declare auth mechanisms (OAuth 2.0, etc.), not query parameters.",
+    "Annotations attach metadata; this fragment changes the actual contract of methods that apply it."
+   ],
+   "explanation": "RAML reuse mechanics: traits for method-level patterns, resourceTypes for resource-level templates, libraries/fragments in Exchange to share them org-wide. Standardized pagination via a shared trait is the textbook example."
+  },
+  {
+   "id": "pa-077",
+   "section": "p3",
+   "level": "medium",
+   "q": "An API published as /api/v2 needs a change that removes a field from a response. Existing consumers must keep working while new consumers adopt the change. What is the correct approach?",
+   "options": [
+    "Publish the breaking change as a new major version (/api/v3) and run v2 alongside it during a deprecation window",
+    "Remove the field from v2 and email consumers about the improvement",
+    "Increase only the Exchange asset's patch version and republish",
+    "Add the change to v2 but only after business hours"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Removing a response field breaks consumers, and breaking changes ride major versions. Exposing the major version in the URL (or equivalent) lets v2 and v3 instances coexist; consumers migrate on their schedule and v2 is retired after deprecation.",
+    "The change breaks v2 consumers regardless of how politely it is announced.",
+    "Patch versions signal backwards-compatible fixes; hiding a breaking change under one breaks the versioning contract.",
+    "Timing does not change compatibility."
+   ],
+   "explanation": "Major version = breaking change = a parallel API instance consumers opt into. The platform supports this directly: separate API instances per major version in API Manager, each with its own policies and consumer contracts, retired via managed deprecation."
+  },
+  {
+   "id": "pa-078",
+   "section": "p3",
+   "level": "easy",
+   "q": "Before any implementation exists, consumers of a newly designed API want to start building against it. Which Anypoint Platform capability enables this?",
+   "options": [
+    "The mocking service on the API specification in Exchange/API Designer",
+    "CloudHub autoscaling",
+    "The API's MUnit test suite",
+    "Runtime Manager application logs"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. The mocking service serves live responses generated from the RAML/OAS examples at a temporary endpoint, so consumer teams integrate against the contract from day one — the design-first payoff.",
+    "Autoscaling concerns running workloads, and there is nothing deployed yet.",
+    "MUnit tests verify an implementation, which does not exist yet.",
+    "No application exists, so there are no logs."
+   ],
+   "explanation": "Design-first development front-loads the contract: publish the spec, switch on mocking, gather consumer feedback, and let both sides build in parallel — implementation and consumption meet at an already-validated interface."
+  },
+  {
+   "id": "pa-079",
+   "section": "p4",
+   "level": "medium",
+   "q": "An order-fulfillment capability must check inventory in SAP, reserve stock, charge the customer through a payment provider, and trigger a shipment — coordinating these steps and their compensations. In API-led connectivity, where does this logic belong?",
+   "options": [
+    "A process API that orchestrates the underlying system APIs",
+    "The experience API serving the web storefront",
+    "The SAP system API",
+    "A stored procedure in the SAP database"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Composing multiple systems into a business process — sequencing, aggregation, compensation — is the process layer's charter. It stays agnostic of both the source systems' details (hidden by system APIs) and delivery channels (handled by experience APIs).",
+    "Experience APIs adapt a process to one channel's needs; burying orchestration there duplicates it for every channel.",
+    "A system API insulates and exposes one system; orchestrating peers would couple it to the whole landscape.",
+    "Database-embedded logic is invisible to the application network and couples the process to one vendor's internals."
+   ],
+   "explanation": "The three-layer division: system APIs unlock single systems, process APIs compose them into channel-agnostic business capabilities, experience APIs shape those capabilities per channel. Multi-system orchestration is the defining workload of the middle layer."
+  },
+  {
+   "id": "pa-080",
+   "section": "p4",
+   "level": "medium",
+   "q": "The same Customer 360 process API is consumed by a web portal, a mobile app, and a partner B2B channel. The mobile team needs a trimmed, flattened JSON with only 12 fields to minimize bandwidth. Where should that reshaping live?",
+   "options": [
+    "In a mobile experience API that adapts the process API's canonical response for that channel",
+    "In the process API, with a ?channel=mobile parameter switching response shapes",
+    "In each system API, returning mobile-ready fields",
+    "In the mobile app itself, downloading the full payload and discarding most of it"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Channel-specific shaping is exactly what experience APIs exist for: the process layer keeps one canonical model, and each channel gets its own adaptation — the mobile experience API returns the trimmed 12-field view.",
+    "Channel switches inside the process API accrete channel knowledge in the layer that must stay channel-agnostic; every new channel would modify it.",
+    "System APIs mirror their backend's domain; teaching them channel formats couples the bottom layer to the top.",
+    "Shipping the full payload to discard it wastes precisely the bandwidth the requirement targets."
+   ],
+   "explanation": "Experience APIs absorb channel variability so the layers beneath stay reusable. One process API, many thin experience adaptations — new channels are added at the edge, not by modifying shared logic."
+  },
+  {
+   "id": "pa-081",
+   "section": "p4",
+   "level": "hard",
+   "q": "A company plans to replace its on-premises SAP ECC with a cloud ERP in two years. Today, eight process APIs need ERP data. How does API-led connectivity minimize the future migration's impact?",
+   "options": [
+    "Expose the ERP only through system APIs with a backend-agnostic contract; at migration, reimplement those system APIs while the eight process APIs keep the same contract",
+    "Let each process API query SAP directly to avoid an extra hop before the migration",
+    "Freeze all API development until the ERP decision is final",
+    "Build the process APIs inside SAP so they migrate together"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. System APIs exist to insulate: their contract expresses the data/capability (customers, orders) rather than SAP-isms. Swapping the backend means new system API implementations behind unchanged contracts — the eight process APIs, and everything above them, are untouched.",
+    "Direct queries embed SAP specifics into eight consumers, turning the migration into eight rewrite projects.",
+    "A two-year freeze to avoid designing an insulation layer inverts the cost-benefit entirely.",
+    "Embedding integration logic in the system being retired guarantees it must all be rebuilt."
+   ],
+   "explanation": "Backend insulation is the strategic case for the system layer: design contracts around business entities, not vendor schemas, and system replacement becomes an implementation detail below a stable interface — the difference between replacing one layer and rewriting the estate."
+  },
+  {
+   "id": "pa-082",
+   "section": "p4",
+   "level": "medium",
+   "q": "Which two statements correctly characterize system APIs in API-led connectivity? (Choose 2.)",
+   "answers": [
+    0,
+    2
+   ],
+   "options": [
+    "They insulate consumers from the details and future changes of the underlying system",
+    "They orchestrate business processes spanning multiple backends",
+    "They are built for reuse by many consumers rather than for one specific project",
+    "They shape responses for one specific delivery channel"
+   ],
+   "optionNotes": [
+    "True. Hiding connection details, data formats, and system quirks behind a stable contract is a system API's primary duty.",
+    "False — multi-backend orchestration is the process layer's job; a system API fronts one system.",
+    "True. System APIs expose core assets generically (canonical entities, standard operations) so any current or future consumer can use them — project-specific shapes would kill reuse.",
+    "False — channel-specific shaping is the experience layer's role."
+   ],
+   "explanation": "System APIs = insulation + reusable access to core systems: one system each, generic contracts, no business-process or channel logic. Those latter concerns belong to the process and experience layers respectively."
+  },
+  {
+   "id": "pa-083",
+   "section": "p5",
+   "level": "medium",
+   "q": "Refer to the exhibit. A consumer registered on the Silver tier sends 800 requests in one minute. What happens to the excess requests, and what must the consumer's requests include for tiers to apply at all?",
+   "exhibit": "API instance policy: SLA-based rate limiting\n\nTiers:\n  Gold:   1000 requests / minute (auto-approved)\n  Silver:  500 requests / minute (auto-approved)",
+   "options": [
+    "Requests beyond 500 in that minute are rejected with HTTP 429; requests must carry valid client credentials (client ID/secret) identifying the approved application",
+    "All 800 succeed but the surplus is billed at Gold rates",
+    "Excess requests queue on the gateway until the next minute",
+    "The consumer is silently upgraded to Gold"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. SLA-based rate limiting enforces the tier that the consumer's registered application was approved for: the 300 requests over Silver's limit get 429 Too Many Requests. Tier identification relies on client credentials sent per request, which is why the policy works together with client registration/contracts.",
+    "API Manager policies enforce limits; they are not a metering-and-billing system.",
+    "Rate limiting rejects; it does not buffer (queuing under pressure is what spike control's retry-after behaviour approximates, not this policy).",
+    "Tier changes are explicit contract operations, never automatic side effects of traffic."
+   ],
+   "explanation": "SLA tiers turn one API into differentiated service levels: consumers request access under a tier, receive client credentials, and the gateway enforces each application's own limit — 429 signalling 'slow down' to the over-quota consumer without affecting others."
+  },
+  {
+   "id": "pa-084",
+   "section": "p5",
+   "level": "medium",
+   "q": "A Mule application implementing an API is deployed to CloudHub, and policies are configured on the API instance in API Manager — but calls to the application are not being policed. Which platform mechanism is most likely missing?",
+   "options": [
+    "API autodiscovery linking the running Mule application to the API instance (api.id plus platform client credentials)",
+    "A CNAME record pointing at the application",
+    "The mocking service must be disabled first",
+    "An Exchange rating of at least four stars"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Policies configured in API Manager reach a Mule app through autodiscovery: the app declares the API instance id (api.id) and authenticates to the platform (client id/secret of the environment), and its embedded gateway then downloads and enforces the instance's policies. Without it, the app serves traffic ungoverned.",
+    "DNS affects reachability, not policy enforcement.",
+    "Mocking lives at design time; it does not block runtime policies.",
+    "Ratings are community feedback with no runtime effect."
+   ],
+   "explanation": "Autodiscovery is the runtime-to-management link: it pairs a deployed Mule app with its API instance so the embedded gateway can fetch policies, enforce contracts, and report analytics. It is the first thing to check when configured policies visibly do nothing."
+  },
+  {
+   "id": "pa-085",
+   "section": "p5",
+   "level": "hard",
+   "q": "Refer to the exhibit. Both policies limit traffic. What is the essential difference in purpose between them?",
+   "exhibit": "Policy A — Rate limiting:\n  500 requests per minute per client application\n  (rejects with 429 once exceeded)\n\nPolicy B — Spike control:\n  50 requests per second overall,\n  queue up to 100 excess requests, retry delay 1s",
+   "options": [
+    "A enforces a business contract (each consumer's entitled quota); B protects the backend from bursts by smoothing short traffic spikes for all traffic combined",
+    "A applies to REST APIs, B only to SOAP services",
+    "B replaces A: spike control makes rate limiting obsolete",
+    "A runs on CloudHub, B only on customer-hosted runtimes"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Rate limiting (especially SLA-based) is contractual: a per-consumer allowance over a window, hard-rejecting the excess. Spike control is protective plumbing: a throughput ceiling with short queuing/retry that absorbs bursts so the implementation is not overwhelmed. Mature APIs often apply both.",
+    "Both policies are protocol-agnostic gateway policies.",
+    "They answer different questions (entitlement vs burst protection); one cannot substitute for the other.",
+    "Both run wherever the gateway runs."
+   ],
+   "explanation": "Same family, different intent: rate limiting divides capacity among consumers as a matter of contract; spike control shapes the aggregate flow to match what the backend can survive moment to moment. Contract enforcement rejects; burst protection smooths."
+  },
+  {
+   "id": "pa-086",
+   "section": "p5",
+   "level": "medium",
+   "q": "A public developer portal exposes an API in Exchange. The API team wants every consuming application to be known, individually revocable, and approved by an API owner before receiving access. Which platform workflow provides this?",
+   "options": [
+    "Client applications request access to the API in Exchange under a contract; with manual approval configured, an owner reviews each request before credentials are honored, and contracts can be revoked per application",
+    "Publish the API's shared API key on the portal page for all consumers",
+    "Add consumers' office IP ranges to an allowlist policy",
+    "Send credentials by email to developers who ask"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. The Exchange 'Request access' flow creates a per-application contract: unique client credentials per consumer, an approval step when tiers are set to manual, per-application analytics attribution, and one-click revocation — governance at consumer granularity.",
+    "One shared key means no attribution and revocation punishes everyone at once.",
+    "IP allowlists identify networks, not applications, and crumble with cloud/NAT consumers.",
+    "Manual credential distribution scales poorly and leaves no platform-managed contract to revoke."
+   ],
+   "explanation": "Contract-based access is the governed on-ramp: register an application, request access (optionally owner-approved), receive unique credentials enforced by client ID/SLA policies. Every consumer becomes individually visible, measurable, and revocable."
+  },
+  {
+   "id": "pa-087",
+   "section": "p5",
+   "level": "medium",
+   "q": "An API's implementation is a legacy .NET service that cannot run Mule policies natively. The organization still wants API Manager policies (rate limiting, client ID enforcement) applied. What is the standard approach?",
+   "options": [
+    "Deploy a gateway in front of it — an auto-generated Mule proxy application or Flex Gateway — and manage that instance's policies in API Manager",
+    "Rewrite the .NET service as a Mule application first",
+    "Implement the policies inside the .NET code by hand",
+    "Skip governance for non-Mule implementations"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Policies need an enforcement point. For non-Mule backends that point is a proxy: API Manager can generate a Mule proxy app (deployable to CloudHub/RTF) or, more lightweight, Flex Gateway fronts the service — either way the API instance's policies apply without touching the backend.",
+    "A rewrite is a massive detour when only governance is needed.",
+    "Hand-rolled policy code diverges from platform-managed policies and loses central control, analytics, and updatability.",
+    "Ungoverned APIs are the exact gap the architecture is meant to close."
+   ],
+   "explanation": "Basic endpoint (Mule app with autodiscovery enforcing its own policies) vs proxy endpoint (gateway in front of any HTTP backend): the proxy pattern extends API Manager governance to implementations that cannot embed the gateway themselves."
+  },
+  {
+   "id": "pa-088",
+   "section": "p6",
+   "level": "medium",
+   "q": "A process API implementation needs substantial internal changes (refactoring plus a library upgrade) with no change to its RAML contract. What should consumers experience when the new implementation is deployed to the same API instance?",
+   "options": [
+    "Nothing — same endpoint, same contract, same policies and contracts remain in force; implementation and interface lifecycles are deliberately decoupled",
+    "They must re-request access because contracts reset on redeploy",
+    "They must switch to a new URL containing the build number",
+    "A mandatory one-hour maintenance outage"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. The API instance in API Manager — its endpoint, policies, SLA tiers, and consumer contracts — persists across implementation deployments. A contract-preserving reimplementation is invisible to consumers, which is the point of managing the interface separately from the code.",
+    "Contracts attach to the API instance, not to a particular deployment of its implementation.",
+    "Build-specific URLs would leak implementation lifecycle into the interface — the opposite of the model.",
+    "Zero-downtime deployment options exist precisely so internal changes need no outage."
+   ],
+   "explanation": "Interface lifecycle ≠ implementation lifecycle: consumers bind to the managed API instance (contract + endpoint + policies). Implementations behind it can be refactored, re-platformed, or scaled freely so long as the contract holds."
+  },
+  {
+   "id": "pa-089",
+   "section": "p6",
+   "level": "medium",
+   "q": "A read-heavy system API serves country and currency reference data that changes monthly. Response times must improve and backend load must drop, without touching the implementation. Which policy achieves this?",
+   "options": [
+    "An HTTP caching policy on the API instance, serving repeated GETs from the gateway cache with an appropriate TTL",
+    "A rate limiting policy set very low so fewer requests reach the backend",
+    "A JSON threat protection policy",
+    "Client ID enforcement, since identified traffic is faster"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Gateway-side HTTP caching stores responses and answers repeat requests without invoking the implementation: latency drops to cache speed, backend load falls proportionally to the hit rate, and a TTL tuned to monthly volatility keeps staleness acceptable — all pure configuration.",
+    "Starving consumers reduces load by refusing service — it degrades the API rather than improving it.",
+    "Threat protection inspects payloads for attacks; it adds latency rather than removing it.",
+    "Identification has no caching effect."
+   ],
+   "explanation": "For cache-friendly workloads (GET, slow-changing data), the HTTP caching policy is the highest-leverage no-code optimization: applied at the enforcement point, invisible to the implementation, tunable per instance."
+  },
+  {
+   "id": "pa-090",
+   "section": "p6",
+   "level": "hard",
+   "q": "An experience API aggregates three process APIs. Its 95th-percentile latency SLA is 800 ms. The three downstream calls are independent of each other, each with a p95 around 400 ms. Which implementation guidance follows?",
+   "options": [
+    "Invoke the three process APIs in parallel (e.g. Scatter-Gather) so total latency approaches the slowest single call instead of the sum, and set downstream timeouts consistent with the 800 ms budget",
+    "Call the three APIs sequentially and hope caching absorbs the difference",
+    "Lower the SLA to 1500 ms to fit sequential calls",
+    "Merge the three process APIs into one so only one call is needed"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Independent calls executed sequentially cost the sum (~1200 ms p95 — over budget); in parallel they cost roughly the max (~400–500 ms — comfortably within it). Per-call timeouts below the overall budget keep one slow dependency from blowing the SLA.",
+    "Sequential is structurally over budget; caching is a gamble, not a design.",
+    "Changing the requirement to fit a weaker design inverts the architect's job.",
+    "Merging deployed APIs to save network hops sacrifices layer reuse for a problem parallelism already solves."
+   ],
+   "explanation": "Latency budgeting is arithmetic: sequential independent calls add, parallel calls take the max. Parallel fan-out plus budget-aligned timeouts is the standard pattern for aggregating APIs under a latency SLA."
+  },
+  {
+   "id": "pa-091",
+   "section": "p7",
+   "level": "medium",
+   "q": "A production API on CloudHub must remain available through the failure of a single worker AND the failure of an entire availability zone. What is the minimal deployment characteristic that provides this?",
+   "options": [
+    "Deploy with at least two workers — CloudHub automatically spreads a multi-worker application across availability zones and load-balances between them",
+    "One very large worker with auto-restart enabled",
+    "Two identical applications with DNS switched manually on failure",
+    "A nightly backup of the application archive"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Multi-worker CloudHub deployments are distributed across AZs within the region automatically; the shared (or dedicated) load balancer routes around a failed worker, and platform monitoring replaces it. Two workers is therefore the availability floor for production.",
+    "Auto-restart heals a crashed worker eventually, but requests fail during the gap, and an AZ outage takes the lone worker with it.",
+    "Manual DNS failover means minutes-to-hours of outage and human dependency.",
+    "Backups restore artifacts; they provide no runtime availability."
+   ],
+   "explanation": "On CloudHub, high availability is a worker-count decision: ≥2 workers gets automatic AZ distribution and load-balancer failover. Single-worker production deployments are the classic availability anti-pattern, whatever the worker's size."
+  },
+  {
+   "id": "pa-092",
+   "section": "p7",
+   "level": "medium",
+   "q": "APIs deployed to an Anypoint VPC must be callable ONLY from the corporate network via the dedicated load balancer — direct calls to the workers' public cloudhub.io endpoints must be impossible. How is this enforced?",
+   "options": [
+    "Have the applications listen on the VPC-internal ports (8091/8092) that only the DLB reaches, so the shared load balancer's public route no longer terminates at the app",
+    "Publish the APIs without documentation so outsiders cannot find them",
+    "Rely on client ID enforcement alone to keep outsiders out",
+    "Lower the workers' DNS TTL"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. In a VPC, apps choosing the internal listener ports (8091 http / 8092 https) are reachable only inside the VPC — i.e., through the DLB (and anything bridged via VPN/peering). Traffic through the public shared LB (which forwards to 8081/8082) has nothing listening, closing the side door.",
+    "Obscurity is not access control; cloudhub.io endpoints follow a guessable pattern.",
+    "Policies police identified API traffic but the public network path itself would remain open to probing.",
+    "DNS TTLs affect caching of lookups, not reachability."
+   ],
+   "explanation": "VPC port discipline is the standard lockdown: internal ports make the DLB the sole ingress, aligning network reality with the 'private API' intent. Firewall rules in the VPC can enforce the same at the network layer."
+  },
+  {
+   "id": "pa-093",
+   "section": "p7",
+   "level": "medium",
+   "q": "A CloudHub 1.0 application handling live traffic must be updated without dropping in-flight or incoming requests. Which platform capability supports this?",
+   "options": [
+    "Zero-downtime redeployment: CloudHub starts replacement workers with the new version and switches the load balancer over only when they report healthy",
+    "Stopping the application, deploying, and starting it quickly",
+    "Deploying at 3 AM when traffic is lower",
+    "Asking consumers to retry failed requests during the deployment"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. CloudHub's zero-downtime update keeps the old workers serving while new-version workers boot and pass health checks; the load balancer then shifts traffic and old workers drain — no request-serving gap.",
+    "Stop-deploy-start guarantees an outage window, however brief.",
+    "Low traffic is still traffic; 'fewer failures' is not 'zero downtime'.",
+    "Pushing failure handling onto consumers concedes the requirement rather than meeting it."
+   ],
+   "explanation": "Zero-downtime deployment is a platform behaviour: parallel new-version workers, health-gated cutover, connection draining. It is the operational counterpart to interface/implementation decoupling — consumers never notice releases."
+  },
+  {
+   "id": "pa-094",
+   "section": "p8",
+   "level": "medium",
+   "q": "An experience API calls a process API whose own SLA allows responses up to 30 seconds in the worst case, but the experience API must answer its clients within 3 seconds or return a graceful error. Which resilience configuration is correct?",
+   "options": [
+    "Set the experience API's outbound response timeout below its own 3-second budget and map the timeout to a controlled error response for its clients",
+    "Set the outbound timeout to 30 seconds to match the downstream SLA",
+    "Remove timeouts so no request is ever cut short",
+    "Retry the downstream call five times on timeout"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Each layer's outbound timeout must fit inside its own promise to callers: roughly 2.5–2.8 s here, leaving margin to build the graceful degradation response. Waiting on a downstream that may lawfully take 30 s guarantees breaking the 3 s SLA.",
+    "Matching the downstream's worst case means inheriting it — 30 s of held connections and a blown SLA.",
+    "No timeout converts slow dependencies into resource exhaustion (held threads/connections) and indefinite client hangs.",
+    "Five sequential retries against a timing-out call multiplies the delay far past any budget."
+   ],
+   "explanation": "Timeout budgets cascade top-down: every outbound timeout must be smaller than the SLA the caller itself has promised, with headroom for fallback handling. Aligning to the dependency's SLA instead of your own is the classic latency-propagation mistake."
+  },
+  {
+   "id": "pa-095",
+   "section": "p8",
+   "level": "medium",
+   "q": "An API owner wants to formalize with consumers not just endpoints and schemas, but expected availability, latency percentiles, and support hours. What is being defined, and where does the platform surface consumer-specific enforcement of usage limits?",
+   "options": [
+    "Non-functional requirements captured in the API's SLA; usage entitlements are enforced per consumer through SLA tiers and their policies in API Manager",
+    "The RAML alone covers all of this; nothing else is needed",
+    "A firewall rule set; enforcement happens at the network layer",
+    "A Slack channel agreement between the teams"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Functional contract (RAML/OAS) and non-functional contract (SLA: availability, latency, support) are complementary halves of an API product. The measurable usage side — how much each consumer may call — is operationalized as SLA tiers with SLA-based policies enforcing them per application.",
+    "RAML expresses the functional interface; availability targets and support commitments live outside the schema language.",
+    "Firewalls know packets, not percentiles or business commitments.",
+    "Informal agreements are neither discoverable, measurable, nor enforceable."
+   ],
+   "explanation": "Treating an API as a product means publishing both contracts: the functional spec and the SLA. Anypoint Platform makes the consumption side concrete — tiers requested via Exchange, enforced by SLA policies, monitored by analytics."
+  },
+  {
+   "id": "pa-096",
+   "section": "p9",
+   "level": "medium",
+   "q": "Product management asks: 'Which consumer applications drive the most traffic to our Orders API, which resources do they hit, and how did that change after last month's release?' Where does this information come from?",
+   "options": [
+    "API analytics in Anypoint Platform — request metrics attributable per client application (via enforced client IDs), by resource/method, over time",
+    "The load balancer's TCP connection counts",
+    "A survey sent to registered developers",
+    "Worker CPU utilization graphs in Runtime Manager"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Because governed APIs identify consumers (client ID enforcement/contracts), API analytics can slice request volume, latency, and errors by client application, API, resource, and time window — exactly the consumption insight requested.",
+    "TCP counts carry no API, resource, or consumer dimensions.",
+    "Surveys yield opinions, not measurements.",
+    "CPU graphs describe infrastructure load, not who called what."
+   ],
+   "explanation": "Consumer-attributable analytics are a payoff of governance: enforce client identification and every request becomes a data point tagged by application and resource — feeding adoption tracking, capacity planning, and product decisions about the application network."
+  },
+  {
+   "id": "pa-097",
+   "section": "p9",
+   "level": "medium",
+   "q": "Operations must be paged when a production API instance's error rate or response time breaches thresholds — even if the underlying workers look healthy — and separately when a worker's CPU stays high. How should alerting be organized?",
+   "options": [
+    "API-level alerts (response time, policy violations, error ratios) on the API instance, plus infrastructure alerts (CPU, memory, app events) in Runtime Manager/Anypoint Monitoring — the two cover different failure classes",
+    "A single CPU alert, since resource health implies API health",
+    "Grepping worker logs manually every morning",
+    "Relying on consumers to open support tickets promptly"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. The platform separates the concerns deliberately: API alerts watch the traffic's quality (latency, errors, policy breaches per API instance); infrastructure alerts watch the runtime (CPU, memory, restarts). An API can fail its SLA on perfectly healthy workers — both alert classes are needed.",
+    "Healthy CPU with failing responses (bad deploy, broken dependency) is common; resource metrics alone miss it.",
+    "Manual, periodic log reading is neither timely nor reliable paging.",
+    "Consumer complaints are the outcome alerting exists to prevent."
+   ],
+   "explanation": "Two alerting planes: API-quality metrics on the managed API instance, resource metrics on the deployment target. Wiring thresholds and notification channels on both gives operations coverage for logical failures and infrastructure failures alike."
   }
  ],
  "sections": [

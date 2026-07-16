@@ -2,6 +2,7 @@
  "id": "mcd1",
  "name": "MuleSoft Certified Developer – Level 1",
  "short": "MCD Level 1",
+ "vendor": "MuleSoft",
  "exam": {
   "questions": 60,
   "minutes": 120,

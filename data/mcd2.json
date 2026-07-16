@@ -2,6 +2,7 @@
  "id": "mcd2",
  "name": "MuleSoft Certified Developer – Level 2",
  "short": "MCD Level 2",
+ "vendor": "MuleSoft",
  "exam": {
   "questions": 60,
   "minutes": 120,
@@ -1286,6 +1287,519 @@
    ],
    "answer": 1,
    "explanation": "Breaking changes require a new major version surfaced as a separate instance/URL so existing consumers keep working; the old version is deprecated with notice and retired after migration."
+  },
+  {
+   "id": "m2-098",
+   "section": "d1",
+   "level": "hard",
+   "q": "A Mule application receives file uploads of up to 2 GB through an HTTP Listener configured with the streaming strategy shown in the exhibit. During load testing, uploads larger than a few megabytes fail. What is the cause?",
+   "exhibit": "<http:listener doc:name=\"Upload\" config-ref=\"HTTP_Listener_config\" path=\"/upload\">\n  <repeatable-in-memory-stream\n    initialBufferSize=\"512\"\n    bufferSizeIncrement=\"256\"\n    maxBufferSize=\"4096\"\n    bufferUnit=\"KB\" />\n</http:listener>",
+   "options": [
+    "The repeatable in-memory stream cannot grow beyond maxBufferSize (4 MB), so larger payloads raise a STREAM_MAXIMUM_SIZE_EXCEEDED error",
+    "HTTP Listeners never support payloads larger than 100 MB regardless of streaming strategy",
+    "initialBufferSize must equal maxBufferSize for repeatable streams to work",
+    "bufferSizeIncrement is only valid on repeatable file-store streams, so the configuration is ignored"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. An in-memory repeatable stream buffers the entire payload in heap memory, growing from initialBufferSize by bufferSizeIncrement up to maxBufferSize; when the payload exceeds that cap, the stream fails. For 2 GB uploads, use repeatable-file-store-stream (or a non-repeatable stream) instead.",
+    "There is no such fixed limit — payload size is bounded by the streaming strategy and available resources, not a hard 100 MB rule.",
+    "The buffer is designed to grow between those two values; they do not need to be equal.",
+    "bufferSizeIncrement is a valid attribute of the in-memory strategy (file-store streams use inMemorySize instead); the configuration is applied, it is just too small for the payloads."
+   ],
+   "explanation": "repeatable-in-memory-stream holds the whole stream in heap, capped by maxBufferSize. Payloads above the cap fail with STREAM_MAXIMUM_SIZE_EXCEEDED. Large payloads call for the default repeatable-file-store-stream, which spills to disk after an in-memory buffer, or a non-repeatable stream when the payload is read only once."
+  },
+  {
+   "id": "m2-099",
+   "section": "d1",
+   "level": "medium",
+   "q": "Refer to the exhibit. The Web Service Consumer inside the Until Successful scope fails on every attempt with a connectivity error. How many times is the Web Service Consumer executed in total, and what error does the scope propagate afterwards?",
+   "exhibit": "<until-successful maxRetries=\"3\" millisBetweenRetries=\"2000\">\n  <wsc:consume config-ref=\"WSC_Config\" operation=\"getQuote\"/>\n</until-successful>",
+   "options": [
+    "3 executions; the original WSC:CONNECTIVITY error is propagated unchanged",
+    "4 executions; a MULE:RETRY_EXHAUSTED error is propagated",
+    "3 executions; a MULE:RETRY_EXHAUSTED error is propagated",
+    "Infinite executions every 2 seconds until the endpoint recovers"
+   ],
+   "answer": 1,
+   "optionNotes": [
+    "maxRetries counts retries in addition to the first attempt, so there are 4 executions, and the scope wraps the failure rather than propagating it unchanged.",
+    "Correct. 1 initial attempt + 3 retries = 4 executions, each 2 seconds apart, after which Until Successful throws MULE:RETRY_EXHAUSTED (the underlying error is preserved as its cause).",
+    "The execution count is wrong: maxRetries=3 means 3 retries on top of the initial attempt.",
+    "Until Successful is bounded by maxRetries; it never retries forever."
+   ],
+   "explanation": "Until Successful runs the initial attempt plus maxRetries retries (here 4 executions total, 2000 ms apart). When all attempts fail it raises MULE:RETRY_EXHAUSTED, with the last underlying error attached as the cause, which an error handler can inspect."
+  },
+  {
+   "id": "m2-100",
+   "section": "d1",
+   "level": "medium",
+   "q": "A Mule application deployed to CloudHub with two workers must ensure that a promotional discount code is issued to a customer only once, even when both workers process requests for the same customer concurrently over several days. Which mechanism is most appropriate for tracking issued codes?",
+   "options": [
+    "A variable stored with the set-variable component",
+    "An in-memory Object Store with persistence disabled",
+    "Object Store v2, which is shared by all workers of the application",
+    "A static java.util.HashMap held in a custom Java class"
+   ],
+   "answer": 2,
+   "optionNotes": [
+    "Variables live only for the duration of one event and are never shared between requests or workers.",
+    "An in-memory store is local to each worker's JVM, so the two workers would each keep their own copy and could both issue the code; it is also lost on restart.",
+    "Correct. Object Store v2 is a persistent, hosted store shared across all workers of a CloudHub application, so a key written by one worker is immediately visible to the other, and data survives restarts (entry TTL up to 30 days on the standard tier).",
+    "A static map has the same problems as an in-memory store — per-JVM, not shared between workers, lost on restart — plus it bypasses Mule's tooling entirely."
+   ],
+   "explanation": "Cross-worker, cross-restart state on CloudHub belongs in Object Store v2: it is persistent and shared by every worker of the app, unlike in-memory stores, flow variables, or static Java state, which are confined to a single JVM."
+  },
+  {
+   "id": "m2-101",
+   "section": "d1",
+   "level": "hard",
+   "q": "Refer to the exhibit. Clients report that requesting /products?category=toys sometimes returns results for a different category. What is the cause?",
+   "exhibit": "<ee:cache doc:name=\"Cache\" cachingStrategy-ref=\"Caching_Strategy\"\n    keyGenerationExpression=\"#[attributes.requestPath]\">\n  <db:select config-ref=\"Database_Config\">\n    <db:sql>SELECT * FROM products WHERE category = :cat</db:sql>\n    <db:input-parameters>#[{cat: attributes.queryParams.category}]</db:input-parameters>\n  </db:select>\n</ee:cache>",
+   "options": [
+    "The Cache scope cannot contain database operations",
+    "The cache key is built only from the request path, so all category values share one cache entry",
+    "keyGenerationExpression must return a number, not a string",
+    "The Cache scope never stores payloads produced by SELECT statements because they are streams"
+   ],
+   "answer": 1,
+   "optionNotes": [
+    "Any non-void processor chain can run inside a Cache scope; the database operation is fine.",
+    "Correct. attributes.requestPath is '/products' for every category, so the first category queried populates the entry that every other category then receives. The key must include the parts of the request that change the response, e.g. attributes.requestPath ++ (attributes.queryParams.category default '').",
+    "Keys can be any expression result; strings are the norm.",
+    "Streamed payloads are consumed into a repeatable form by the caching strategy; SELECT results are cacheable."
+   ],
+   "explanation": "A Cache scope key must capture everything that makes a response unique. Keying only on requestPath collapses all query-parameter variants into a single entry, serving whichever category was cached first. Including the category parameter in keyGenerationExpression fixes it."
+  },
+  {
+   "id": "m2-102",
+   "section": "d1",
+   "level": "medium",
+   "q": "An HTTP-triggered flow sets maxConcurrency=\"2\". Ten requests arrive at the same time and each takes about 5 seconds to process. What happens to the requests that cannot be processed immediately?",
+   "options": [
+    "They are queued indefinitely inside the flow until a thread is available",
+    "The Mule runtime applies back-pressure and the HTTP Listener rejects excess requests with HTTP 503",
+    "They are processed anyway because maxConcurrency only applies to batch jobs",
+    "The listener silently drops the connections without a response"
+   ],
+   "answer": 1,
+   "optionNotes": [
+    "Mule 4 does not queue unbounded work at a flow that is saturated; back-pressure is signalled to the source instead.",
+    "Correct. When the flow cannot accept more events, the runtime triggers back-pressure (FLOW_BACK_PRESSURE); the HTTP Listener translates that into a 503 Service Unavailable response for requests beyond what the flow can accept.",
+    "maxConcurrency applies to flows (and some scopes); it limits how many events the flow processes in parallel.",
+    "Clients receive an explicit 503 response, not a dropped connection."
+   ],
+   "explanation": "maxConcurrency caps parallel executions of a flow. When the cap is hit, back-pressure propagates to the message source; the HTTP Listener honours it by answering 503, letting well-behaved clients retry rather than overwhelming the app."
+  },
+  {
+   "id": "m2-103",
+   "section": "d1",
+   "level": "easy",
+   "q": "A Mule application reads 1 GB files from SFTP and writes them unchanged to Amazon S3. The payload is read exactly once and memory usage must stay minimal. Which streaming strategy is most appropriate for the SFTP read operation?",
+   "options": [
+    "Repeatable in-memory stream",
+    "Repeatable file-store stream",
+    "Non-repeatable stream",
+    "Disable streaming and load the file fully into the payload"
+   ],
+   "answer": 2,
+   "optionNotes": [
+    "Buffers the entire payload in heap — the opposite of minimal memory for 1 GB files.",
+    "Works, but it copies the stream to a temporary file so it can be re-read; that disk buffering is wasted effort when the data is consumed exactly once.",
+    "Correct. A non-repeatable stream hands the bytes straight through to the single consumer with no buffering at all — the most efficient choice when the payload is read exactly once.",
+    "Loading 1 GB into memory defeats the requirement entirely."
+   ],
+   "explanation": "Non-repeatable streaming is the zero-overhead option: bytes flow directly from source to consumer and can be read only once. Repeatable strategies exist to allow multiple reads and cost either heap (in-memory) or disk (file-store)."
+  },
+  {
+   "id": "m2-104",
+   "section": "d1",
+   "level": "hard",
+   "q": "Which two statements about the Parallel For Each scope in Mule 4 are true? (Choose 2.)",
+   "answers": [
+    0,
+    2
+   ],
+   "options": [
+    "After the scope completes, the payload is a list of the results of each iteration, in the original collection order",
+    "Variables set inside an iteration are visible to the rest of the flow after the scope",
+    "Variable changes made inside iterations are discarded when the scope finishes",
+    "It processes elements strictly one at a time unless wrapped in an Async scope"
+   ],
+   "optionNotes": [
+    "True. Parallel For Each aggregates each route's result into a list that preserves the order of the input collection, regardless of completion order.",
+    "False — each iteration works on a copy of the event, so its variable changes do not survive the scope.",
+    "True. Because iterations run on copies of the event, any variables they set (or modify) are lost after the scope; only the aggregated payload comes out.",
+    "False — running iterations concurrently is the entire point of Parallel For Each (concurrency is tunable with maxConcurrency)."
+   ],
+   "explanation": "Parallel For Each runs iterations concurrently on copies of the event and returns a list of results in input order. The copy semantics mean per-iteration variable changes are discarded — a key behavioural difference from the sequential For Each, which shares the event and keeps variable changes but leaves the payload unchanged."
+  },
+  {
+   "id": "m2-105",
+   "section": "d2",
+   "level": "hard",
+   "q": "A Mule application declares the MySQL JDBC driver as shown in the exhibit, yet deployment fails with 'Cannot load class com.mysql.cj.jdbc.Driver' when the Database connector initializes. Why?",
+   "exhibit": "<dependency>\n  <groupId>com.mysql</groupId>\n  <artifactId>mysql-connector-j</artifactId>\n  <version>8.0.33</version>\n</dependency>",
+   "options": [
+    "The driver must also be declared as a sharedLibrary in the mule-maven-plugin configuration so the connector's classloader can see it",
+    "MySQL drivers are not supported on Mule 4 and must be replaced with a generic JDBC bridge",
+    "The version is incompatible; only 5.x drivers work with the Database connector",
+    "The dependency needs <scope>provided</scope> so the runtime supplies the class"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Mule 4 isolates classloaders: a plain dependency is visible only to the application, not to plugins such as the Database connector. Declaring it under mule-maven-plugin > classloaderModelLoaderDescriptor sharedLibraries (groupId/artifactId) exports it to the plugins' classloaders.",
+    "MySQL is fully supported; the failure is a classloading issue, not a compatibility one.",
+    "Driver 8.x works fine once shared; the version is not the problem.",
+    "provided scope would remove the JAR from the deployable archive entirely — the runtime does not bundle JDBC drivers."
+   ],
+   "explanation": "Because of Mule 4's classloading isolation, JDBC drivers (and similar libraries used by connectors) must be listed in the mule-maven-plugin's <sharedLibraries> section. That exports them from the application classloader to connector classloaders; a plain <dependency> alone leaves the Database connector unable to load the driver class."
+  },
+  {
+   "id": "m2-106",
+   "section": "d2",
+   "level": "medium",
+   "q": "A team wants several on-premises Mule applications to share one HTTP Listener configuration and one TLS context by placing them in a Mule domain project. Which limitation must they keep in mind?",
+   "options": [
+    "Domains can share flows and sub-flows but not connector configurations",
+    "Domain projects are supported only on customer-hosted Mule runtimes, not on CloudHub",
+    "Each application may reference at most one resource from the domain",
+    "Domains require every application to use exactly the same Mule runtime patch version as the domain"
+   ],
+   "answer": 1,
+   "optionNotes": [
+    "It is the other way round: domains exist to share resources such as connector configs and TLS contexts; they do not contain flows.",
+    "Correct. CloudHub deploys each application in its own isolated worker with no domain support, so shared-resource domains are a customer-hosted (standalone/RTF-excluded) runtime feature. Apps bound to a domain cannot be deployed to CloudHub.",
+    "There is no such limit — an app can reference any number of domain resources.",
+    "Apps and domain must run in the same runtime instance and be version compatible, but an exact patch-level match is not the defining limitation here."
+   ],
+   "explanation": "Mule domains let multiple apps deployed to the same customer-hosted runtime share connector configurations (HTTP listeners, TLS contexts, DB configs...). Because CloudHub isolates every application in its own worker, domain projects cannot be used there — a common architecture gotcha."
+  },
+  {
+   "id": "m2-107",
+   "section": "d2",
+   "level": "easy",
+   "q": "A RAML API published to Exchange at version 2.3.1 gets a change that renames a required field in a response type. According to semantic versioning, what should the next published version be?",
+   "options": [
+    "2.3.2",
+    "2.4.0",
+    "3.0.0",
+    "2.3.1-breaking"
+   ],
+   "answer": 2,
+   "optionNotes": [
+    "A patch bump signals a backwards-compatible fix; renaming a required field breaks existing consumers.",
+    "A minor bump signals added, backwards-compatible functionality — not the case here.",
+    "Correct. Renaming a required field is a breaking change for every consumer parsing the response, so the major version must be incremented: 3.0.0.",
+    "Pre-release labels do not communicate breakage; consumers resolving 2.x would still break."
+   ],
+   "explanation": "SemVer: MAJOR for breaking changes, MINOR for backwards-compatible additions, PATCH for fixes. A renamed required field breaks consumers, so 2.3.1 → 3.0.0."
+  },
+  {
+   "id": "m2-108",
+   "section": "d2",
+   "level": "medium",
+   "q": "Refer to the exhibit. What does the mule-plugin classifier on this dependency indicate?",
+   "exhibit": "<dependency>\n  <groupId>com.acme</groupId>\n  <artifactId>common-error-handling</artifactId>\n  <version>1.2.0</version>\n  <classifier>mule-plugin</classifier>\n</dependency>",
+   "options": [
+    "The artifact is a reusable Mule extension/plugin that gets its own isolated classloader when the app deploys",
+    "The dependency is only used at build time and is excluded from the deployable archive",
+    "The artifact is a Mule domain that this application inherits resources from",
+    "The dependency will be downloaded from Anypoint Exchange instead of Maven Central"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. mule-plugin marks the artifact as a Mule 4 plugin (for example a packaged connector or a common library built as a plugin). The runtime deploys it with its own classloader following Mule's classloading isolation model.",
+    "Build-time-only dependencies use scope provided/test; the classifier does not change packaging inclusion that way.",
+    "Domains are referenced with the mule-domain classifier and a special parent mechanism, not mule-plugin.",
+    "Where it is downloaded from depends on the configured repositories, not on the classifier."
+   ],
+   "explanation": "The mule-plugin classifier tells Maven and the Mule runtime that the artifact is a Mule plugin. Plugins deploy alongside the app with isolated classloaders — the packaging mechanism behind connectors and reusable Mule libraries."
+  },
+  {
+   "id": "m2-109",
+   "section": "d2",
+   "level": "medium",
+   "q": "A CI/CD pipeline deploys a Mule application to CloudHub 2.0 with the mule-maven-plugin. Where should the Connected App credentials used by the plugin be kept?",
+   "options": [
+    "Hard-coded in the cloudhub2Deployment section of pom.xml so builds are reproducible",
+    "In the developer's mule-artifact.json",
+    "Outside the project — e.g. encrypted CI/CD secrets or Maven settings.xml — injected as properties at build time",
+    "In a properties file committed next to the pom for the whole team to reuse"
+   ],
+   "answer": 2,
+   "optionNotes": [
+    "pom.xml is committed to source control; credentials in it leak to everyone with repo access and to build logs.",
+    "mule-artifact.json describes the application artifact; it is packaged and distributed with the app — the worst place for secrets.",
+    "Correct. The plugin resolves ${...} properties, so credentials belong in CI/CD secret stores (or an encrypted settings.xml server entry) and are passed to the build as properties/environment variables, never committed.",
+    "Committed properties files have the same exposure problem as the pom itself."
+   ],
+   "explanation": "Deployment credentials must stay out of version control. The standard pattern is to reference them as Maven properties in the deployment configuration and supply the values from the CI/CD platform's secret management (or ~/.m2/settings.xml with encryption) at build time."
+  },
+  {
+   "id": "m2-110",
+   "section": "d2",
+   "level": "medium",
+   "q": "A team builds a common DataWeave library (reusable .dwl modules) that several Mule applications should import. What is the recommended way to distribute and consume it?",
+   "options": [
+    "Copy the .dwl files into each project's src/main/resources folder",
+    "Publish it to Anypoint Exchange as a reusable asset and add it as a Maven dependency in each application",
+    "Paste the functions into each transformation that needs them",
+    "Host the files on a shared network drive referenced by absolute path in the transforms"
+   ],
+   "answer": 1,
+   "optionNotes": [
+    "Copies drift immediately — a bug fix must be re-copied into every project by hand.",
+    "Correct. Packaging the library as an asset in Exchange (deployed to the organization's Maven facade) gives every application a versioned <dependency>; upgrades are explicit version bumps and the single source of truth lives in one place.",
+    "Inline duplication is the least maintainable option of all.",
+    "Absolute paths break across machines and environments and provide no versioning."
+   ],
+   "explanation": "Exchange doubles as a Maven repository for an organization. Publishing shared DataWeave modules (or any reusable library) there and consuming them as versioned Maven dependencies is the MuleSoft-recommended reuse pattern — one source of truth, explicit versioning, CI-friendly."
+  },
+  {
+   "id": "m2-111",
+   "section": "d3",
+   "level": "medium",
+   "q": "Refer to the exhibit. The application starts locally with the command 'mvn mule:run' and fails with: 'Could not resolve placeholder secure::db.password'. What is the most likely cause?",
+   "exhibit": "<secure-properties:config name=\"Secure_Props\"\n    file=\"config/secure-${env}.yaml\" key=\"${mule.key}\">\n  <secure-properties:encrypt algorithm=\"AES\" mode=\"CBC\"/>\n</secure-properties:config>\n\n<!-- config/secure-dev.yaml -->\ndb:\n  password: \"![k1lFactpJ+4wJb2rcvUkMg==]\"",
+   "options": [
+    "The mule.key (and/or env) system property was not passed to the runtime at startup",
+    "Encrypted values must use the format ${aes:...} instead of ![...]",
+    "The Secure Properties module cannot read YAML files",
+    "secure:: placeholders only resolve on CloudHub, not locally"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. The config derives the file name from ${env} and the decryption key from ${mule.key}; if these are not supplied (e.g. -Denv=dev -Dmule.key=<key>, or -M-D... when running in Studio/standalone), the secure properties provider cannot initialize and no secure:: placeholder resolves.",
+    "![...] is exactly the wrapper the Secure Properties module expects for encrypted values.",
+    "The module reads .yaml and .properties files alike.",
+    "Secure properties work identically on any runtime, local or cloud."
+   ],
+   "explanation": "Secure Properties configs typically parameterize both the environment file and the encryption key. The decryption key is deliberately never packaged with the app — it must arrive as a startup property (mule.key). Forgetting to pass it (or the env selector) is the classic cause of 'Could not resolve placeholder secure::…'."
+  },
+  {
+   "id": "m2-112",
+   "section": "d3",
+   "level": "easy",
+   "q": "Why must the encryption key used by the Secure Properties module be supplied as a runtime argument instead of being stored in a properties file inside the application?",
+   "options": [
+    "Property files cannot hold values longer than 16 characters",
+    "Bundling the key with the app would let anyone with the artifact decrypt every secret it protects",
+    "The Mule runtime caches property files, so the key would be stale after rotation",
+    "Keys in property files are automatically re-encrypted on deployment, corrupting them"
+   ],
+   "answer": 1,
+   "optionNotes": [
+    "There is no such length limit.",
+    "Correct. The entire point of encrypting properties is defeated if the decryption key travels inside the same artifact (or the same repository). Supplying it out-of-band — startup argument, CI/CD secret, platform property marked hidden — keeps the artifact safe to share.",
+    "Caching is not the security rationale here.",
+    "No such re-encryption mechanism exists."
+   ],
+   "explanation": "Encrypted properties are only as safe as the separation between ciphertext and key. The key therefore lives outside the deployable artifact and source control, passed at startup (e.g. -M-Dmule.key=...) or via secured platform properties."
+  },
+  {
+   "id": "m2-113",
+   "section": "d3",
+   "level": "hard",
+   "q": "Refer to the exhibit. An HTTP Request to a partner API fails during the TLS handshake with 'Received fatal alert: certificate_required'. The partner confirms their endpoint enforces mutual TLS. Which change fixes the configuration?",
+   "exhibit": "<tls:context name=\"Partner_TLS\">\n  <tls:trust-store path=\"partner-truststore.jks\"\n      password=\"${secure::ts.password}\" type=\"jks\"/>\n</tls:context>",
+   "options": [
+    "Add a tls:key-store with this application's client certificate and private key",
+    "Replace the trust store with the partner's private key",
+    "Set insecure=\"true\" on the trust store to skip validation",
+    "Change the trust store type from JKS to PKCS12"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. In mutual TLS the client must present its own certificate. The trust store only validates the server's certificate; presenting a client certificate requires a tls:key-store entry holding this app's certificate and private key.",
+    "Private keys are never exchanged between parties; the partner keeps theirs, we keep ours.",
+    "insecure=true disables server-certificate validation on our side — it does nothing about the server requiring a certificate from us, so the handshake still fails.",
+    "The store format is irrelevant to the missing-client-certificate problem."
+   ],
+   "explanation": "TLS context roles: trust-store = certificates we trust when validating the other side; key-store = our own identity (certificate + private key) presented to the other side. 'certificate_required' from the server means it wants our client certificate — only a key-store provides that."
+  },
+  {
+   "id": "m2-114",
+   "section": "d3",
+   "level": "medium",
+   "q": "Deployment properties such as db.password are set in Runtime Manager for a CloudHub application. The team wants these values masked in the Runtime Manager UI and encrypted at rest by the platform. How is that achieved?",
+   "options": [
+    "List the property names in the secureProperties array of mule-artifact.json",
+    "Prefix each property value with 'secure::' when typing it in Runtime Manager",
+    "Wrap each value in ![...] in the Runtime Manager properties tab",
+    "Enable 'Persistent queues' on the application settings page"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Properties named in mule-artifact.json's \"secureProperties\" array become safely hidden application properties: Runtime Manager stores them encrypted and displays them masked, and they cannot be read back through the UI or API.",
+    "secure:: is the prefix used inside the app to resolve properties through the Secure Properties module — it has no effect on how Runtime Manager stores what you type.",
+    "![...] marks values encrypted by the Secure Properties tool inside configuration files; Runtime Manager does not interpret it.",
+    "Persistent queues concern reliable messaging between workers, not property security."
+   ],
+   "explanation": "Declaring names in the secureProperties array of mule-artifact.json makes those deployment properties 'safely hidden': the platform encrypts them at rest, masks them in the UI, and never returns their values via API — complementary to (and independent of) the in-app Secure Properties module."
+  },
+  {
+   "id": "m2-115",
+   "section": "d3",
+   "level": "medium",
+   "q": "An integration must store customers' national ID numbers in a database column that auditors may never see in plain text, while the rest of the record stays queryable. Which approach fits best inside the Mule flow?",
+   "options": [
+    "Use the Cryptography module to encrypt just the ID field of the payload before the insert",
+    "Enable TLS on the database connection",
+    "Store the IDs in a secure properties file instead of the database",
+    "Base64-encode the ID field before inserting it"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. The Cryptography module (JCE/PGP/XML operations) encrypts message data — here a single field via a DataWeave step plus jce:encrypt (or encrypt-pbe) — so the column holds ciphertext while other columns remain usable.",
+    "TLS protects data in transit between app and database; the column itself would still store plain text.",
+    "Secure properties protect configuration values of the app, not per-record business data.",
+    "Base64 is an encoding anyone can reverse; it provides zero confidentiality."
+   ],
+   "explanation": "Field-level protection of business data is the Cryptography module's job (distinct from the Secure Properties module, which guards configuration). Encrypting the sensitive field before persistence gives at-rest confidentiality without affecting the rest of the record; TLS only ever covers transit."
+  },
+  {
+   "id": "m2-116",
+   "section": "d4",
+   "level": "medium",
+   "q": "Refer to the exhibit. What is the effect — and the trade-off — of configuring the application's loggers this way?",
+   "exhibit": "<!-- log4j2.xml -->\n<AsyncLogger name=\"com.acme.orders\" level=\"INFO\"/>\n<AsyncLogger name=\"org.mule.runtime\" level=\"WARN\"/>",
+   "options": [
+    "Logging calls return immediately while a background thread writes entries; throughput improves but the most recent entries can be lost if the JVM crashes",
+    "Log entries are written twice, once per logger, doubling disk usage",
+    "Asynchronous loggers only work with the JSON layout",
+    "The runtime ignores AsyncLogger elements unless Anypoint Monitoring is enabled"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Async loggers enqueue events to a ring buffer consumed by a separate thread, removing I/O from the processing path — significantly better throughput and latency. The cost: buffered entries that have not been flushed are lost on an abrupt JVM termination.",
+    "Each logger covers a different package; nothing is duplicated.",
+    "Async logging is independent of the layout used by the appender.",
+    "AsyncLogger is plain Log4j 2 configuration honoured by the runtime regardless of monitoring products."
+   ],
+   "explanation": "Log4j 2 async loggers decouple application threads from disk I/O via a lock-free ring buffer — the standard performance tuning for chatty Mule apps. The accepted trade-off is potential loss of the last moments of logging in a hard crash, which is why some teams keep ERROR-level loggers synchronous."
+  },
+  {
+   "id": "m2-117",
+   "section": "d4",
+   "level": "medium",
+   "q": "Support engineers must trace a single customer transaction across three Mule applications that call each other over HTTP. Logs from all applications are aggregated in Anypoint Monitoring. What makes this end-to-end tracing work with the least custom code?",
+   "options": [
+    "Rely on the correlation ID that Mule propagates on outbound HTTP calls and include it in every log entry",
+    "Add a random UUID variable in each application and log it",
+    "Log the payload in full in each application and match records by content",
+    "Enable verbose HTTP wire logging in all three applications"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Every Mule event carries a correlation ID, and Mule connectors propagate it automatically on outbound requests (X-Correlation-ID header) so downstream apps adopt the same ID. Logging it (it is part of standard log context / #[correlationId]) lets one search return the transaction's entries from all three apps.",
+    "Independent UUIDs per application cannot be joined across the chain — the ID must travel with the request.",
+    "Payload matching is fragile, expensive, and risks logging sensitive data.",
+    "Wire logs are for debugging connectivity; they are enormous and still would not link the applications' entries reliably."
+   ],
+   "explanation": "Mule's built-in correlation ID is designed exactly for this: it is generated at the edge, propagated automatically across Mule-to-Mule HTTP hops, and available in logs and expressions. Searching the aggregated logs by that one ID reconstructs the full journey."
+  },
+  {
+   "id": "m2-118",
+   "section": "d4",
+   "level": "easy",
+   "q": "The operations team wants an email whenever a production CloudHub application's worker exceeds 80% memory usage for five minutes. Where is this configured?",
+   "options": [
+    "In an alert in Anypoint Runtime Manager / Anypoint Monitoring targeting the application's resource metrics",
+    "In the application's log4j2.xml",
+    "In a scheduled MUnit test that checks memory",
+    "In the mule-artifact.json minMuleVersion field"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. Runtime Manager (and Anypoint Monitoring for richer conditions) provides alerts on infrastructure metrics — CPU, memory, response time, application events — with thresholds, durations, and email/webhook notifications, no code changes needed.",
+    "log4j2.xml shapes what the app logs; it cannot watch worker resource usage or send threshold emails.",
+    "MUnit runs at build time against test cases, not against production workers.",
+    "minMuleVersion declares runtime compatibility; it is unrelated to monitoring."
+   ],
+   "explanation": "Resource-threshold notifications are a platform feature: define an alert on the application in Runtime Manager/Anypoint Monitoring with the metric (memory), threshold (80%), duration (5 min) and recipients. Applications need no changes."
+  },
+  {
+   "id": "m2-119",
+   "section": "d4",
+   "level": "hard",
+   "q": "A Mule API depends on a database and a downstream SOAP service. The platform team wants a health endpoint that load balancers can poll to take an unhealthy instance out of rotation. Which implementation is most appropriate?",
+   "options": [
+    "A dedicated flow on GET /health that verifies each dependency with a short-timeout check and returns 200 only when all are reachable",
+    "Return 200 from /health unconditionally, since the app being up is what matters",
+    "Expose the Mule runtime's JMX port directly to the load balancer",
+    "Schedule a flow that emails operations when a dependency is down"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. A health-check flow that probes critical dependencies (e.g. SELECT 1, lightweight ping operation) with aggressive timeouts and maps the results to 200/503 gives the load balancer a truthful signal, and the short timeouts keep the endpoint itself fast.",
+    "An unconditional 200 reports a zombie instance as healthy — traffic keeps flowing to an app that cannot serve it.",
+    "JMX is neither an HTTP health protocol nor safe to expose; load balancers expect a simple HTTP probe.",
+    "Emails alert humans; they do not let the load balancer react automatically."
+   ],
+   "explanation": "A useful health endpoint verifies what the application needs to do its job, not merely that HTTP is listening. Checking each dependency with short timeouts and returning 200/503 accordingly integrates cleanly with load balancer health probes and keeps failure detection automatic."
+  },
+  {
+   "id": "m2-120",
+   "section": "d5",
+   "level": "medium",
+   "q": "Refer to the exhibit. What does this MUnit configuration accomplish?",
+   "exhibit": "<munit-tools:mock-when processor=\"http:request\">\n  <munit-tools:with-attributes>\n    <munit-tools:with-attribute attributeName=\"doc:name\" whereValue=\"Get customer\"/>\n  </munit-tools:with-attributes>\n  <munit-tools:then-return>\n    <munit-tools:payload value='#[{\"id\": 42, \"status\": \"ACTIVE\"}]' mediaType=\"application/json\"/>\n  </munit-tools:then-return>\n</munit-tools:mock-when>",
+   "options": [
+    "During the test, the HTTP Request named 'Get customer' is not executed; the mock returns the given JSON payload instead",
+    "It asserts that the HTTP Request returns exactly that JSON in production",
+    "It rewrites the flow permanently to return static data",
+    "It mocks every processor in the flow, not just the HTTP Request"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. mock-when intercepts matching processors during the MUnit test run. The with-attribute filter narrows the match to the operation whose doc:name is 'Get customer', which then returns the stubbed payload — isolating the flow under test from the real API.",
+    "Assertions are made with assert-that / verify-call; mock-when substitutes behaviour, it does not assert.",
+    "Mocks exist only inside the test execution; the deployed application is untouched.",
+    "The processor attribute plus the doc:name filter target one specific operation."
+   ],
+   "explanation": "mock-when is MUnit's stubbing tool: match a processor (optionally filtered by attributes such as doc:name) and substitute its result. Tests thus run without external dependencies, deterministic and fast."
+  },
+  {
+   "id": "m2-121",
+   "section": "d5",
+   "level": "hard",
+   "q": "A flow raises a custom APP:ORDER_NOT_FOUND error through a Raise Error component when a lookup misses. Which MUnit approach verifies that behaviour directly?",
+   "options": [
+    "Declare expectedErrorType=\"APP:ORDER_NOT_FOUND\" on the munit:test so the test passes only when that error is raised",
+    "Wrap the flow-ref in a Try scope inside the test and assert the payload afterwards",
+    "Use mock-when on the Raise Error component so it does not fire",
+    "Check the application log for the error message with a file assertion"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. munit:test supports expectedErrorType (and expectedException/expectedErrorDescription): the test executes the flow and passes precisely when the declared error type propagates — the idiomatic way to test error paths.",
+    "Possible but roundabout: it forces manual error-to-payload plumbing that expectedErrorType provides declaratively.",
+    "Mocking the Raise Error away tests the opposite of the requirement — the error is what must be verified.",
+    "Log scraping is brittle and does not prove the error type actually propagated to the caller."
+   ],
+   "explanation": "For negative-path tests, declare the expected error type on the test itself: <munit:test ... expectedErrorType=\"APP:ORDER_NOT_FOUND\">. The test fails if the flow completes normally or raises a different type."
+  },
+  {
+   "id": "m2-122",
+   "section": "d5",
+   "level": "medium",
+   "q": "Refer to the exhibit. What is the effect of this configuration on the Maven build?",
+   "exhibit": "<plugin>\n  <groupId>com.mulesoft.munit.tools</groupId>\n  <artifactId>munit-maven-plugin</artifactId>\n  <configuration>\n    <coverage>\n      <runCoverage>true</runCoverage>\n      <failBuild>true</failBuild>\n      <requiredApplicationCoverage>80</requiredApplicationCoverage>\n    </coverage>\n  </configuration>\n</plugin>",
+   "options": [
+    "MUnit measures test coverage and fails the build when overall application coverage is below 80%",
+    "The build fails if more than 80% of tests fail",
+    "Coverage is reported but can never fail the build",
+    "Only 80% of the MUnit tests are executed to save time"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct. runCoverage enables the coverage report, requiredApplicationCoverage sets the threshold (percentage of message processors exercised by tests), and failBuild=true turns a shortfall into a build failure — a common CI quality gate.",
+    "The threshold applies to coverage of the application's processors, not to the test pass rate (any failing test already fails the build).",
+    "failBuild=true is exactly what makes the threshold enforcing.",
+    "All tests always run; coverage measures what they exercise."
+   ],
+   "explanation": "The munit-maven-plugin coverage block turns test coverage into a CI gate: with failBuild and requiredApplicationCoverage set, a build whose MUnit tests exercise less than the required percentage of the application fails, keeping untested code out of production."
   }
  ],
  "sections": [
