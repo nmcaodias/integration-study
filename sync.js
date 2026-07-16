@@ -59,50 +59,79 @@
   }
   function writeLocal(state) { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
 
-  /* Merge two progress states: union of read sections, per-question max of
-     attempts/correct, exams concatenated and de-duplicated by date, and
-     spaced-repetition entries by latest review timestamp.
-     Each field may carry a reset timestamp (resets.<field>, set by the in-app
-     "Reset progress" buttons): the side reset more recently wins that field
-     wholesale, so a reset is not resurrected by the next merge. */
+  /* Merge two progress states. Reset stamps written by the in-app "Reset
+     progress" actions decide what survives the merge:
+       resets.read/qstats/exams/srs — cert-wide, per field
+       resets.topics[sectionId]     — one topic's read mark + its questions
+       resets.q[questionId]         — per-question tombstones (topic resets)
+     Rules:
+       read   — union; a section's mark survives only if newer than the read
+                reset and its topic's reset (marks are timestamps; legacy
+                `true` counts as time 1, kept only when nothing was reset)
+       qstats — per-key max of entries newer than every applicable reset
+                (entries carry `t`; entries from before timestamps exist are
+                dropped once anything resets them — which is the intent)
+       exams  — union deduped by date, dropping attempts older than the reset
+       srs    — latest review per card; auto-cards also honour their
+                question's tombstone
+     So a reset propagates across devices, while progress made anywhere AFTER
+     the reset is preserved. */
   function mergeCert(a, b) {
     a = a || {}; b = b || {};
     const ra = a.resets || {}, rb = b.resets || {};
-    const pick = (field, empty, mergeBoth) => {
-      const ta = ra[field] || 0, tb = rb[field] || 0;
-      if (ta > tb) return a[field] || empty;
-      if (tb > ta) return b[field] || empty;
-      return mergeBoth();
-    };
-    const read = pick("read", {}, () => Object.assign({}, a.read || {}, b.read || {}));
-    const qstats = pick("qstats", {}, () => {
-      const out = {};
-      new Set([...Object.keys(a.qstats || {}), ...Object.keys(b.qstats || {})]).forEach(k => {
-        const x = (a.qstats || {})[k] || { a: 0, c: 0 };
-        const y = (b.qstats || {})[k] || { a: 0, c: 0 };
-        out[k] = { a: Math.max(x.a || 0, y.a || 0), c: Math.max(x.c || 0, y.c || 0) };
-      });
-      return out;
+    const rmax = f => Math.max(ra[f] || 0, rb[f] || 0);
+    const topicReset = sid => Math.max((ra.topics || {})[sid] || 0, (rb.topics || {})[sid] || 0);
+    const qReset = qid => Math.max(rmax("qstats"), (ra.q || {})[qid] || 0, (rb.q || {})[qid] || 0);
+    const newer = (e, rt) => e && (rt === 0 || (e.t || 0) > rt) ? e : null;
+
+    const read = {};
+    new Set([...Object.keys(a.read || {}), ...Object.keys(b.read || {})]).forEach(sid => {
+      const rt = Math.max(rmax("read"), topicReset(sid));
+      const val = Math.max(Number((a.read || {})[sid] || 0), Number((b.read || {})[sid] || 0));
+      if (val > rt) read[sid] = val;
     });
-    const exams = pick("exams", [], () => {
-      const seen = new Set();
-      return [...(a.exams || []), ...(b.exams || [])]
-        .filter(e => e && e.date && !seen.has(e.date) && seen.add(e.date))
-        .sort((x, y) => (x.date < y.date ? -1 : 1));
+
+    const qstats = {};
+    new Set([...Object.keys(a.qstats || {}), ...Object.keys(b.qstats || {})]).forEach(k => {
+      const rt = qReset(k);
+      const x = newer((a.qstats || {})[k], rt), y = newer((b.qstats || {})[k], rt);
+      if (!x && !y) return;
+      qstats[k] = {
+        a: Math.max(x ? x.a || 0 : 0, y ? y.a || 0 : 0),
+        c: Math.max(x ? x.c || 0 : 0, y ? y.c || 0 : 0),
+        t: Math.max(x ? x.t || 0 : 0, y ? y.t || 0 : 0)
+      };
     });
-    const srs = pick("srs", {}, () => {
-      const out = {};
-      new Set([...Object.keys(a.srs || {}), ...Object.keys(b.srs || {})]).forEach(k => {
-        const x = (a.srs || {})[k], y = (b.srs || {})[k];
-        out[k] = !x ? y : !y ? x : ((y.t || 0) > (x.t || 0) ? y : x); // latest review wins
-      });
-      return out;
+
+    const examReset = rmax("exams");
+    const seen = new Set();
+    const exams = [...(a.exams || []), ...(b.exams || [])]
+      .filter(e => e && e.date && (examReset === 0 || new Date(e.date).getTime() > examReset))
+      .filter(e => !seen.has(e.date) && seen.add(e.date))
+      .sort((x, y) => (x.date < y.date ? -1 : 1));
+
+    const srs = {};
+    new Set([...Object.keys(a.srs || {}), ...Object.keys(b.srs || {})]).forEach(k => {
+      const rt = Math.max(rmax("srs"), k.startsWith("q:") ? qReset(k.slice(2)) : 0);
+      const x = newer((a.srs || {})[k], rt), y = newer((b.srs || {})[k], rt);
+      if (!x && !y) return;
+      srs[k] = !x ? y : !y ? x : ((y.t || 0) > (x.t || 0) ? y : x); // latest review wins
     });
+
     const resets = {};
     ["read", "qstats", "exams", "srs"].forEach(f => {
-      const t = Math.max(ra[f] || 0, rb[f] || 0);
+      const t = rmax(f);
       if (t) resets[f] = t;
     });
+    const topics = {};
+    new Set([...Object.keys(ra.topics || {}), ...Object.keys(rb.topics || {})]).forEach(sid => { topics[sid] = topicReset(sid); });
+    if (Object.keys(topics).length) resets.topics = topics;
+    const qmap = {};
+    new Set([...Object.keys(ra.q || {}), ...Object.keys(rb.q || {})]).forEach(qid => {
+      qmap[qid] = Math.max((ra.q || {})[qid] || 0, (rb.q || {})[qid] || 0);
+    });
+    if (Object.keys(qmap).length) resets.q = qmap;
+
     return { read, qstats, exams, srs, resets };
   }
   function merge(a, b) {

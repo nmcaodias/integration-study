@@ -121,8 +121,10 @@ on every push (`.github/workflows/validate.yml`).
 ## Resetting progress
 
 Every certification page has a **Reset progress** card: reset the notes-read marks, the quiz
-stats (per-topic percentages and the readiness score), the exam history, or everything —
-each reset is timestamped so it propagates through sync instead of being restored by the
-next merge. As a last resort, local progress lives under the `mulesoft-study-v1` key in
+stats (per-topic percentages and the readiness score), the exam history, or everything.
+Individual topics can be reset too — with the ↺ button on the topic's row on the
+certification page or the "Reset topic progress" button on its notes page — clearing that
+topic's read mark, question stats, and auto-flashcards. Every reset is timestamped so it
+propagates through sync instead of being restored by the next merge. As a last resort, local progress lives under the `mulesoft-study-v1` key in
 localStorage, and the sync copy is the `integration-study-progress` gist at
 https://gist.github.com.

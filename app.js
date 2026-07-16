@@ -220,6 +220,30 @@
     return `<div class="bar"><div class="${cls || ""}" style="width:${Math.max(0, Math.min(100, pct))}%"></div></div>`;
   }
 
+  /* Reset one topic: its notes-read mark, its questions' stats, and their
+     auto-flashcards. A topic stamp (resets.topics) plus per-question tombstones
+     (resets.q) let the sync merge honour the reset instead of resurrecting the
+     old entries from another device. Returns true if the user confirmed. */
+  function resetTopic(certId, sid) {
+    const cert = CERTS[certId];
+    const sec = sectionById(cert, sid);
+    if (!confirm(`Reset progress for "${sec.title}" (notes read + quiz stats)? This also applies to your other synced devices.`)) return false;
+    const cs = state[certId];
+    const now = Date.now();
+    cs.resets.topics = cs.resets.topics || {};
+    cs.resets.q = cs.resets.q || {};
+    cs.resets.topics[sid] = now;
+    delete cs.read[sid];
+    cert.questions.forEach(q => {
+      if (q.section !== sid) return;
+      delete cs.qstats[q.id];
+      delete cs.srs["q:" + q.id];
+      cs.resets.q[q.id] = now;
+    });
+    save();
+    return true;
+  }
+
   /* ---------------- Router ---------------- */
   function route() {
     if (!state) return; // data still loading (boot() calls route when ready)
@@ -242,18 +266,8 @@
   function go(hash) { location.hash = hash; }
   window.addEventListener("hashchange", route);
 
-  function setNav(certId) {
-    let html = "";
-    CERT_IDS.forEach(id => {
-      html += `<a href="#/cert/${id}" class="${certId === id ? "active" : ""}">${esc(CERTS[id].short)}</a>`;
-    });
-    topnav.innerHTML = html;
-  }
-
-  /* ---------------- Views ---------------- */
-  function renderHome() {
-    setNav(null);
-    // group certifications by vendor, in manifest order of first appearance
+  function vendorGroups() {
+    // manifest order of first appearance
     const groups = [];
     CERT_IDS.forEach(id => {
       const v = CERTS[id].vendor || "Other";
@@ -261,8 +275,40 @@
       if (!g) { g = { vendor: v, ids: [] }; groups.push(g); }
       g.ids.push(id);
     });
+    return groups;
+  }
+
+  function setNav(certId) {
+    topnav.innerHTML = vendorGroups().map(g => {
+      const activeIn = g.ids.includes(certId);
+      return `
+      <div class="nav-group">
+        <button class="nav-drop ${activeIn ? "active" : ""}" aria-haspopup="true" aria-expanded="false">${esc(g.vendor)} <span class="caret">▾</span></button>
+        <div class="nav-menu">
+          ${g.ids.map(id => `<a href="#/cert/${id}" class="${certId === id ? "active" : ""}">${esc(CERTS[id].short)}</a>`).join("")}
+        </div>
+      </div>`;
+    }).join("");
+    topnav.querySelectorAll(".nav-drop").forEach(btn => {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        const group = btn.parentElement;
+        topnav.querySelectorAll(".nav-group.open").forEach(x => { if (x !== group) x.classList.remove("open"); });
+        group.classList.toggle("open");
+        btn.setAttribute("aria-expanded", group.classList.contains("open"));
+      };
+    });
+  }
+  // any click outside the nav closes open menus (navigating re-renders the nav anyway)
+  document.addEventListener("click", () => {
+    topnav.querySelectorAll(".nav-group.open").forEach(x => x.classList.remove("open"));
+  });
+
+  /* ---------------- Views ---------------- */
+  function renderHome() {
+    setNav(null);
     let html = "";
-    groups.forEach(g => {
+    vendorGroups().forEach(g => {
       let cards = "";
       g.ids.forEach(id => {
         const c = CERTS[id];
@@ -311,6 +357,7 @@
         <div class="t-stats">
           ${acc === null ? '<span class="pill">not attempted</span>' :
             `<span class="pill ${acc >= 70 ? "ok" : "bad"}">${acc}% correct</span>`}
+          <button class="icon-btn topic-reset" data-sid="${sec.id}" title="Reset this topic's progress">↺</button>
         </div>
       </div>`;
     });
@@ -363,6 +410,10 @@
       startQuiz(certId, null, 0, buildWeakPool(certId, 15));
     };
 
+    app.querySelectorAll(".topic-reset").forEach(btn => {
+      btn.onclick = () => { if (resetTopic(certId, btn.dataset.sid)) renderCert(certId); };
+    });
+
     const doReset = (fields, label) => {
       if (!confirm(`Reset ${label} for ${cert.short}? This also applies to your other synced devices.`)) return;
       const now = Date.now();
@@ -399,6 +450,7 @@
         <div class="btn-row">
           <button class="btn ${isRead ? "secondary" : ""}" id="mark-read">${isRead ? "✅ Marked as read (click to unmark)" : "Mark as read"}</button>
           <button class="btn secondary" id="quiz-section">Quiz me on this topic (${Math.min(QUIZ_SIZE, qCount)} of ${qCount} questions)</button>
+          <button class="btn danger" id="topic-reset">↺ Reset topic progress</button>
         </div>
       </div>
       <div class="btn-row">
@@ -423,11 +475,12 @@
 
     document.getElementById("mark-read").onclick = () => {
       if (state[certId].read[sid]) delete state[certId].read[sid];
-      else state[certId].read[sid] = true;
+      else state[certId].read[sid] = Date.now(); // timestamp lets sync merges honour topic resets
       save();
       renderNotes(certId, sid);
     };
     document.getElementById("quiz-section").onclick = () => startQuiz(certId, sid, QUIZ_SIZE);
+    document.getElementById("topic-reset").onclick = () => { if (resetTopic(certId, sid)) renderNotes(certId, sid); };
   }
 
   /* ---------------- Practice quiz ---------------- */
@@ -574,6 +627,7 @@
       qs[q.id].a++;
       if (correct) qs[q.id].c++;
       else enqueueMissedQuestion(s.certId, q.id);
+      qs[q.id].t = Date.now();
       save();
       renderQuizQuestion();
     }
@@ -813,6 +867,7 @@
       if (!qs[q.id]) qs[q.id] = { a: 0, c: 0 };
       qs[q.id].a++;
       if (ok) qs[q.id].c++;
+      qs[q.id].t = Date.now();
     });
     const total = s.questions.length;
     const pct = Math.round(100 * correct / total);
