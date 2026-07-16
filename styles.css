@@ -222,6 +222,16 @@ h3 { font-size: 1.05rem; margin: 1rem 0 .4rem; }
 .card-link:hover { transform: translateY(-2px); }
 
 .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; }
+.vendor-head {
+  margin: 1.8rem 0 .7rem;
+  font-size: .95rem;
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: .35rem;
+}
+.vendor-head:first-of-type { margin-top: 1rem; }
 
 .btn {
   display: inline-block;

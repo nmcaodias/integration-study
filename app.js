@@ -10,7 +10,7 @@
 
   /* ---------------- State & persistence ---------------- */
   function blankCertState() {
-    return { read: {}, qstats: {}, exams: [], srs: {} };
+    return { read: {}, qstats: {}, exams: [], srs: {}, resets: {} };
   }
   function loadState() {
     try {
@@ -18,7 +18,8 @@
       const s = raw ? JSON.parse(raw) : {};
       CERT_IDS.forEach(id => {
         if (!s[id]) s[id] = blankCertState();
-        if (!s[id].srs) s[id].srs = {}; // backfill for saves from before flashcards
+        if (!s[id].srs) s[id].srs = {};       // backfill for saves from before flashcards
+        if (!s[id].resets) s[id].resets = {}; // backfill for saves from before progress resets
       });
       return s;
     } catch (e) {
@@ -48,6 +49,8 @@
     }
     return a;
   }
+
+  const QUIZ_SIZE = 10; // every practice quiz is exactly this long (or the whole pool if smaller)
 
   // multi-select support: a question has either `answer` (number) or `answers` (array)
   function isMulti(q) { return Array.isArray(q.answers); }
@@ -250,27 +253,39 @@
   /* ---------------- Views ---------------- */
   function renderHome() {
     setNav(null);
-    let cards = "";
+    // group certifications by vendor, in manifest order of first appearance
+    const groups = [];
     CERT_IDS.forEach(id => {
-      const c = CERTS[id];
-      const st = certStats(id);
-      const pctSeen = st.totalQ ? Math.round(100 * st.attempted / st.totalQ) : 0;
-      cards += `
-      <a class="card card-link" href="#/cert/${id}">
-        <h2>${esc(c.name)}</h2>
-        <p class="muted">${c.exam.questions} questions · ${c.exam.minutes} min · ${c.exam.passPct}% to pass</p>
-        <div class="mt-1">
-          <div class="muted">Notes read: ${st.readCount}/${c.sections.length}</div>
-          <div class="muted">Questions attempted: ${st.attempted}/${st.totalQ}</div>
-          ${bar(pctSeen)}
-          ${st.examCount ? `<span class="pill ${st.bestExam >= c.exam.passPct ? "ok" : "warn"}">Best exam: ${st.bestExam}%</span>` : `<span class="pill">No exam attempts yet</span>`}
-        </div>
-      </a>`;
+      const v = CERTS[id].vendor || "Other";
+      let g = groups.find(x => x.vendor === v);
+      if (!g) { g = { vendor: v, ids: [] }; groups.push(g); }
+      g.ids.push(id);
+    });
+    let html = "";
+    groups.forEach(g => {
+      let cards = "";
+      g.ids.forEach(id => {
+        const c = CERTS[id];
+        const st = certStats(id);
+        const pctSeen = st.totalQ ? Math.round(100 * st.attempted / st.totalQ) : 0;
+        cards += `
+        <a class="card card-link" href="#/cert/${id}">
+          <h2>${esc(c.name)}</h2>
+          <p class="muted">${c.exam.questions} questions · ${c.exam.minutes} min · ${c.exam.passPct}% to pass</p>
+          <div class="mt-1">
+            <div class="muted">Notes read: ${st.readCount}/${c.sections.length}</div>
+            <div class="muted">Questions attempted: ${st.attempted}/${st.totalQ}</div>
+            ${bar(pctSeen)}
+            ${st.examCount ? `<span class="pill ${st.bestExam >= c.exam.passPct ? "ok" : "warn"}">Best exam: ${st.bestExam}%</span>` : `<span class="pill">No exam attempts yet</span>`}
+          </div>
+        </a>`;
+      });
+      html += `<h2 class="vendor-head">${esc(g.vendor)}</h2><div class="grid-2">${cards}</div>`;
     });
     app.innerHTML = `
       <h1>Integration Study</h1>
       <p class="subtitle">Pick a certification to study its topics, take practice quizzes, or run a full timed exam simulation.</p>
-      <div class="grid-2">${cards}</div>`;
+      ${html}`;
   }
 
   function renderCert(certId) {
@@ -330,11 +345,38 @@
       <div class="card">
         <h2>Topics</h2>
         ${rows}
+      </div>
+      <div class="card reset-zone">
+        <h2>Reset progress</h2>
+        <p class="muted">Start over on any part of this certification. Exam readiness is computed from
+        quiz stats and exam history, so resetting those resets it too. Resets carry over to your
+        other synced devices.</p>
+        <div class="btn-row">
+          <button class="btn danger" id="reset-read">Reset notes read</button>
+          <button class="btn danger" id="reset-quiz">Reset quiz stats</button>
+          <button class="btn danger" id="reset-exams">Reset exam history</button>
+          <button class="btn danger" id="reset-all">Reset everything</button>
+        </div>
       </div>`;
 
     document.getElementById("weak-quiz").onclick = () => {
       startQuiz(certId, null, 0, buildWeakPool(certId, 15));
     };
+
+    const doReset = (fields, label) => {
+      if (!confirm(`Reset ${label} for ${cert.short}? This also applies to your other synced devices.`)) return;
+      const now = Date.now();
+      fields.forEach(f => {
+        cs[f] = f === "exams" ? [] : {};
+        cs.resets[f] = now;
+      });
+      save();
+      renderCert(certId);
+    };
+    document.getElementById("reset-read").onclick = () => doReset(["read"], "the notes-read marks");
+    document.getElementById("reset-quiz").onclick = () => doReset(["qstats"], "quiz stats (per-topic percentages and readiness)");
+    document.getElementById("reset-exams").onclick = () => doReset(["exams"], "the exam history");
+    document.getElementById("reset-all").onclick = () => doReset(["read", "qstats", "exams", "srs"], "ALL progress (notes, quiz stats, exams, flashcards)");
   }
 
   function renderNotes(certId, sid) {
@@ -356,7 +398,7 @@
         <div class="notes-body">${sec.notes}</div>
         <div class="btn-row">
           <button class="btn ${isRead ? "secondary" : ""}" id="mark-read">${isRead ? "✅ Marked as read (click to unmark)" : "Mark as read"}</button>
-          <button class="btn secondary" id="quiz-section">Quiz me on this topic (${qCount} questions)</button>
+          <button class="btn secondary" id="quiz-section">Quiz me on this topic (${Math.min(QUIZ_SIZE, qCount)} of ${qCount} questions)</button>
         </div>
       </div>
       <div class="btn-row">
@@ -385,7 +427,7 @@
       save();
       renderNotes(certId, sid);
     };
-    document.getElementById("quiz-section").onclick = () => startQuiz(certId, sid, 0);
+    document.getElementById("quiz-section").onclick = () => startQuiz(certId, sid, QUIZ_SIZE);
   }
 
   /* ---------------- Practice quiz ---------------- */
@@ -400,7 +442,7 @@
     app.innerHTML = `
       <p class="muted"><a href="#/cert/${certId}">← ${esc(cert.short)}</a></p>
       <h1>Practice quiz</h1>
-      <p class="subtitle">Instant feedback with explanations after every question. Results feed your per-topic stats.</p>
+      <p class="subtitle">10 questions per quiz. Instant feedback with explanations after every question. Results feed your per-topic stats.</p>
       <div class="card">
         <div class="setup-field">
           <label for="quiz-topic">Topic</label>
@@ -418,18 +460,13 @@
             <option value="hard">Hard</option>
           </select>
         </div>
-        <div class="setup-field">
-          <label for="quiz-count">Number of questions (0 = all available)</label>
-          <input type="number" id="quiz-count" min="0" max="${cert.questions.length}" value="10">
-        </div>
         <button class="btn" id="quiz-start">Start quiz</button>
       </div>`;
 
     document.getElementById("quiz-start").onclick = () => {
       const topic = document.getElementById("quiz-topic").value;
-      const count = parseInt(document.getElementById("quiz-count").value, 10) || 0;
       const level = document.getElementById("quiz-level").value;
-      startQuiz(certId, topic === "all" ? null : topic, count, null, level === "all" ? null : level);
+      startQuiz(certId, topic === "all" ? null : topic, QUIZ_SIZE, null, level === "all" ? null : level);
     };
   }
 

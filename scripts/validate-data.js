@@ -28,10 +28,13 @@ for (const id of manifest.certs) {
     continue;
   }
 
-  for (const field of ["id", "name", "short", "exam", "sections", "questions"]) {
+  for (const field of ["id", "name", "short", "vendor", "exam", "sections", "questions"]) {
     if (!(field in cert)) fail(`${id}.json: missing '${field}'`);
   }
   if (cert.id !== id) fail(`${id}.json: id '${cert.id}' does not match filename`);
+  if ("vendor" in cert && (typeof cert.vendor !== "string" || !cert.vendor.trim())) {
+    fail(`${id}.json: vendor must be a non-empty string (used to group certifications on the home page)`);
+  }
   if (!cert.exam || !cert.exam.questions || !cert.exam.minutes || !cert.exam.passPct) {
     fail(`${id}.json: exam must define questions, minutes, passPct`);
   }

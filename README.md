@@ -24,8 +24,9 @@ cross-device progress sync through a private GitHub Gist.
   of all five certifications, with diagrams from the official MuleSoft and Apache Kafka
   documentation (stored locally in `images/`) and a 📖 link on every sub-topic heading
   to its official documentation page.
-- **Practice quizzes** — pick a topic (or all) and a question count; instant feedback with
-  explanations after every answer. Per-topic accuracy is tracked on the certification page.
+- **Practice quizzes** — 10 questions per quiz; pick a topic (or all) and a difficulty; instant
+  feedback with explanations after every answer. Per-topic accuracy is tracked on the
+  certification page.
 - **Weak-areas practice** — a 🎯 button on each certification page builds a quiz from your
   worst-performing and least-practiced questions, using the stats the app already tracks.
 - **Spaced-repetition flashcards** — 🃏 per certification: authored fact cards plus every
@@ -70,9 +71,10 @@ or to migrate progress from an old local copy.
 All certification content lives in `data/`:
 
 - `data/certs.json` — the manifest: which certification files to load.
-- `data/mcd1.json`, `data/mcd2.json`, `data/mcia.json`, `data/ccdak.json` — one file per
-  certification: exam metadata, sections (title, weight, objectives, notes HTML, `topicDocs`
-  documentation links), and the question bank.
+- `data/mcd1.json`, `data/mcd2.json`, `data/mcia.json`, `data/ccdak.json`, `data/mcpa.json` —
+  one file per certification: exam metadata, a `vendor` (groups certifications on the home
+  page, e.g. "MuleSoft" / "Confluent"), sections (title, weight, objectives, notes HTML,
+  `topicDocs` documentation links), and the question bank.
 
 ### Adding your own questions
 
@@ -118,8 +120,9 @@ on every push (`.github/workflows/validate.yml`).
 
 ## Resetting progress
 
-Local progress lives under the `mulesoft-study-v1` key in localStorage (clear it from
-DevTools → Application → Local Storage). If sync is connected, also delete the
-`integration-study-progress` gist (or its contents) at https://gist.github.com — otherwise
-the next sync restores the merged state. Exam attempts alone can be cleared per certification
-with the "Clear history" button.
+Every certification page has a **Reset progress** card: reset the notes-read marks, the quiz
+stats (per-topic percentages and the readiness score), the exam history, or everything —
+each reset is timestamped so it propagates through sync instead of being restored by the
+next merge. As a last resort, local progress lives under the `mulesoft-study-v1` key in
+localStorage, and the sync copy is the `integration-study-progress` gist at
+https://gist.github.com.

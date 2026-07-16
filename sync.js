@@ -61,26 +61,49 @@
 
   /* Merge two progress states: union of read sections, per-question max of
      attempts/correct, exams concatenated and de-duplicated by date, and
-     spaced-repetition entries by latest review timestamp. */
+     spaced-repetition entries by latest review timestamp.
+     Each field may carry a reset timestamp (resets.<field>, set by the in-app
+     "Reset progress" buttons): the side reset more recently wins that field
+     wholesale, so a reset is not resurrected by the next merge. */
   function mergeCert(a, b) {
     a = a || {}; b = b || {};
-    const read = Object.assign({}, a.read || {}, b.read || {});
-    const qstats = {};
-    new Set([...Object.keys(a.qstats || {}), ...Object.keys(b.qstats || {})]).forEach(k => {
-      const x = (a.qstats || {})[k] || { a: 0, c: 0 };
-      const y = (b.qstats || {})[k] || { a: 0, c: 0 };
-      qstats[k] = { a: Math.max(x.a || 0, y.a || 0), c: Math.max(x.c || 0, y.c || 0) };
+    const ra = a.resets || {}, rb = b.resets || {};
+    const pick = (field, empty, mergeBoth) => {
+      const ta = ra[field] || 0, tb = rb[field] || 0;
+      if (ta > tb) return a[field] || empty;
+      if (tb > ta) return b[field] || empty;
+      return mergeBoth();
+    };
+    const read = pick("read", {}, () => Object.assign({}, a.read || {}, b.read || {}));
+    const qstats = pick("qstats", {}, () => {
+      const out = {};
+      new Set([...Object.keys(a.qstats || {}), ...Object.keys(b.qstats || {})]).forEach(k => {
+        const x = (a.qstats || {})[k] || { a: 0, c: 0 };
+        const y = (b.qstats || {})[k] || { a: 0, c: 0 };
+        out[k] = { a: Math.max(x.a || 0, y.a || 0), c: Math.max(x.c || 0, y.c || 0) };
+      });
+      return out;
     });
-    const seen = new Set();
-    const exams = [...(a.exams || []), ...(b.exams || [])]
-      .filter(e => e && e.date && !seen.has(e.date) && seen.add(e.date))
-      .sort((x, y) => (x.date < y.date ? -1 : 1));
-    const srs = {};
-    new Set([...Object.keys(a.srs || {}), ...Object.keys(b.srs || {})]).forEach(k => {
-      const x = (a.srs || {})[k], y = (b.srs || {})[k];
-      srs[k] = !x ? y : !y ? x : ((y.t || 0) > (x.t || 0) ? y : x); // latest review wins
+    const exams = pick("exams", [], () => {
+      const seen = new Set();
+      return [...(a.exams || []), ...(b.exams || [])]
+        .filter(e => e && e.date && !seen.has(e.date) && seen.add(e.date))
+        .sort((x, y) => (x.date < y.date ? -1 : 1));
     });
-    return { read, qstats, exams, srs };
+    const srs = pick("srs", {}, () => {
+      const out = {};
+      new Set([...Object.keys(a.srs || {}), ...Object.keys(b.srs || {})]).forEach(k => {
+        const x = (a.srs || {})[k], y = (b.srs || {})[k];
+        out[k] = !x ? y : !y ? x : ((y.t || 0) > (x.t || 0) ? y : x); // latest review wins
+      });
+      return out;
+    });
+    const resets = {};
+    ["read", "qstats", "exams", "srs"].forEach(f => {
+      const t = Math.max(ra[f] || 0, rb[f] || 0);
+      if (t) resets[f] = t;
+    });
+    return { read, qstats, exams, srs, resets };
   }
   function merge(a, b) {
     a = a || {}; b = b || {};
