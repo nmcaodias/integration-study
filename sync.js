@@ -144,8 +144,12 @@
   }
 
   async function findOrCreateGist() {
-    const gists = await gh("/gists?per_page=100");
-    const found = gists.find(g => g.description === GIST_DESC && g.files && g.files[GIST_FILE]);
+    let found = null;
+    for (let page = 1; !found && page <= 20; page++) {
+      const gists = await gh("/gists?per_page=100&page=" + page);
+      found = gists.find(g => g.description === GIST_DESC && g.files && g.files[GIST_FILE]);
+      if (gists.length < 100) break;
+    }
     if (found) {
       localStorage.setItem(GIST_KEY, found.id);
       return found.id;
@@ -187,6 +191,10 @@
     merge,
     readLocal,
 
+    /* Set by app.js; called after a merge rewrites localStorage so the app can
+       refresh its in-memory state. */
+    onMerged: null,
+
     initStatus() { setStatus(status); },
 
     /* Store the token, locate/create the gist, and do a first two-way sync.
@@ -219,6 +227,7 @@
       try {
         const merged = merge(readLocal(), await pull());
         writeLocal(merged);
+        if (this.onMerged) this.onMerged();
         await push();
         setStatus("idle");
       } catch (e) {
@@ -227,14 +236,17 @@
       }
     },
 
-    /* Called by app.js on every save(); batches rapid changes into one PATCH. */
+    /* Called by app.js on every save(); batches rapid changes into one flush.
+       The flush merges the gist into local state before pushing — a raw PATCH
+       would overwrite progress (and reset stamps) pushed by another device
+       since our last pull. */
     schedulePush() {
       if (!this.isConnected()) return;
       clearTimeout(pushTimer);
       setStatus("syncing");
       pushTimer = setTimeout(async () => {
-        try { await push(); setStatus("idle"); }
-        catch (e) { setStatus("error", String(e.message || e)); }
+        try { await this.pullAndMerge(); }
+        catch (e) { /* pullAndMerge already set the error status */ }
       }, PUSH_DEBOUNCE_MS);
     },
 
