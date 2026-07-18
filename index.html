@@ -2,17 +2,26 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Integration Study</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f4f6fa">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#10141d">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header class="topbar">
-    <a href="#/" class="brand">⚡ Integration Study</a>
+    <button id="nav-burger" title="Menu" aria-label="Menu" aria-expanded="false" aria-controls="mobile-nav">☰</button>
+    <a href="#/" class="brand">⚡ <span class="brand-name">Integration Study</span></a>
     <nav id="topnav"></nav>
     <a href="#/sync" id="sync-link" title="Sync &amp; backup">⚙<span id="sync-status"></span></a>
     <button id="theme-toggle" title="Toggle theme">🌓</button>
   </header>
+  <nav id="mobile-nav" aria-label="Certifications"></nav>
   <main id="app"></main>
 
   <script src="sync.js"></script>

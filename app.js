@@ -7,6 +7,8 @@
   const STORE_KEY = "mulesoft-study-v1";
   const app = document.getElementById("app");
   const topnav = document.getElementById("topnav");
+  const mobileNav = document.getElementById("mobile-nav");
+  const burger = document.getElementById("nav-burger");
 
   /* ---------------- State & persistence ---------------- */
   function blankCertState() {
@@ -291,6 +293,14 @@
   }
 
   function setNav(certId) {
+    // mobile hamburger panel: same data, flat list grouped by vendor
+    mobileNav.classList.remove("open");
+    burger.setAttribute("aria-expanded", "false");
+    mobileNav.innerHTML = vendorGroups().map(g => `
+      <div class="mnav-vendor">${esc(g.vendor)}</div>
+      ${g.ids.map(id => `<a href="#/cert/${id}" class="${certId === id ? "active" : ""}">${esc(CERTS[id].short)}</a>`).join("")}
+    `).join("");
+
     topnav.innerHTML = vendorGroups().map(g => {
       const activeIn = g.ids.includes(certId);
       return `
@@ -320,9 +330,20 @@
       const b = x.querySelector(".nav-drop");
       if (b) b.setAttribute("aria-expanded", "false");
     });
+    mobileNav.classList.remove("open");
+    burger.setAttribute("aria-expanded", "false");
   }
   // any click outside the nav closes open menus (navigating re-renders the nav anyway)
   document.addEventListener("click", closeNavMenus);
+  burger.onclick = (e) => {
+    e.stopPropagation();
+    const open = !mobileNav.classList.contains("open");
+    closeNavMenus();
+    if (open) {
+      mobileNav.classList.add("open");
+      burger.setAttribute("aria-expanded", "true");
+    }
+  };
 
   /* ---------------- Views ---------------- */
   function renderHome() {

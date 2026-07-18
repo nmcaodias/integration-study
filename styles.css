@@ -129,6 +129,51 @@ pre code { background: none; padding: 0; }
   cursor: pointer;
   font-size: 1rem;
 }
+
+/* hamburger + mobile nav panel (shown only on small screens) */
+#nav-burger {
+  display: none;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: .35rem .65rem;
+  cursor: pointer;
+  font-size: 1.05rem;
+  color: var(--text);
+  line-height: 1.2;
+}
+#mobile-nav { display: none; }
+#mobile-nav.open {
+  display: block;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: .3rem .5rem .6rem;
+  /* pin just below the (48px + notch) mobile topbar, wherever the page is scrolled */
+  position: sticky;
+  top: calc(48px + env(safe-area-inset-top));
+  z-index: 9;
+  max-height: calc(100vh - 60px);
+  overflow-y: auto;
+}
+#mobile-nav .mnav-vendor {
+  font-size: .74rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--text-muted);
+  padding: .7rem .6rem .2rem;
+}
+#mobile-nav a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: .5rem .9rem;
+  border-radius: 8px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: .98rem;
+}
+#mobile-nav a.active { background: var(--primary-soft); color: var(--primary); font-weight: 600; }
 #sync-link {
   color: var(--text-muted);
   text-decoration: none;
@@ -219,22 +264,31 @@ pre code { background: none; padding: 0; }
 
 /* ---------- Small screens ---------- */
 @media (max-width: 640px) {
-  .topbar { gap: .5rem; padding: .55rem .7rem; flex-wrap: wrap; }
-  .brand { font-size: .95rem; }
-  #topnav { gap: .15rem; position: relative; }
-  #topnav a { padding: .3rem .5rem; font-size: .85rem; }
-  .nav-drop { padding: .3rem .5rem; font-size: .85rem; }
-  /* anchor open menus to the nav itself so they never overflow the viewport */
-  .nav-group { position: static; }
-  .nav-menu { left: 0; right: 0; min-width: 0; }
-  #app { padding: 1rem .8rem 3rem; }
+  /* single-row topbar: burger + ⚡ + spacer + ⚙ + 🌓 (48px + notch inset, matching #mobile-nav.open's top) */
+  .topbar {
+    gap: .5rem;
+    min-height: 48px;
+    padding: calc(.4rem + env(safe-area-inset-top)) max(.7rem, env(safe-area-inset-right)) .4rem max(.7rem, env(safe-area-inset-left));
+  }
+  .brand { font-size: 1.1rem; margin-right: auto; }
+  .brand .brand-name { display: none; }
+  #topnav { display: none; }
+  #nav-burger { display: block; }
+  #app { padding: 1rem .8rem calc(3rem + env(safe-area-inset-bottom)); }
   h1 { font-size: 1.3rem; }
   .option { padding: .8rem .8rem; min-height: 44px; }
   .nav-grid button { min-width: 44px; min-height: 44px; }
   .exam-header { flex-direction: column; align-items: flex-start; gap: .4rem; }
   .btn { padding: .6rem .9rem; }
+  /* action rows: tidy two-up grid instead of a tall ragged stack */
+  .btn-row .btn { flex: 1 1 calc(50% - .3rem); text-align: center; }
   .topic-row { flex-direction: column; align-items: flex-start; gap: .3rem; }
   .topic-row .t-stats { min-width: 0; text-align: left; justify-content: flex-start; }
+}
+
+/* snappier taps: no double-tap-zoom delay on interactive elements */
+.btn, .option, .nav-grid button, .icon-btn, #nav-burger, #theme-toggle, #mobile-nav a, #topnav a, .nav-drop {
+  touch-action: manipulation;
 }
 
 /* ---------- Layout ---------- */
@@ -479,4 +533,10 @@ h3 { font-size: 1.05rem; margin: 1rem 0 .4rem; }
 
 .muted { color: var(--text-muted); font-size: .9rem; }
 .mt-1 { margin-top: 1rem; }
+
+/* 16px stops iOS Safari from zooming into focused fields
+   (must come after the base .setup-field rules to win the cascade) */
+@media (max-width: 640px) {
+  .setup-field select, .setup-field input[type="number"], .setup-field input[type="password"] { font-size: 16px; }
+}
 
