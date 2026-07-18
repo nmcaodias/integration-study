@@ -4439,15 +4439,15 @@
     "The IT delivery gap": "https://docs.mulesoft.com/general/api-led-overview",
     "API-led connectivity — the three layers": "https://docs.mulesoft.com/general/api-led-overview",
     "Modern APIs": "https://docs.mulesoft.com/general/api-led-overview",
-    "Center for Enablement (C4E)": "https://docs.mulesoft.com/general/",
-    "HTTP fundamentals": "https://docs.mulesoft.com/http-connector/latest/",
-    "Anypoint Platform components": "https://docs.mulesoft.com/general/",
+    "Center for Enablement (C4E)": "https://www.salesforce.com/blog/what-is-a-center-for-enablement/",
+    "HTTP fundamentals": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods",
+    "Anypoint Platform components": "https://docs.mulesoft.com/general/glossary",
     "Point-to-point vs. the application network": "https://docs.mulesoft.com/general/api-led-overview",
     "Benefits of an application network": "https://docs.mulesoft.com/general/api-led-overview",
-    "REST principles": "https://docs.mulesoft.com/http-connector/latest/",
-    "REST vs. SOAP web services": "https://docs.mulesoft.com/http-connector/latest/",
+    "REST principles": "https://restfulapi.net/",
+    "REST vs. SOAP web services": "https://aws.amazon.com/compare/the-difference-between-soap-rest/",
     "API as a product and its lifecycle": "https://docs.mulesoft.com/general/api-led-overview",
-    "Control plane vs. runtime plane": "https://docs.mulesoft.com/general/"
+    "Control plane vs. runtime plane": "https://docs.mulesoft.com/hosting-home/"
    },
    "docs": [
     {
@@ -4478,8 +4478,8 @@
     "Reuse in RAML": "https://docs.mulesoft.com/exchange/asset-types",
     "Consuming APIs": "https://docs.mulesoft.com/exchange/",
     "RAML data types and facets": "https://github.com/raml-org/raml-spec/blob/master/versions/raml-10/raml-10.md#raml-data-types",
-    "Securing an API in RAML: securitySchemes": "https://docs.mulesoft.com/design-center/",
-    "Status codes an API declares": "https://docs.mulesoft.com/http-connector/latest/",
+    "Securing an API in RAML: securitySchemes": "https://github.com/raml-org/raml-spec/blob/master/versions/raml-10/raml-10.md#security-schemes",
+    "Status codes an API declares": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status",
     "The mocking service in depth": "https://docs.mulesoft.com/design-center/design-mocking-service",
     "Consuming an API from a Mule app": "https://docs.mulesoft.com/http-connector/latest/http-request-ref"
    },
@@ -4582,7 +4582,7 @@
     "APIkit": "https://docs.mulesoft.com/apikit/latest/",
     "How the APIkit Router works": "https://docs.mulesoft.com/apikit/latest/",
     "Keeping spec and implementation in sync": "https://docs.mulesoft.com/apikit/latest/",
-    "REST Connect connectors": "https://docs.mulesoft.com/exchange/",
+    "REST Connect connectors": "https://docs.mulesoft.com/exchange/to-deploy-using-rest-connect",
     "The generated flow naming convention": "https://docs.mulesoft.com/apikit/latest/",
     "The APIkit main flow and error mappings": "https://docs.mulesoft.com/apikit/latest/",
     "Manual routing vs APIkit": "https://docs.mulesoft.com/apikit/latest/"
@@ -4609,7 +4609,7 @@
    "topicDocs": {
     "Choice router — conditional, exactly one route": "https://docs.mulesoft.com/mule-runtime/latest/choice-router-concept",
     "Scatter-Gather — concurrent multicast": "https://docs.mulesoft.com/mule-runtime/latest/scatter-gather-concept",
-    "Other routers (know they exist)": "https://docs.mulesoft.com/mule-runtime/latest/choice-router-concept",
+    "Other routers (know they exist)": "https://docs.mulesoft.com/mule-runtime/latest/about-components",
     "Validation module": "https://docs.mulesoft.com/validation-connector/latest/",
     "Choosing a router": "https://docs.mulesoft.com/mule-runtime/latest/choice-router-concept",
     "Combining validators (All / Any)": "https://docs.mulesoft.com/validation-connector/latest/"
@@ -4751,7 +4751,7 @@
     "Choosing a record-processing tool": "https://docs.mulesoft.com/mule-runtime/latest/for-each-scope-concept",
     "Batch Job — three phases": "https://docs.mulesoft.com/mule-runtime/latest/batch-processing-concept",
     "Triggering flows": "https://docs.mulesoft.com/mule-runtime/latest/scheduler-concept",
-    "Watermarking — sync only what's new": "https://docs.mulesoft.com/object-store-connector/latest/",
+    "Watermarking — sync only what's new": "https://docs.mulesoft.com/db-connector/latest/database-documentation",
     "Object Store": "https://docs.mulesoft.com/object-store-connector/latest/",
     "For Each vs. Parallel For Each vs. Batch": "https://docs.mulesoft.com/mule-runtime/latest/for-each-scope-concept",
     "Batch phases in detail": "https://docs.mulesoft.com/mule-runtime/latest/batch-processing-concept",
@@ -4820,7 +4820,7 @@
     "Managing APIs — API Manager": "https://docs.mulesoft.com/api-manager/latest/latest-overview-concept",
     "Policies": "https://docs.mulesoft.com/mule-gateway/policies-included-directory",
     "Client ID enforcement, contracts and SLA tiers": "https://docs.mulesoft.com/api-manager/latest/defining-sla-tiers",
-    "Two enforcement models: proxy vs. autodiscovery": "https://docs.mulesoft.com/api-manager/latest/",
+    "Two enforcement models: proxy vs. autodiscovery": "https://docs.mulesoft.com/mule-gateway/",
     "Policy categories": "https://docs.mulesoft.com/gateway/latest/policies-included-directory",
     "Deployment targets recap": "https://docs.mulesoft.com/runtime-manager/deployment-strategies"
    },
