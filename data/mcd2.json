@@ -2426,7 +2426,7 @@
     "Versioning and configuration": "https://semver.org/",
     "Classloader isolation and sharedLibraries": "https://docs.mulesoft.com/mule-runtime/latest/mmp-concept",
     "mvn deploy vs. mvn deploy -DmuleDeploy": "https://docs.mulesoft.com/mule-runtime/latest/deploy-to-cloudhub-2",
-    "Semantic versioning decisions": "https://docs.mulesoft.com/api-governance/latest/"
+    "Semantic versioning decisions": "https://docs.mulesoft.com/api-governance/"
    },
    "docs": [
     {
@@ -2456,9 +2456,9 @@
    "topicDocs": {
     "TLS building blocks": "https://docs.mulesoft.com/mule-runtime/latest/tls-configuration",
     "Secure configuration properties": "https://docs.mulesoft.com/mule-runtime/latest/secure-configuration-properties",
-    "Payload-level cryptography": "https://docs.mulesoft.com/mule-runtime/latest/cryptography",
+    "Payload-level cryptography": "https://docs.mulesoft.com/cryptography-module/latest/",
     "API security policies (API Manager)": "https://docs.mulesoft.com/mule-gateway/policies-included-directory",
-    "Choosing the right security control": "https://docs.mulesoft.com/mule-runtime/latest/security",
+    "Choosing the right security control": "https://docs.mulesoft.com/general/security",
     "TLS handshake troubleshooting": "https://docs.mulesoft.com/mule-runtime/latest/tls-configuration",
     "Masking vs. encryption of properties": "https://docs.mulesoft.com/mule-runtime/latest/secure-configuration-properties"
    },
@@ -2473,7 +2473,7 @@
     },
     {
      "label": "Cryptography module",
-     "url": "https://docs.mulesoft.com/mule-runtime/latest/cryptography"
+     "url": "https://docs.mulesoft.com/cryptography-module/latest/"
     },
     {
      "label": "Included policies directory",
@@ -2538,7 +2538,7 @@
     "Production readiness checklist": "https://docs.mulesoft.com/api-manager/latest/latest-overview-concept",
     "Versioning and deprecation": "https://semver.org/",
     "MUnit tools: mock, spy, verify, assert": "https://docs.mulesoft.com/munit/latest/",
-    "Coverage as a build gate": "https://docs.mulesoft.com/munit/latest/coverage-concept",
+    "Coverage as a build gate": "https://docs.mulesoft.com/munit/latest/coverage-maven-concept",
     "Deprecating an API version gracefully": "https://docs.mulesoft.com/api-manager/latest/"
    },
    "docs": [

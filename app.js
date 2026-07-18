@@ -258,6 +258,7 @@
     const hash = location.hash || "#/";
     const parts = hash.replace(/^#\//, "").split("/").filter(Boolean);
     stopTimer();
+    window.scrollTo(0, 0);
     if (parts[0] === "sync") return renderSync();
     if (parts[0] === "flash") return renderFlash(parts[1]);
     if (parts.length === 0) return renderHome();

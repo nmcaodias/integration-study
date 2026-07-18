@@ -1593,9 +1593,9 @@
     "API instances across environments": "https://docs.mulesoft.com/api-manager/latest/latest-overview-concept",
     "Selecting policies for NFRs": "https://docs.mulesoft.com/mule-gateway/policies-included-directory",
     "Policy enforcement options": "https://docs.mulesoft.com/api-manager/latest/api-proxy-landing-page",
-    "Passing client ID and secret": "https://docs.mulesoft.com/api-manager/latest/client-id-based-policies",
-    "SLA tiers, contracts, and access management": "https://docs.mulesoft.com/api-manager/latest/create-instance-task",
-    "Custom policies": "https://docs.mulesoft.com/api-manager/latest/policies-custom-overview"
+    "Passing client ID and secret": "https://docs.mulesoft.com/gateway/latest/policies-included-client-id-enforcement",
+    "SLA tiers, contracts, and access management": "https://docs.mulesoft.com/api-manager/latest/defining-sla-tiers",
+    "Custom policies": "https://docs.mulesoft.com/gateway/latest/policies-custom-overview"
    },
    "objectives": [
     "Manage API instances across environments",

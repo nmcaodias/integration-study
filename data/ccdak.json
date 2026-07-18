@@ -1757,7 +1757,7 @@
     "The producer: send path and key configs": "https://docs.confluent.io/platform/current/clients/producer.html",
     "Idempotence and transactions (EOS)": "https://docs.confluent.io/kafka/design/delivery-semantics.html",
     "The consumer: poll loop, commits, rebalancing": "https://docs.confluent.io/platform/current/clients/consumer.html",
-    "Serialization and Schema Registry": "https://docs.confluent.io/platform/current/schema-registry/fundamentals/avro.html",
+    "Serialization and Schema Registry": "https://docs.confluent.io/platform/current/schema-registry/index.html",
     "Error handling: retriable vs non-retriable": "https://docs.confluent.io/platform/current/clients/producer.html",
     "Admin API and CLI tools": "https://kafka.apache.org/documentation/#adminapi",
     "Compression and batching": "https://kafka.apache.org/documentation/#producerconfigs"
@@ -1804,7 +1804,7 @@
     "Workers: standalone vs distributed": "https://docs.confluent.io/platform/current/connect/index.html",
     "Connectors, tasks, and scaling": "https://developer.confluent.io/courses/kafka-connect/intro/",
     "Converters and Schema Registry": "https://docs.confluent.io/platform/current/connect/index.html",
-    "Single Message Transforms (SMTs)": "https://docs.confluent.io/platform/current/connect/transforms/overview.html",
+    "Single Message Transforms (SMTs)": "https://docs.confluent.io/kafka-connectors/transforms/current/overview.html",
     "Error handling and dead letter queues": "https://docs.confluent.io/platform/current/connect/index.html",
     "Change Data Capture (CDC)": "https://developer.confluent.io/courses/kafka-connect/intro/"
    },
@@ -1827,7 +1827,7 @@
     "Unit testing producers and consumers": "https://kafka.apache.org/documentation/",
     "Testing Kafka Streams topologies": "https://docs.confluent.io/platform/current/streams/developer-guide/test-streams.html",
     "Integration testing with real brokers": "https://docs.confluent.io/platform/current/streams/developer-guide/test-streams.html",
-    "Testing schema evolution": "https://docs.confluent.io/platform/current/schema-registry/fundamentals/avro.html"
+    "Testing schema evolution": "https://docs.confluent.io/platform/current/schema-registry/fundamentals/schema-evolution.html"
    },
    "objectives": [
     "Unit test producer and consumer logic with mocks",

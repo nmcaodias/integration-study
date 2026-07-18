@@ -4477,7 +4477,7 @@
     "RAML essentials": "https://github.com/raml-org/raml-spec/blob/master/versions/raml-10/raml-10.md",
     "Reuse in RAML": "https://docs.mulesoft.com/exchange/asset-types",
     "Consuming APIs": "https://docs.mulesoft.com/exchange/",
-    "RAML data types and facets": "https://docs.mulesoft.com/design-center/design-raml-data-types",
+    "RAML data types and facets": "https://github.com/raml-org/raml-spec/blob/master/versions/raml-10/raml-10.md#raml-data-types",
     "Securing an API in RAML: securitySchemes": "https://docs.mulesoft.com/design-center/",
     "Status codes an API declares": "https://docs.mulesoft.com/http-connector/latest/",
     "The mocking service in depth": "https://docs.mulesoft.com/design-center/design-mocking-service",
@@ -4514,7 +4514,7 @@
     "Setting event data": "https://docs.mulesoft.com/mule-runtime/latest/dataweave",
     "Enrichment with target parameters": "https://docs.mulesoft.com/mule-runtime/latest/target-variables",
     "Attributes by event source": "https://docs.mulesoft.com/mule-runtime/latest/about-mule-event",
-    "Payload MIME type and encoding": "https://docs.mulesoft.com/mule-runtime/latest/dataweave-formats",
+    "Payload MIME type and encoding": "https://docs.mulesoft.com/dataweave/latest/dataweave-formats",
     "Variable scope and lifetime": "https://docs.mulesoft.com/mule-runtime/latest/about-mule-event"
    },
    "docs": [
@@ -4546,8 +4546,8 @@
     "Flows, private flows, subflows": "https://docs.mulesoft.com/mule-runtime/latest/about-flows",
     "Async scope": "https://docs.mulesoft.com/mule-runtime/latest/async-scope-reference",
     "Domain projects": "https://docs.mulesoft.com/mule-runtime/latest/shared-resources",
-    "The application descriptor (mule-artifact.json)": "https://docs.mulesoft.com/mule-runtime/latest/application-descriptor",
-    "Splitting configuration across files": "https://docs.mulesoft.com/mule-runtime/latest/mule-app-structure",
+    "The application descriptor (mule-artifact.json)": "https://docs.mulesoft.com/mule-runtime/latest/package-a-mule-application",
+    "Splitting configuration across files": "https://docs.mulesoft.com/mule-runtime/latest/modularizing-your-configuration-files-for-team-development",
     "Choosing flow, sub-flow, or private flow": "https://docs.mulesoft.com/mule-runtime/latest/about-flows"
    },
    "docs": [
@@ -4612,7 +4612,7 @@
     "Other routers (know they exist)": "https://docs.mulesoft.com/mule-runtime/latest/choice-router-concept",
     "Validation module": "https://docs.mulesoft.com/validation-connector/latest/",
     "Choosing a router": "https://docs.mulesoft.com/mule-runtime/latest/choice-router-concept",
-    "Combining validators (All / Any)": "https://docs.mulesoft.com/validations-module/latest/"
+    "Combining validators (All / Any)": "https://docs.mulesoft.com/validation-connector/latest/"
    },
    "docs": [
     {
@@ -4682,7 +4682,7 @@
     "Working with XML": "https://docs.mulesoft.com/dataweave/latest/dataweave-formats-xml",
     "Type coercion and formatting": "https://docs.mulesoft.com/dataweave/latest/dataweave-types",
     "Variables, functions, modules, lookup": "https://docs.mulesoft.com/dataweave/latest/dataweave-variables",
-    "Iteration functions at a glance": "https://docs.mulesoft.com/dataweave/latest/dw-core-functions",
+    "Iteration functions at a glance": "https://docs.mulesoft.com/dataweave/latest/dw-core",
     "Null handling and defaults": "https://docs.mulesoft.com/dataweave/latest/dataweave-cookbook-defaults",
     "Producing XML: attributes and repeated elements": "https://docs.mulesoft.com/dataweave/latest/dataweave-formats-xml"
    },
@@ -4715,8 +4715,8 @@
     "Web Service Consumer (SOAP)": "https://docs.mulesoft.com/web-service-consumer-connector/latest/",
     "File / FTP / SFTP connectors": "https://docs.mulesoft.com/file-connector/latest/",
     "JMS connector": "https://docs.mulesoft.com/jms-connector/latest/",
-    "Config vs. operation, and connection pooling": "https://docs.mulesoft.com/mule-runtime/latest/connectors",
-    "Reconnection strategies": "https://docs.mulesoft.com/mule-runtime/latest/reconnection-strategies-about",
+    "Config vs. operation, and connection pooling": "https://docs.mulesoft.com/connectors/",
+    "Reconnection strategies": "https://docs.mulesoft.com/mule-runtime/latest/reconnection-strategy-about",
     "Database connector: parameters and bulk": "https://docs.mulesoft.com/db-connector/latest/"
    },
    "docs": [
@@ -4786,17 +4786,17 @@
    "title": "Debugging and Troubleshooting Mule Applications",
    "weight": 5,
    "topicDocs": {
-    "The Mule debugger": "https://docs.mulesoft.com/anypoint-studio/latest/index",
-    "Maven dependency problems": "https://docs.mulesoft.com/anypoint-studio/latest/index",
+    "The Mule debugger": "https://docs.mulesoft.com/studio/visual-debugger-concept",
+    "Maven dependency problems": "https://docs.mulesoft.com/mule-runtime/latest/mmp-concept",
     "Reading Mule logs": "https://docs.mulesoft.com/mule-runtime/latest/logging-in-mule",
-    "The Studio debugger workflow": "https://docs.mulesoft.com/studio/latest/visual-debugger",
+    "The Studio debugger workflow": "https://docs.mulesoft.com/studio/visual-debugger-concept",
     "Anatomy of a log line": "https://docs.mulesoft.com/mule-runtime/latest/logging-in-mule",
-    "Common failure signatures": "https://docs.mulesoft.com/mule-runtime/latest/troubleshooting"
+    "Common failure signatures": "https://docs.mulesoft.com/mule-runtime/latest/mule-error-concept"
    },
    "docs": [
     {
      "label": "Anypoint Studio docs (debugger)",
-     "url": "https://docs.mulesoft.com/anypoint-studio/latest/"
+     "url": "https://docs.mulesoft.com/studio/"
     },
     {
      "label": "Logging in Mule",
@@ -4819,9 +4819,9 @@
     "CloudHub deployment": "https://docs.mulesoft.com/cloudhub/deploying-to-cloudhub",
     "Managing APIs — API Manager": "https://docs.mulesoft.com/api-manager/latest/latest-overview-concept",
     "Policies": "https://docs.mulesoft.com/mule-gateway/policies-included-directory",
-    "Client ID enforcement, contracts and SLA tiers": "https://docs.mulesoft.com/api-manager/latest/create-instance-task",
+    "Client ID enforcement, contracts and SLA tiers": "https://docs.mulesoft.com/api-manager/latest/defining-sla-tiers",
     "Two enforcement models: proxy vs. autodiscovery": "https://docs.mulesoft.com/api-manager/latest/",
-    "Policy categories": "https://docs.mulesoft.com/api-manager/latest/policies-landing-page",
+    "Policy categories": "https://docs.mulesoft.com/gateway/latest/policies-included-directory",
     "Deployment targets recap": "https://docs.mulesoft.com/runtime-manager/deployment-strategies"
    },
    "docs": [
