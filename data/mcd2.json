@@ -2381,7 +2381,7 @@
     "Performance and scaling": "https://docs.mulesoft.com/mule-runtime/latest/execution-engine",
     "Choosing a streaming strategy": "https://docs.mulesoft.com/mule-runtime/latest/streaming-about",
     "Retry, redelivery, and reconnection compared": "https://docs.mulesoft.com/mule-runtime/latest/reliability-patterns",
-    "Object Store for state and idempotency": "https://docs.mulesoft.com/object-store-connector/latest/",
+    "Object Store for state and idempotency": "https://docs.mulesoft.com/object-store/",
     "Back-pressure and concurrency": "https://docs.mulesoft.com/mule-runtime/latest/execution-engine"
    },
    "docs": [
@@ -2426,7 +2426,7 @@
     "Versioning and configuration": "https://semver.org/",
     "Classloader isolation and sharedLibraries": "https://docs.mulesoft.com/mule-runtime/latest/mmp-concept",
     "mvn deploy vs. mvn deploy -DmuleDeploy": "https://docs.mulesoft.com/mule-runtime/latest/deploy-to-cloudhub-2",
-    "Semantic versioning decisions": "https://docs.mulesoft.com/api-governance/"
+    "Semantic versioning decisions": "https://semver.org/"
    },
    "docs": [
     {
@@ -2500,9 +2500,9 @@
     "Anypoint Monitoring": "https://docs.mulesoft.com/monitoring/",
     "Alerts in Runtime Manager vs API Manager": "https://docs.mulesoft.com/runtime-manager/alerts-on-runtime-manager",
     "Business-level tracking": "https://docs.mulesoft.com/mule-runtime/latest/business-events",
-    "Where each alert lives": "https://docs.mulesoft.com/monitoring/",
+    "Where each alert lives": "https://docs.mulesoft.com/runtime-manager/alerts-on-runtime-manager",
     "What to log (and what not to)": "https://docs.mulesoft.com/mule-runtime/latest/logging-in-mule",
-    "Anypoint Monitoring vs. Functional Monitoring": "https://docs.mulesoft.com/monitoring/"
+    "Anypoint Monitoring vs. Functional Monitoring": "https://docs.mulesoft.com/api-functional-monitoring/"
    },
    "docs": [
     {
@@ -2537,9 +2537,9 @@
     "Coverage and the Maven build": "https://docs.mulesoft.com/munit/latest/coverage-maven-concept",
     "Production readiness checklist": "https://docs.mulesoft.com/api-manager/latest/latest-overview-concept",
     "Versioning and deprecation": "https://semver.org/",
-    "MUnit tools: mock, spy, verify, assert": "https://docs.mulesoft.com/munit/latest/",
+    "MUnit tools: mock, spy, verify, assert": "https://docs.mulesoft.com/munit/latest/munit-test-concept",
     "Coverage as a build gate": "https://docs.mulesoft.com/munit/latest/coverage-maven-concept",
-    "Deprecating an API version gracefully": "https://docs.mulesoft.com/api-manager/latest/"
+    "Deprecating an API version gracefully": "https://docs.mulesoft.com/api-manager/latest/latest-overview-concept"
    },
    "docs": [
     {
