@@ -28,14 +28,18 @@ for (const id of manifest.certs) {
     continue;
   }
 
-  for (const field of ["id", "name", "short", "vendor", "exam", "sections", "questions"]) {
+  // kind "book" entries have no real exam, so 'exam' and section weights don't apply
+  const isBook = cert.kind === "book";
+  const required = ["id", "name", "short", "vendor", "sections", "questions"];
+  if (!isBook) required.push("exam");
+  for (const field of required) {
     if (!(field in cert)) fail(`${id}.json: missing '${field}'`);
   }
   if (cert.id !== id) fail(`${id}.json: id '${cert.id}' does not match filename`);
   if ("vendor" in cert && (typeof cert.vendor !== "string" || !cert.vendor.trim())) {
     fail(`${id}.json: vendor must be a non-empty string (used to group certifications on the home page)`);
   }
-  if (!cert.exam || !cert.exam.questions || !cert.exam.minutes || !cert.exam.passPct) {
+  if (!isBook && (!cert.exam || !cert.exam.questions || !cert.exam.minutes || !cert.exam.passPct)) {
     fail(`${id}.json: exam must define questions, minutes, passPct`);
   }
 
@@ -45,7 +49,7 @@ for (const id of manifest.certs) {
     if (secIds.has(s.id)) fail(`${id}/${s.id}: duplicate section id`);
     secIds.add(s.id);
     weightSum += s.weight || 0;
-    if (!s.weight) fail(`${id}/${s.id}: missing weight`);
+    if (!s.weight && !isBook) fail(`${id}/${s.id}: missing weight`);
     if (!s.title) fail(`${id}/${s.id}: missing title`);
     if (!Array.isArray(s.objectives) || !s.objectives.length) fail(`${id}/${s.id}: missing objectives`);
     if (!s.notes || s.notes.length < 500) fail(`${id}/${s.id}: notes missing or suspiciously short`);
@@ -63,7 +67,7 @@ for (const id of manifest.certs) {
     }
   }
   // ccdak's official published weights sum to 99
-  if (weightSum !== 100 && !(id === "ccdak" && weightSum === 99)) {
+  if (!isBook && weightSum !== 100 && !(id === "ccdak" && weightSum === 99)) {
     fail(`${id}.json: section weights sum to ${weightSum}, expected 100`);
   }
 

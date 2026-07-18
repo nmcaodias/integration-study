@@ -86,6 +86,10 @@
     return cert.sections.find(s => s.id === sid);
   }
 
+  // a "book" entry offers notes, quizzes and flashcards but no exam simulation
+  function isBook(certId) { return CERTS[certId] && CERTS[certId].kind === "book"; }
+  function passPctOf(cert) { return (cert.exam && cert.exam.passPct) || 70; }
+
   function certStats(certId) {
     const cert = CERTS[certId];
     const cs = state[certId];
@@ -266,9 +270,9 @@
     if (parts[0] === "notes" && CERTS[parts[1]] && sectionById(CERTS[parts[1]], parts[2])) return renderNotes(parts[1], parts[2]);
     if (parts[0] === "quiz" && CERTS[parts[1]]) return renderQuizSetup(parts[1]);
     if (parts[0] === "quizrun") return session && session.mode === "quiz" ? renderQuizQuestion() : go("#/");
-    if (parts[0] === "exam" && CERTS[parts[1]]) return renderExamIntro(parts[1]);
+    if (parts[0] === "exam" && CERTS[parts[1]]) return isBook(parts[1]) ? go("#/cert/" + parts[1]) : renderExamIntro(parts[1]);
     if (parts[0] === "examrun") return session && session.mode === "exam" ? renderExamQuestion() : go("#/");
-    if (parts[0] === "history" && CERTS[parts[1]]) return renderHistory(parts[1]);
+    if (parts[0] === "history" && CERTS[parts[1]]) return isBook(parts[1]) ? go("#/cert/" + parts[1]) : renderHistory(parts[1]);
     renderHome();
   }
   function go(hash) { location.hash = hash; }
@@ -330,15 +334,19 @@
         const c = CERTS[id];
         const st = certStats(id);
         const pctSeen = st.totalQ ? Math.round(100 * st.attempted / st.totalQ) : 0;
+        const meta = isBook(id)
+          ? `${c.book ? esc(c.book.authors) + " · " : ""}${c.sections.length} chapters · ${st.totalQ} questions`
+          : `${c.exam.questions} questions · ${c.exam.minutes} min · ${c.exam.passPct}% to pass`;
         cards += `
         <a class="card card-link" href="#/cert/${id}">
           <h2>${esc(c.name)}</h2>
-          <p class="muted">${c.exam.questions} questions · ${c.exam.minutes} min · ${c.exam.passPct}% to pass</p>
+          <p class="muted">${meta}</p>
           <div class="mt-1">
             <div class="muted">Notes read: ${st.readCount}/${c.sections.length}</div>
             <div class="muted">Questions attempted: ${st.attempted}/${st.totalQ}</div>
             ${bar(pctSeen)}
-            ${st.examCount ? `<span class="pill ${st.bestExam >= c.exam.passPct ? "ok" : "warn"}">Best exam: ${st.bestExam}%</span>` : `<span class="pill">No exam attempts yet</span>`}
+            ${isBook(id) ? "" :
+              st.examCount ? `<span class="pill ${st.bestExam >= c.exam.passPct ? "ok" : "warn"}">Best exam: ${st.bestExam}%</span>` : `<span class="pill">No exam attempts yet</span>`}
           </div>
         </a>`;
       });
@@ -378,22 +386,29 @@
       </div>`;
     });
 
-    const lastExams = cs.exams.slice(-3).reverse().map(e =>
+    const book = isBook(certId);
+    const lastExams = book ? "" : cs.exams.slice(-3).reverse().map(e =>
       `<span class="pill ${e.pass ? "ok" : "bad"}">${e.pct}%</span>`).join(" ");
-    const rd = readiness(certId);
+    const rd = book ? null : readiness(certId);
     const fc = flashCounts(certId);
+
+    const subtitle = book
+      ? `${cert.book ? esc(cert.book.authors) + (cert.book.year ? " (" + cert.book.year + ")" : "") + " · " : ""}${cert.sections.length} chapters · ${cert.questions.length} questions`
+      : `Real exam: ${cert.exam.questions} questions · ${cert.exam.minutes} minutes · ${cert.exam.passPct}% to pass`;
 
     app.innerHTML = `
       <h1>${esc(cert.name)}</h1>
-      <p class="subtitle">Real exam: ${cert.exam.questions} questions · ${cert.exam.minutes} minutes · ${cert.exam.passPct}% to pass</p>
+      <p class="subtitle">${subtitle}</p>
       <div class="btn-row" style="margin-bottom:1.2rem">
         <a class="btn" href="#/quiz/${certId}">📝 Practice quiz</a>
         <button class="btn" id="weak-quiz" title="15 questions picked from your weakest and least-practiced areas">🎯 Practice weak areas</button>
         <a class="btn" href="#/flash/${certId}">🃏 Flashcards${fc.due + fc.fresh ? ` <span class="pill warn">${fc.due + fc.fresh}</span>` : ""}</a>
+        ${book ? "" : `
         <a class="btn" href="#/exam/${certId}">⏱️ Exam simulation</a>
-        <a class="btn secondary" href="#/history/${certId}">📈 Exam history ${lastExams ? "· " + lastExams : ""}</a>
+        <a class="btn secondary" href="#/history/${certId}">📈 Exam history ${lastExams ? "· " + lastExams : ""}</a>`}
       </div>
       ${st.attempted ? "" : `<p class="muted" style="margin-bottom:1rem">🎯 Weak-areas practice gets smarter as you answer questions — right now it's mostly random.</p>`}
+      ${book ? "" : `
       <div class="card readiness">
         <h2>Exam readiness <span class="pill ${rd.verdict[1]}">${rd.score}% · ${rd.verdict[0]}</span></h2>
         <div class="ready-bars">
@@ -404,20 +419,20 @@
         ${st.attempted ? `<p class="muted" style="margin-top:.6rem">Focus next: ${rd.weakest.map(w =>
           `<strong>${esc(w.sec.title)}</strong> (${Math.round(100 * w.accuracy)}% accuracy · ${Math.round(100 * w.coverage)}% attempted)`).join(" · ")}</p>`
         : `<p class="muted" style="margin-top:.6rem">Take quizzes and exam simulations to build up this score.</p>`}
-      </div>
+      </div>`}
       <div class="card">
         <h2>Topics</h2>
         ${rows}
       </div>
       <div class="card reset-zone">
         <h2>Reset progress</h2>
-        <p class="muted">Start over on any part of this certification. Exam readiness is computed from
-        quiz stats and exam history, so resetting those resets it too. Resets carry over to your
+        <p class="muted">Start over on any part of this ${book ? "book" : "certification"}. ${book ? "" : `Exam readiness is computed from
+        quiz stats and exam history, so resetting those resets it too. `}Resets carry over to your
         other synced devices.</p>
         <div class="btn-row">
           <button class="btn danger" id="reset-read">Reset notes read</button>
           <button class="btn danger" id="reset-quiz">Reset quiz stats</button>
-          <button class="btn danger" id="reset-exams">Reset exam history</button>
+          ${book ? "" : `<button class="btn danger" id="reset-exams">Reset exam history</button>`}
           <button class="btn danger" id="reset-all">Reset everything</button>
         </div>
       </div>`;
@@ -442,9 +457,11 @@
       renderCert(certId);
     };
     document.getElementById("reset-read").onclick = () => doReset(["read"], "the notes-read marks");
-    document.getElementById("reset-quiz").onclick = () => doReset(["qstats"], "quiz stats (per-topic percentages and readiness)");
-    document.getElementById("reset-exams").onclick = () => doReset(["exams"], "the exam history");
-    document.getElementById("reset-all").onclick = () => doReset(["read", "qstats", "exams", "srs"], "ALL progress (notes, quiz stats, exams, flashcards)");
+    document.getElementById("reset-quiz").onclick = () => doReset(["qstats"], book ? "quiz stats (per-topic percentages)" : "quiz stats (per-topic percentages and readiness)");
+    if (!book) document.getElementById("reset-exams").onclick = () => doReset(["exams"], "the exam history");
+    document.getElementById("reset-all").onclick = () => book
+      ? doReset(["read", "qstats", "srs"], "ALL progress (notes, quiz stats, flashcards)")
+      : doReset(["read", "qstats", "exams", "srs"], "ALL progress (notes, quiz stats, exams, flashcards)");
   }
 
   function renderNotes(certId, sid) {
@@ -459,7 +476,7 @@
     app.innerHTML = `
       <p class="muted"><a href="#/cert/${certId}">← ${esc(cert.short)}</a></p>
       <h1>${esc(sec.title)}</h1>
-      <p class="subtitle">${sec.weight ? sec.weight + "% of the exam · " : ""}Section ${idx + 1} of ${cert.sections.length} · <span class="muted">📖 next to a topic links to its official documentation</span></p>
+      <p class="subtitle">${sec.weight ? sec.weight + "% of the exam · " : ""}${isBook(certId) ? "Chapter" : "Section"} ${idx + 1} of ${cert.sections.length} · <span class="muted">📖 next to a topic links to its ${isBook(certId) ? "pattern page" : "official documentation"}</span></p>
       <div class="card">
         <h3>🎯 Exam objectives</h3>
         <ul class="objectives">${sec.objectives.map(o => `<li>${esc(o)}</li>`).join("")}</ul>
@@ -697,7 +714,7 @@
       <div class="card">
         <div class="score-hero">
           ${answered ? `
-          <div class="big ${pct >= cert.exam.passPct ? "pass" : "fail"}">${pct}%</div>
+          <div class="big ${pct >= passPctOf(cert) ? "pass" : "fail"}">${pct}%</div>
           <p class="muted">${s.correctCount} of ${answered} answered correctly</p>` : `
           <div class="big">–</div>
           <p class="muted">No questions answered</p>`}

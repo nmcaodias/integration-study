@@ -3,7 +3,9 @@
 A self-contained web app to study for integration certifications:
 **MuleSoft Certified Developer – Level 1**, **Level 2**, the
 **MuleSoft Platform Integration Architect**, the **MuleSoft Platform Architect**,
-and the **Confluent Certified Developer for Apache Kafka (CCDAK)**.
+and the **Confluent Certified Developer for Apache Kafka (CCDAK)** — plus a
+book-study tab for **Enterprise Integration Patterns** (Hohpe & Woolf), with
+notes, quizzes and flashcards per chapter (book tabs have no exam simulation).
 
 No build step and no backend — a static site whose content lives in JSON files, with optional
 cross-device progress sync through a private GitHub Gist.
@@ -72,10 +74,12 @@ or to migrate progress from an old local copy.
 All certification content lives in `data/`:
 
 - `data/certs.json` — the manifest: which certification files to load.
-- `data/mcd1.json`, `data/mcd2.json`, `data/mcia.json`, `data/ccdak.json`, `data/mcpa.json` —
-  one file per certification: exam metadata, a `vendor` (groups certifications on the home
-  page, e.g. "MuleSoft" / "Confluent"), sections (title, weight, objectives, notes HTML,
-  `topicDocs` documentation links), and the question bank.
+- `data/mcd1.json`, `data/mcd2.json`, `data/mcia.json`, `data/ccdak.json`, `data/mcpa.json`,
+  `data/eip.json` — one file per certification (or book): exam metadata, a `vendor` (groups
+  entries on the home page, e.g. "MuleSoft" / "Confluent" / "Books"), sections (title, weight,
+  objectives, notes HTML, `topicDocs` documentation links), and the question bank.
+  A file with `"kind": "book"` (like `eip.json`) needs no `exam` block and no section
+  weights — the app hides the exam simulation, exam history, and readiness score for it.
 
 ### Adding your own questions
 
@@ -93,7 +97,8 @@ Append to the `questions` array of the certification's JSON file:
 ```
 
 `id` must be unique; `section` must be an existing section id (L1 `s1`–`s12`, L2 `d1`–`d5`,
-Integration Architect `a1`–`a10`, CCDAK `k1`–`k6`, Platform Architect `p1`–`p9`); `answer`
+Integration Architect `a1`–`a10`, CCDAK `k1`–`k6`, Platform Architect `p1`–`p9`,
+EIP `b1`–`b9`); `answer`
 is the 0-based index of the correct option. For a multi-select question, replace `answer`
 with `"answers": [0, 2]` (array of correct indexes — scored all-or-nothing). A whole new
 certification = a new JSON file with the same shape plus an entry in `data/certs.json`.
