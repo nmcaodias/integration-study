@@ -14,52 +14,76 @@
    "section": "p1",
    "q": "A Node.js microservice must become a governed node of the application network with rate limiting and client ID enforcement. What is required?",
    "options": [
-    "Rewrite it as a Mule application",
+    "Rewrite it as a Mule application so autodiscovery can enforce the policies inside the runtime",
     "Front it with an API proxy or Flex Gateway managed by API Manager, where the policies execute",
-    "Add autodiscovery to the Node.js code",
-    "Nothing; policies apply automatically to any HTTP service"
+    "Embed the Anypoint autodiscovery element in the Node.js service so it registers with API Manager",
+    "Nothing extra — API Manager discovers and polices any HTTP endpoint on the network automatically"
    ],
    "answer": 1,
-   "explanation": "Non-Mule implementations join the governed network behind a gateway: an API Manager-generated proxy or Flex Gateway enforces policies in front of them. Autodiscovery/embedded enforcement is a Mule-runtime capability."
+   "explanation": "Non-Mule implementations join the governed network behind a gateway: an API Manager-generated proxy or Flex Gateway enforces policies in front of them. Autodiscovery/embedded enforcement is a Mule-runtime capability.",
+   "optionNotes": [
+    "A full rewrite is unnecessary — a gateway governs the service as-is; rewriting is cost without benefit.",
+    "Correct — non-Mule implementations join the governed network behind an API-Manager proxy or Flex Gateway that enforces the policies.",
+    "Autodiscovery is a Mule-runtime capability; a Node.js process cannot host the autodiscovery element.",
+    "Policies never apply automatically; an endpoint is governed only once it sits behind a managed API instance."
+   ]
   },
   {
    "id": "pa-002",
    "section": "p1",
    "q": "An API named 'Mobile Orders API' formats order data specifically for the iOS app and calls the Order Fulfillment API for all logic. Which layer is it, and what would make it an anti-pattern?",
    "options": [
-    "System API; calling other APIs",
-    "Experience API; it becomes an anti-pattern if it starts calling backend systems directly or accumulating business logic",
-    "Process API; being channel-specific",
-    "It doesn't fit the model"
+    "System API; it would be an anti-pattern the moment it began orchestrating logic across several other APIs",
+    "Experience API; it's an anti-pattern if it calls backends directly or hoards business logic",
+    "Process API; it becomes an anti-pattern when tied to one specific channel's data shape",
+    "It sits outside the three-layer model, since API-led connectivity has no place for channel-specific facades"
    ],
    "answer": 1,
-   "explanation": "Channel-specific shaping over a Process API = Experience layer done right. Reaching past the layers into backends, or hoarding orchestration logic per channel, are the classic Experience-layer violations."
+   "explanation": "Channel-specific shaping over a Process API = Experience layer done right. Reaching past the layers into backends, or hoarding orchestration logic per channel, are the classic Experience-layer violations.",
+   "optionNotes": [
+    "System APIs unlock one backend; orchestrating across APIs is Process-layer work, not the violation described.",
+    "Correct — channel-specific shaping over a Process API is the Experience layer; reaching into backends or hoarding logic breaks it.",
+    "Process APIs are deliberately channel-agnostic; being channel-specific is an Experience trait, not a Process anti-pattern.",
+    "It does fit — a channel-specific facade over a Process API is exactly an Experience API."
+   ]
   },
   {
    "id": "pa-003",
    "section": "p1",
    "q": "In API Manager terminology, what is an 'API instance'?",
    "options": [
-    "A running Mule worker",
-    "A managed deployment of an API specification version in a specific environment — the unit to which policies, SLA tiers, contracts, and alerts attach",
-    "A RAML file",
-    "A client application"
+    "The running Mule worker or replica that hosts the deployed API implementation",
+    "A managed deployment of one API spec version in a specific environment",
+    "The RAML/OAS specification document authored in Design Center before deployment",
+    "A registered consumer application that holds a contract and client credentials"
    ],
    "answer": 1,
-   "explanation": "Governance objects hang off the instance: one spec version typically has one instance per environment, each with its own api.id, policies, tiers, and analytics."
+   "explanation": "Governance objects hang off the instance: one spec version typically has one instance per environment, each with its own api.id, policies, tiers, and analytics.",
+   "optionNotes": [
+    "That's a runtime unit in Runtime Manager, not the governance object in API Manager.",
+    "Correct — the instance is the governed deployment of a spec version per environment; policies/tiers/contracts/alerts hang off it.",
+    "The spec is the design artifact; the instance is what you create in API Manager from it.",
+    "A client application consumes an instance via a contract; it isn't the instance itself."
+   ]
   },
   {
    "id": "pa-004",
    "section": "p1",
    "q": "Which Anypoint Platform components does an API consumer team primarily interact with when discovering and gaining access to an existing API?",
    "options": [
-    "Runtime Manager and Access Management",
+    "Runtime Manager and Access Management, where deployments and org permissions are administered",
     "Exchange (discovery, docs, mocking, access request) and then the API's portal/console",
-    "Anypoint Studio only",
-    "Design Center"
+    "Anypoint Studio only, importing the API's connector to start building against it",
+    "Design Center, where the API specification is authored and the mocking service lives"
    ],
    "answer": 1,
-   "explanation": "Consumers live in Exchange: find the asset, read auto-generated docs, try the mocking service/console, and request access with a client application. Runtime Manager and Design Center are provider-side tools."
+   "explanation": "Consumers live in Exchange: find the asset, read auto-generated docs, try the mocking service/console, and request access with a client application. Runtime Manager and Design Center are provider-side tools.",
+   "optionNotes": [
+    "Those are operator/admin tools; a consumer discovering an API starts in Exchange, not Runtime Manager.",
+    "Correct — consumers find, read, mock, and request access to the API in Exchange, then use its portal/console.",
+    "Studio is for builders; a consumer doesn't need the IDE to discover or request access.",
+    "Design Center is for API designers/authors, not consumers seeking access to a published API."
+   ]
   },
   {
    "id": "pa-005",
@@ -83,13 +107,19 @@
    "section": "p2",
    "q": "Six months after buying Anypoint Platform, an organization has three teams building integrations with inconsistent standards and near-zero reuse. Which foundation is missing?",
    "options": [
-    "More vCores",
-    "A Center for Enablement establishing shared standards, publishing reusable assets, and measuring consumption",
-    "A bigger Exchange license",
-    "Switching to Runtime Fabric"
+    "More vCores, so the teams have capacity to deploy additional integrations",
+    "A Center for Enablement that sets shared standards and curates reusable assets",
+    "A larger Exchange entitlement so the teams can hold many more published assets between them",
+    "Switching deployments to Runtime Fabric to standardize the runtime plane"
    ],
    "answer": 1,
-   "explanation": "Inconsistency and no reuse are organizational gaps, not technology gaps — exactly what a C4E exists to fix: standards, enablement, productized assets, and consumption KPIs."
+   "explanation": "Inconsistency and no reuse are organizational gaps, not technology gaps — exactly what a C4E exists to fix: standards, enablement, productized assets, and consumption KPIs.",
+   "optionNotes": [
+    "Capacity isn't the gap — reuse and standards are; more vCores won't create consistency.",
+    "Correct — a C4E sets shared standards, curates reusable assets, and measures consumption to drive reuse.",
+    "Exchange size isn't limiting reuse; the missing piece is the operating model that drives publishing/consuming.",
+    "RTF is a deployment choice; it doesn't address inconsistent standards or near-zero reuse."
+   ]
   },
   {
    "id": "pa-007",
@@ -113,78 +143,114 @@
    "section": "p2",
    "q": "What is MuleSoft Catalyst?",
    "options": [
-    "A deployment technology for containers",
-    "MuleSoft's delivery methodology organized around business outcomes, technology delivery, and organizational enablement, with playbooks in the Catalyst Knowledge Hub",
-    "A monitoring product",
-    "A RAML linting tool"
+    "A container-based deployment technology for running Mule apps on a Kubernetes cluster you manage",
+    "MuleSoft's outcomes-driven delivery methodology with Knowledge Hub playbooks",
+    "A monitoring and observability product within the Anypoint Platform suite",
+    "A RAML/OAS linting tool that enforces API design standards during authoring"
    ],
    "answer": 1,
-   "explanation": "Catalyst is the outcome-focused delivery approach: tie the application network to measurable business results, deliver the technology, and build the operating model (C4E, training) — with published playbooks."
+   "explanation": "Catalyst is the outcome-focused delivery approach: tie the application network to measurable business results, deliver the technology, and build the operating model (C4E, training) — with published playbooks.",
+   "optionNotes": [
+    "That describes a Runtime Fabric-style deployment target, not Catalyst.",
+    "Correct — Catalyst is MuleSoft's outcomes-driven delivery methodology, with playbooks in the Knowledge Hub.",
+    "Monitoring is Anypoint Monitoring/Visualizer; Catalyst is a methodology, not a product.",
+    "Linting is a design-time tooling concern, unrelated to the Catalyst methodology."
+   ]
   },
   {
    "id": "pa-009",
    "section": "p2",
    "q": "A European insurer requires: platform management metadata in the EU, and claim payloads never leaving its German data centers. Which architecture satisfies BOTH?",
    "options": [
-    "US control plane + CloudHub Frankfurt",
+    "US control plane with CloudHub workers in the Frankfurt region for the claim payloads",
     "EU control plane + customer-hosted (or RTF) runtimes in the German data centers",
-    "PCE + CloudHub",
-    "EU control plane + CloudHub US-East with encryption"
+    "Private Cloud Edition for metadata plus CloudHub for the claim payloads",
+    "EU control plane with CloudHub US-East workers, encrypting claim payloads in transit and at rest"
    ],
    "answer": 1,
-   "explanation": "EU control plane keeps metadata in Europe; runtimes on the insurer's German infrastructure keep payloads exactly where required (business data only flows through the runtime plane)."
+   "explanation": "EU control plane keeps metadata in Europe; runtimes on the insurer's German infrastructure keep payloads exactly where required (business data only flows through the runtime plane).",
+   "optionNotes": [
+    "A US control plane puts management metadata outside the EU, violating the first requirement.",
+    "Correct — EU control plane keeps metadata in-region; customer-hosted/RTF runtimes keep payloads in the German data centers.",
+    "PCE is a self-managed control plane; the need is EU-region metadata, and CloudHub payloads would still leave the DCs.",
+    "US-East workers process payloads outside Germany; encryption doesn't satisfy residency for the payload location."
+   ]
   },
   {
    "id": "pa-010",
    "section": "p2",
    "q": "Which data does the MuleSoft-hosted control plane NEVER process?",
    "options": [
-    "API specifications",
-    "Deployment configurations",
+    "API specifications and fragments published to Exchange",
+    "Deployment configurations and application properties",
     "Business payloads flowing through deployed APIs",
-    "Monitoring metadata"
+    "Monitoring and analytics metadata from deployed apps"
    ],
    "answer": 2,
-   "explanation": "Payloads stay in the runtime plane. The control plane manages metadata: designs, configurations, deployment state, analytics aggregates."
+   "explanation": "Payloads stay in the runtime plane. The control plane manages metadata: designs, configurations, deployment state, analytics aggregates.",
+   "optionNotes": [
+    "Specs live in the control plane (Exchange/Design Center) — it does process these.",
+    "Deployment configuration is control-plane data used to orchestrate runtimes.",
+    "Correct — runtime payloads stay in the runtime plane; the MuleSoft control plane never sees business data.",
+    "Monitoring metadata is aggregated in the control plane; it's metadata, not the payloads themselves."
+   ]
   },
   {
    "id": "pa-011",
    "section": "p2",
    "q": "Platform users must authenticate through the corporate Azure AD with MFA. API consumers must obtain OAuth tokens from the same Azure AD. How do these map to platform capabilities?",
    "options": [
-    "Both are 'identity management'",
-    "Users → identity management (SAML/OIDC federation); API consumers → client management (Azure AD as external OAuth client provider) + token-validating policies",
-    "Both are 'client management'",
-    "Neither is supported"
+    "Both map to identity management, since both authenticate against the same Azure AD",
+    "Users -> identity management (federation); consumers -> client management + a token policy",
+    "Both map to client management, since Azure AD issues the OAuth tokens involved",
+    "Neither integration is supported; Anypoint federates only its own built-in identity provider store"
    ],
    "answer": 1,
-   "explanation": "Two distinct integrations: identity management federates HUMAN logins; client management delegates API client registration/token issuance, with OAuth/JWT policies validating those tokens at gateways."
+   "explanation": "Two distinct integrations: identity management federates HUMAN logins; client management delegates API client registration/token issuance, with OAuth/JWT policies validating those tokens at gateways.",
+   "optionNotes": [
+    "Platform-user login is identity management, but consumer OAuth is client management — different capabilities.",
+    "Correct — user federation is identity management; external OAuth for consumers is client management plus a token policy.",
+    "User authentication isn't client management; only the API-consumer side maps there.",
+    "Both are supported — Anypoint federates identity providers and integrates external OAuth client providers."
+   ]
   },
   {
    "id": "pa-012",
    "section": "p2",
    "q": "Where do Anypoint MQ messages and Object Store v2 data reside?",
    "options": [
-    "In the control plane region",
-    "In the runtime-plane REGION where they are provisioned — a data-residency and DR consideration",
-    "Replicated globally",
-    "On the developer's machine"
+    "In the MuleSoft-hosted control plane region where the whole platform is administered",
+    "In the runtime-plane region where they are provisioned (a residency/DR factor)",
+    "Replicated globally across all Anypoint regions for low-latency access",
+    "On the developer's machine until the application is redeployed"
    ],
    "answer": 1,
-   "explanation": "MQ and OSv2 are regional platform services in the runtime plane. Residency requirements constrain the region choice, and DR must account for their regional scope (no automatic cross-region replication)."
+   "explanation": "MQ and OSv2 are regional platform services in the runtime plane. Residency requirements constrain the region choice, and DR must account for their regional scope (no automatic cross-region replication).",
+   "optionNotes": [
+    "They're runtime-plane services; the control plane holds metadata, not MQ/OS data.",
+    "Correct — MQ and Object Store v2 data live in the runtime region you provision, which matters for residency and DR.",
+    "There's no global replication; data stays in its provisioned region.",
+    "These are hosted platform services, not local developer state."
+   ]
   },
   {
    "id": "pa-013",
    "section": "p3",
    "q": "Which artifact do API consumers depend on, making it the pivot of change management?",
    "options": [
-    "The Mule project source code",
+    "The Mule project source code that implements the API's flows",
     "The published API specification (contract) in Exchange",
-    "The worker size",
-    "The flow names"
+    "The worker size and vCore allocation chosen at deploy time",
+    "The flow and processor names inside the implementation"
    ],
    "answer": 1,
-   "explanation": "Consumers bind to the contract, never the implementation. Implementations can be rewritten freely as long as the spec's behavior holds; spec changes are what require versioning discipline."
+   "explanation": "Consumers bind to the contract, never the implementation. Implementations can be rewritten freely as long as the spec's behavior holds; spec changes are what require versioning discipline.",
+   "optionNotes": [
+    "Consumers never see the implementation source; it can change freely behind a stable contract.",
+    "Correct — consumers depend on the published spec (contract) in Exchange, so changing it is what breaks them.",
+    "Worker sizing is an operational detail invisible to consumers.",
+    "Internal flow names are implementation detail, decoupled from the contract."
+   ]
   },
   {
    "id": "pa-014",
@@ -208,26 +274,38 @@
    "section": "p3",
    "q": "An API's JSON response field 'deliveryDate' must change from date to date-time, and a new optional 'trackingUrl' field is added. What versioning applies?",
    "options": [
-    "One MINOR bump covers both",
-    "The type change is BREAKING → new MAJOR version (new instance, e.g. /v2); the optional field alone would have been MINOR",
-    "Two PATCH bumps",
-    "No version change needed"
+    "One MINOR version bump, since both are additive schema refinements",
+    "Breaking type change -> new MAJOR version (the optional field alone would be MINOR)",
+    "Two PATCH bumps, one per field touched in the response",
+    "No version change is needed at all — response schema edits don't affect the contract"
    ],
    "answer": 1,
-   "explanation": "Changing a field's type breaks existing consumers' parsers → MAJOR. Additive optional fields are MINOR. The breaking change dominates: v2 alongside v1 with a deprecation window."
+   "explanation": "Changing a field's type breaks existing consumers' parsers → MAJOR. Additive optional fields are MINOR. The breaking change dominates: v2 alongside v1 with a deprecation window.",
+   "optionNotes": [
+    "A type change from date to date-time breaks existing consumers, so it can't be MINOR.",
+    "Correct — the breaking type change forces a new MAJOR version; a lone optional field would only be MINOR.",
+    "PATCH is for non-contract fixes; changing a field's type is a breaking contract change.",
+    "Response schema is part of the contract; a breaking change absolutely requires versioning."
+   ]
   },
   {
    "id": "pa-016",
    "section": "p3",
    "q": "Sales and Billing model 'Customer' differently, and both are valid for their domains. The architect must integrate them. Which approach follows bounded-context best practice?",
    "options": [
-    "Force both teams onto one enterprise Customer model",
-    "Keep each context's model; translate explicitly at the API boundary (System/Process APIs act as the anti-corruption layer)",
-    "Let each API return raw backend formats",
-    "Store both models in one database"
+    "Force both teams onto one enterprise-wide Customer model they must share",
+    "Keep each context's model; translate at the API boundary (anti-corruption layer)",
+    "Let each API return the raw backend format and push all of the mapping onto its consumers",
+    "Store both models in one shared database and reconcile them there"
    ],
    "answer": 1,
-   "explanation": "Bounded contexts keep domain models honest; the integration layer owns the translation. Forcing one model creates the slow, bloated enterprise-model problem; raw formats leak backend coupling."
+   "explanation": "Bounded contexts keep domain models honest; the integration layer owns the translation. Forcing one model creates the slow, bloated enterprise-model problem; raw formats leak backend coupling.",
+   "optionNotes": [
+    "A single enterprise model over genuinely different domains creates a committee bottleneck and lossy compromises.",
+    "Correct — preserve each bounded context and translate at the boundary; the API layer is the anti-corruption layer.",
+    "Leaking raw backend formats couples consumers to internals — the opposite of the goal.",
+    "One shared database re-creates the tight coupling bounded contexts are meant to avoid."
+   ]
   },
   {
    "id": "pa-017",
@@ -251,39 +329,57 @@
    "section": "p3",
    "q": "How does HTTP-native optimistic concurrency prevent two clients from silently overwriting each other's updates?",
    "options": [
-    "The server locks the record during editing",
-    "The server versions the entity with an ETag; clients send If-Match on updates, and a stale ETag is rejected with 412 Precondition Failed",
-    "Clients coordinate through a queue",
-    "It cannot be prevented in REST"
+    "The server locks the record while a client is editing it",
+    "The server ETags the entity; a stale If-Match update is rejected with 412",
+    "Clients coordinate updates through a shared message queue",
+    "It cannot be prevented in REST without pessimistic server-side record locking during edits"
    ],
    "answer": 1,
-   "explanation": "ETag/If-Match is REST's lost-update protection: the update succeeds only if the entity is still the version the client read. No locks, fully stateless."
+   "explanation": "ETag/If-Match is REST's lost-update protection: the update succeeds only if the entity is still the version the client read. No locks, fully stateless.",
+   "optionNotes": [
+    "Server-side locking is pessimistic and stateful — not the HTTP-native optimistic approach.",
+    "Correct — ETag + If-Match implements optimistic concurrency; a stale version is rejected with 412.",
+    "Queues serialize work but aren't the HTTP concurrency mechanism the question asks about.",
+    "REST prevents it natively via conditional requests (ETag/If-Match)."
+   ]
   },
   {
    "id": "pa-019",
    "section": "p3",
    "q": "Common enterprise types (Money, Address) must be reused across dozens of API specs. What is the platform-idiomatic mechanism?",
    "options": [
-    "Copy-paste into each RAML",
-    "Publish them as API fragments (RAML libraries/data types) in Exchange and import them as dependencies in each spec",
-    "A shared database schema",
-    "One giant enterprise spec containing all APIs"
+    "Copy-paste the type definitions into each RAML that needs them",
+    "Publish them as reusable API fragments in Exchange and import them as dependencies",
+    "Define a shared database schema all APIs read the types from",
+    "Maintain one giant enterprise specification containing every API and all of its shared types"
    ],
    "answer": 1,
-   "explanation": "Exchange fragments are the shared kernel: versioned, discoverable, imported by any spec. Copy-paste drifts; a mega-spec couples everything."
+   "explanation": "Exchange fragments are the shared kernel: versioned, discoverable, imported by any spec. Copy-paste drifts; a mega-spec couples everything.",
+   "optionNotes": [
+    "Copy-paste drifts across specs and defeats reuse and central updates.",
+    "Correct — publish reusable types as Exchange fragments and import them as versioned dependencies.",
+    "A database schema is a runtime concern, not a way to share API type definitions.",
+    "One monolithic spec couples unrelated APIs and blocks independent evolution."
+   ]
   },
   {
    "id": "pa-020",
    "section": "p4",
    "q": "Business process: 'When a customer registers on the website, create them in Salesforce, subscribe them in Marketo, and return a welcome package to the site.' Identify the API set following API-led principles.",
    "options": [
-    "One API doing everything",
-    "Customers SAPI (Salesforce) + Marketing SAPI (Marketo) + Customer Registration PAPI orchestrating both + Web Registration xAPI for the site",
-    "Two Experience APIs calling the backends",
-    "A DataGraph endpoint"
+    "One API that connects to both Salesforce and Marketo and serves the web site directly in one flow",
+    "System APIs for Salesforce/Marketo + a Process API orchestrating them + a Web xAPI",
+    "Two Experience APIs, each calling one backend and returning to the site",
+    "A single DataGraph endpoint federating Salesforce and Marketo"
    ],
    "answer": 1,
-   "explanation": "Each system of record gets a System API, the cross-system business process is a Process API, and the channel gets its Experience API. This maximizes reuse (the SAPIs and PAPI serve future channels)."
+   "explanation": "Each system of record gets a System API, the cross-system business process is a Process API, and the channel gets its Experience API. This maximizes reuse (the SAPIs and PAPI serve future channels).",
+   "optionNotes": [
+    "One do-everything API collapses the layers and loses reuse and separation of concerns.",
+    "Correct — System APIs per backend, a Process API orchestrating the registration, and an Experience API for the site.",
+    "Experience APIs shouldn't call backends directly; orchestration belongs in a Process API.",
+    "DataGraph federates read queries; it doesn't orchestrate a multi-step write process with side effects."
+   ]
   },
   {
    "id": "pa-021",
@@ -306,39 +402,57 @@
    "section": "p4",
    "q": "A 'Customer 360' page needs read-only data assembled from four existing, managed REST APIs (profile, orders, support tickets, preferences), and the mobile team wants to fetch only the fields it displays. Which platform capability fits best?",
    "options": [
-    "A new Process API with 4 Scatter-Gather branches",
-    "Anypoint DataGraph: unify the four APIs into one graph and let the client query exactly the fields it needs in one request",
-    "Four separate REST calls from the app",
-    "An ETL batch job"
+    "A new Process API running four Scatter-Gather branches to assemble the whole page on every request",
+    "Anypoint DataGraph: query exactly the fields needed across the four APIs in one request",
+    "Four separate REST calls made directly from the mobile app",
+    "A nightly ETL batch job pre-assembling the Customer 360 view"
    ],
    "answer": 1,
-   "explanation": "Read-only aggregation of existing managed REST APIs with client-driven field selection is DataGraph's exact sweet spot — one GraphQL query, no new API to build and maintain. Writes or business logic would instead demand a Process API."
+   "explanation": "Read-only aggregation of existing managed REST APIs with client-driven field selection is DataGraph's exact sweet spot — one GraphQL query, no new API to build and maintain. Writes or business logic would instead demand a Process API.",
+   "optionNotes": [
+    "A hand-built aggregator works but is more code to own than DataGraph for read-only field selection.",
+    "Correct — DataGraph federates the read-only APIs so the client fetches just the fields it needs in one query.",
+    "Four client-side calls push orchestration and latency onto the app.",
+    "Batch ETL serves stale data and adds a store to maintain — wrong for a live page."
+   ]
   },
   {
    "id": "pa-023",
    "section": "p4",
    "q": "When is Anypoint DataGraph NOT appropriate?",
    "options": [
-    "Aggregating read-only data across REST APIs",
-    "When the operation UPDATES multiple systems with business rules and compensation logic",
-    "When consumers want to pick specific fields",
-    "When source APIs are already in Exchange"
+    "When aggregating read-only reference data across several existing REST APIs",
+    "When the operation UPDATES multiple systems and needs compensation logic",
+    "When consumers want to select only specific fields",
+    "When the source APIs are already published in Exchange"
    ],
    "answer": 1,
-   "explanation": "DataGraph is a read-oriented query layer. Multi-system writes with business logic are orchestration — a Process API's job."
+   "explanation": "DataGraph is a read-oriented query layer. Multi-system writes with business logic are orchestration — a Process API's job.",
+   "optionNotes": [
+    "Read-only aggregation is exactly DataGraph's sweet spot.",
+    "Correct — multi-system writes with orchestration/compensation belong in a Process API, not DataGraph.",
+    "Field selection is a core DataGraph benefit, not a disqualifier.",
+    "Being in Exchange is a prerequisite for DataGraph, not a reason to avoid it."
+   ]
   },
   {
    "id": "pa-024",
    "section": "p4",
    "q": "Which data model should the Orders System API (over SAP) expose?",
    "options": [
-    "Raw SAP IDoc structures",
-    "A clean canonical model of the ORDER bounded context, hiding SAP's native representation",
-    "The mobile app's display model",
-    "Whatever DataWeave outputs by default"
+    "The raw SAP IDoc structures exactly as SAP emits them",
+    "A clean canonical ORDER model that hides SAP's native representation",
+    "The mobile app's display-specific model",
+    "Whatever structure DataWeave happens to produce from the SAP response by default"
    ],
    "answer": 1,
-   "explanation": "System APIs translate system-native formats into the domain's canonical types — that's how they insulate the network from the backend. Raw IDocs leak coupling; channel models belong upstairs."
+   "explanation": "System APIs translate system-native formats into the domain's canonical types — that's how they insulate the network from the backend. Raw IDocs leak coupling; channel models belong upstairs.",
+   "optionNotes": [
+    "Leaking IDoc structures couples every consumer to SAP internals.",
+    "Correct — a System API exposes a clean canonical model of its domain, insulating consumers from the backend.",
+    "Channel-specific shaping belongs in an Experience API, not a System API.",
+    "An accidental default mapping is not a deliberate, stable contract."
+   ]
   },
   {
    "id": "pa-025",
@@ -362,26 +476,38 @@
    "section": "p4",
    "q": "Two channels (web, kiosk) need the same order-placement logic with different response shapes. Where does the logic live and what differs per channel?",
    "options": [
-    "Duplicate the logic in two Experience APIs",
-    "The logic lives ONCE in the Place Order Process API; each channel gets a thin Experience API doing only its formatting",
-    "Both channels call the System APIs directly",
-    "The kiosk reuses the web API"
+    "Duplicate the order-placement logic inside each channel's Experience API",
+    "Logic lives once in the Place Order Process API; each channel gets a thin xAPI",
+    "Have both channels call the System APIs directly and orchestrate all the steps themselves",
+    "Let the kiosk reuse the web channel's Experience API unchanged"
    ],
    "answer": 1,
-   "explanation": "Reuse pressure pushes logic down into the Process layer; channel differences stay thin at the Experience layer. Duplicating orchestration per channel is the exact failure API-led prevents."
+   "explanation": "Reuse pressure pushes logic down into the Process layer; channel differences stay thin at the Experience layer. Duplicating orchestration per channel is the exact failure API-led prevents.",
+   "optionNotes": [
+    "Duplicating logic per channel invites drift and double maintenance.",
+    "Correct — shared logic in one Process API; each channel's Experience API only reshapes the response.",
+    "Bypassing the Process API scatters orchestration into channels.",
+    "Reusing one channel's Experience API forces the wrong response shape on the other."
+   ]
   },
   {
    "id": "pa-027",
    "section": "p4",
    "q": "A proposed 'Process API' receives a request from the web app and simply forwards it unchanged to a single System API. What should the architect recommend?",
    "options": [
-    "Keep it; every call must traverse all three layers",
-    "Question the layer: a pure pass-through adds latency and operations cost without value — let the Experience API call the System API directly (layers are a means, not a mandate)",
-    "Convert it to a batch job",
-    "Merge all three into one API"
+    "Keep it as-is, since every call is expected to traverse all three API-led layers",
+    "Drop it: a value-free pass-through adds latency and cost with no benefit",
+    "Convert the pass-through Process API into a scheduled batch job",
+    "Merge all three APIs into a single combined API"
    ],
    "answer": 1,
-   "explanation": "API-led is guidance, not liturgy: each layer must earn its hop. Pass-through layers are candidates for removal — documented as a justified exception."
+   "explanation": "API-led is guidance, not liturgy: each layer must earn its hop. Pass-through layers are candidates for removal — documented as a justified exception.",
+   "optionNotes": [
+    "The three layers are guidance, not a rule that every call must cross all of them.",
+    "Correct — a value-free pass-through should be removed; skip the layer rather than pay its cost.",
+    "Batching changes the interaction model and doesn't address the needless hop.",
+    "Merging everything discards the reuse and separation the layers provide where they do add value."
+   ]
   },
   {
    "id": "pa-028",
@@ -391,101 +517,149 @@
     "salesforce-api-v2-final",
     "Customers System API (Salesforce)",
     "Mobile Customers API",
-    "CRM Helper"
+    "CRM Helper Service"
    ],
    "answer": 1,
-   "explanation": "Names should convey the domain object, the layer, and (for System APIs) the system of record — making the network self-describing in Exchange. Channel names belong to Experience APIs only."
+   "explanation": "Names should convey the domain object, the layer, and (for System APIs) the system of record — making the network self-describing in Exchange. Channel names belong to Experience APIs only.",
+   "optionNotes": [
+    "Encodes the tool and a version label but not the layer or business capability.",
+    "Correct — 'Customers System API (Salesforce)' names the capability, the layer, and the backing system.",
+    "Implies an Experience/channel API, misrepresenting a System API over Salesforce.",
+    "Vague and non-standard; conveys neither layer nor domain."
+   ]
   },
   {
    "id": "pa-029",
    "section": "p5",
    "q": "The same Orders API v2 runs in dev, test, and prod. How is it governed in API Manager?",
    "options": [
-    "One API instance shared by all environments",
-    "One API instance PER environment, each with its own api.id, policies, SLA tiers, contracts, and alerts",
-    "Policies are set in the RAML",
-    "Only prod needs an instance"
+    "One API instance shared across dev, test, and prod",
+    "One API instance per environment, each with its own api.id and policies",
+    "Policies declared inside the API's RAML specification",
+    "An instance only in production; the lower environments simply run unmanaged"
    ],
    "answer": 1,
-   "explanation": "Instances are environment-scoped. Autodiscovery pairs each deployment with its environment's instance via the api.id property; promotion copies governance config between environments."
+   "explanation": "Instances are environment-scoped. Autodiscovery pairs each deployment with its environment's instance via the api.id property; promotion copies governance config between environments.",
+   "optionNotes": [
+    "A shared instance can't hold per-environment api.id, policies, or contracts.",
+    "Correct — one instance per environment, each with its own api.id, policies, SLA tiers, contracts, and alerts.",
+    "Policies are configured on the API instance in API Manager, not in the RAML.",
+    "Lower environments also need managed instances to test policy behavior before prod."
+   ]
   },
   {
    "id": "pa-030",
    "section": "p5",
    "q": "NFR: 'Backend must never receive more than 100 requests/second, but short bursts from consumers should be absorbed rather than rejected.' Which policy?",
    "options": [
-    "Rate limiting",
-    "Spike control — it smooths bursts by queuing/delaying requests within limits instead of hard-rejecting",
-    "Client ID enforcement",
-    "CORS"
+    "Rate limiting, which hard-rejects any requests received over the configured limit",
+    "Spike control — it smooths bursts by briefly delaying within limits",
+    "Client ID enforcement to identify each caller",
+    "A CORS policy to control browser origins"
    ],
    "answer": 1,
-   "explanation": "Rate limiting REJECTS excess in a window; spike control SHAPES traffic to a sustainable pace, absorbing bursts. 'Protect the backend, don't reject bursts' is the spike-control signature."
+   "explanation": "Rate limiting REJECTS excess in a window; spike control SHAPES traffic to a sustainable pace, absorbing bursts. 'Protect the backend, don't reject bursts' is the spike-control signature.",
+   "optionNotes": [
+    "Rate limiting rejects the surplus outright, so it can't absorb bursts.",
+    "Correct — spike control smooths bursts by briefly queuing/delaying within limits instead of hard-rejecting.",
+    "Client ID enforcement is about identity, not shaping throughput.",
+    "CORS governs cross-origin browser calls, unrelated to backend rate protection."
+   ]
   },
   {
    "id": "pa-031",
    "section": "p5",
    "q": "Security mandates that EVERY API instance in production must enforce TLS and client authentication, present and future, without relying on each team remembering. Which capability implements this?",
    "options": [
-    "A wiki page of standards",
-    "Automated policies applied at the organization/environment level to all API instances",
-    "Manually applying policies each release",
-    "A custom connector"
+    "A wiki page documenting the required security standards for every team to follow",
+    "Automated org/environment-level policies applied to every API instance",
+    "Manually applying the policies to each API on every release",
+    "A custom connector each team adds to its implementation"
    ],
    "answer": 1,
-   "explanation": "Automated policies are governance-at-scale: applied centrally, they attach to every current and future instance in scope, closing the 'team forgot the auth policy' hole."
+   "explanation": "Automated policies are governance-at-scale: applied centrally, they attach to every current and future instance in scope, closing the 'team forgot the auth policy' hole.",
+   "optionNotes": [
+    "Documentation relies on people remembering — exactly what the requirement rules out.",
+    "Correct — automated (org/environment-level) policies apply to all instances, present and future, without per-team effort.",
+    "Manual per-release application is error-prone and doesn't cover future instances automatically.",
+    "A connector is implementation code, not enforced governance across all instances."
+   ]
   },
   {
    "id": "pa-032",
    "section": "p5",
    "q": "Match the enforcement option to the scenario: (1) Mule app on CloudHub; (2) legacy .NET service that cannot be modified; (3) high-throughput edge in a Kubernetes cluster.",
    "options": [
-    "1=proxy, 2=embedded, 3=proxy",
-    "1=embedded gateway via autodiscovery, 2=API proxy generated by API Manager, 3=Flex Gateway",
-    "All three require Flex Gateway",
-    "1=Flex, 2=embedded, 3=proxy"
+    "1=API proxy, 2=embedded gateway, 3=API proxy",
+    "1=embedded autodiscovery, 2=API-Manager proxy, 3=Flex Gateway",
+    "All three enforcement points handled through a Flex Gateway deployed at the edge",
+    "1=Flex Gateway, 2=embedded gateway, 3=API proxy"
    ],
    "answer": 1,
-   "explanation": "Mule apps enforce policies in-process (autodiscovery); unmodifiable non-Mule backends get a proxy in front; Flex Gateway is the lightweight Envoy-based option for high-performance/K8s edges."
+   "explanation": "Mule apps enforce policies in-process (autodiscovery); unmodifiable non-Mule backends get a proxy in front; Flex Gateway is the lightweight Envoy-based option for high-performance/K8s edges.",
+   "optionNotes": [
+    "A CloudHub Mule app can enforce embedded via autodiscovery; a proxy adds a needless hop.",
+    "Correct — Mule app -> embedded autodiscovery; unmodifiable .NET -> API-Manager proxy; K8s edge -> Flex Gateway.",
+    "Flex Gateway fits the edge case but not the Mule app, which enforces embedded.",
+    "The .NET service can't run embedded policies, and the Mule app shouldn't need Flex."
+   ]
   },
   {
    "id": "pa-033",
    "section": "p5",
    "q": "Why is passing client_id/client_secret as QUERY PARAMETERS discouraged?",
    "options": [
-    "Query parameters are slower",
-    "Credentials end up in URLs — cached, logged by proxies and access logs, visible in browser history; headers (or Basic auth) keep them out of URLs",
-    "APIs cannot read query parameters",
-    "It breaks rate limiting"
+    "Query parameters are parsed more slowly than headers",
+    "Secrets in the URL get cached, logged, and stored in browser history",
+    "APIs are unable to read values from query parameters",
+    "Query parameters interfere with the gateway's rate-limiting counters and quotas"
    ],
    "answer": 1,
-   "explanation": "URL components leak into logs and caches everywhere along the path. The client ID enforcement policy supports headers/Basic auth precisely to avoid credential exposure."
+   "explanation": "URL components leak into logs and caches everywhere along the path. The client ID enforcement policy supports headers/Basic auth precisely to avoid credential exposure.",
+   "optionNotes": [
+    "Performance isn't the concern; exposure of secrets in URLs is.",
+    "Correct — secrets in URLs get cached, logged, and stored in history; headers keep them out of the URL.",
+    "APIs can read query params fine; the problem is leakage, not capability.",
+    "Rate limiting keys off identity/contract, not param placement."
+   ]
   },
   {
    "id": "pa-034",
    "section": "p5",
    "q": "A consumer with valid credentials and an approved Silver-tier contract (100 req/min) sends 150 requests in a minute. What do they receive for the excess?",
    "options": [
-    "401 Unauthorized",
+    "401 Unauthorized, since the tier no longer applies",
     "429 Too Many Requests once the tier limit is exceeded",
-    "500 Internal Server Error",
-    "403 Forbidden for all requests"
+    "500 Internal Server Error from the overloaded backend",
+    "403 Forbidden on every request for the rest of the minute"
    ],
    "answer": 1,
-   "explanation": "Valid identity + exceeded quota = 429 from the SLA-based rate limiting policy. 401 would mean invalid/missing credentials; the first 100 requests succeed normally."
+   "explanation": "Valid identity + exceeded quota = 429 from the SLA-based rate limiting policy. 401 would mean invalid/missing credentials; the first 100 requests succeed normally.",
+   "optionNotes": [
+    "Credentials are valid, so it isn't a 401 authentication failure.",
+    "Correct — traffic beyond the SLA-tier limit is throttled with HTTP 429.",
+    "The gateway rejects the surplus before the backend, so it isn't a 500.",
+    "403 is authorization denial; exceeding a rate limit returns 429, and only the excess is rejected."
+   ]
   },
   {
    "id": "pa-035",
    "section": "p5",
    "q": "Which sequence correctly describes how a new consumer gains governed access to an API?",
    "options": [
-    "Email the API team for credentials",
-    "Find the API in Exchange → request access with a client application → select an SLA tier → contract approved (auto or manual) → use the issued client_id/secret per the API's documented mechanism",
-    "Deploy their own proxy",
-    "Clone the API's repository"
+    "Email the API team and wait for credentials to be issued",
+    "Find it in Exchange, request access with an app, pick a tier, use the issued credentials",
+    "Deploy a personal proxy in front of the API to obtain access",
+    "Clone the API's implementation repository and run it locally"
    ],
    "answer": 1,
-   "explanation": "The self-service access flow runs through Exchange and creates a contract binding the client app to the instance and tier — which the gateway then enforces and attributes analytics to."
+   "explanation": "The self-service access flow runs through Exchange and creates a contract binding the client app to the instance and tier — which the gateway then enforces and attributes analytics to.",
+   "optionNotes": [
+    "Manual email issuance bypasses the governed self-service contract flow.",
+    "Correct — discover in Exchange, request access with an app, pick a tier, get the contract approved, then use the credentials.",
+    "Consumers don't front the API with their own proxy to gain access.",
+    "Access is granted via a contract, not by cloning and self-hosting the implementation."
+   ]
   },
   {
    "id": "pa-036",
@@ -508,52 +682,76 @@
    "section": "p5",
    "q": "Where should policy enforcement happen for an Experience API, given that its Process and System APIs are also managed?",
    "options": [
-    "Only at the Experience API; inner APIs trust the outer layer",
-    "At EVERY layer — each API instance enforces its own authentication/limits (zero trust inside the network)",
-    "Only at the System APIs",
-    "Policies are optional for internal APIs"
+    "Only at the Experience API, since the inner Process and System APIs trust it",
+    "At every layer — each instance enforces its own auth/limits (zero trust)",
+    "Only at the System APIs closest to the data",
+    "Policies are optional for internal-only APIs"
    ],
    "answer": 1,
-   "explanation": "Each node of the application network is independently governed: internal callers authenticate too. 'Internal = trusted' invites lateral movement and unaccounted load."
+   "explanation": "Each node of the application network is independently governed: internal callers authenticate too. 'Internal = trusted' invites lateral movement and unaccounted load.",
+   "optionNotes": [
+    "Trusting the outer layer leaves inner APIs exposed if that layer is bypassed.",
+    "Correct — enforce at every layer; each instance authenticates and limits its own callers (zero trust).",
+    "Guarding only System APIs leaves Process/Experience layers unprotected.",
+    "Internal APIs still need enforcement; 'internal' is not a security boundary."
+   ]
   },
   {
    "id": "pa-038",
    "section": "p5",
    "q": "What is the effect of applying a policy to a RESOURCE LEVEL rather than the whole API instance?",
    "options": [
-    "The policy runs twice",
-    "The policy applies only to matching methods/paths (e.g., POST /orders), leaving other operations unaffected",
-    "It disables the policy",
-    "Resource-level policies exist only in custom policies"
+    "The policy executes twice per request",
+    "It applies only to the matched methods/paths, not to other operations",
+    "It disables the policy for the whole instance",
+    "Resource-level scoping is available only when you write a custom policy by hand"
    ],
    "answer": 1,
-   "explanation": "Resource-level configuration scopes a policy to specific method+path patterns — e.g., stricter auth on writes than reads within one API."
+   "explanation": "Resource-level configuration scopes a policy to specific method+path patterns — e.g., stricter auth on writes than reads within one API.",
+   "optionNotes": [
+    "Scoping to a resource doesn't duplicate execution.",
+    "Correct — a resource-level policy runs only for the matched methods/paths, not the whole API.",
+    "Scoping narrows where the policy runs; it doesn't turn it off.",
+    "Resource-level application works for included policies too, not just custom ones."
+   ]
   },
   {
    "id": "pa-039",
    "section": "p5",
    "q": "The security team requires OAuth for external consumers, but gateway latency must stay minimal and the authorization server must not be called on every request. Which policy fits?",
    "options": [
-    "Basic authentication",
-    "JWT validation — signatures verified locally against the provider's JWKS; expiry and claims checked without per-request round trips",
-    "OAuth introspection on every call",
-    "IP allowlisting"
+    "Basic authentication against the corporate user directory",
+    "JWT validation — verified locally via JWKS, with no per-request round trip",
+    "OAuth token introspection called on every request",
+    "IP allowlisting of the known consumer networks"
    ],
    "answer": 1,
-   "explanation": "Self-contained JWTs validate cryptographically at the gateway using cached JWKS keys — OAuth-grade security without the introspection round trip. Opaque tokens would force per-request calls."
+   "explanation": "Self-contained JWTs validate cryptographically at the gateway using cached JWKS keys — OAuth-grade security without the introspection round trip. Opaque tokens would force per-request calls.",
+   "optionNotes": [
+    "Basic auth isn't OAuth and sends credentials on every call.",
+    "Correct — JWT validation checks signatures/claims locally via JWKS, avoiding a per-request auth-server hop.",
+    "Introspection on every call adds exactly the latency and load the requirement forbids.",
+    "IP allowlisting is network-level and doesn't provide OAuth consumer identity."
+   ]
   },
   {
    "id": "pa-040",
    "section": "p5",
    "q": "An API owner needs per-consumer usage reports to plan capacity and identify who a v1 retirement would affect. Where does this data come from?",
    "options": [
-    "Worker CPU metrics",
-    "API Manager analytics — invocations are attributed to client applications via their credentials/contracts",
-    "The application log files",
-    "Exchange download counts"
+    "Worker CPU and memory metrics from the runtime",
+    "API Manager analytics — calls attributed to client apps by their credentials",
+    "The application's own log files, grepped per consumer",
+    "Exchange asset download counts for the API"
    ],
    "answer": 1,
-   "explanation": "Because consumers present client credentials, gateway analytics break traffic down per client application — the basis for capacity, chargeback, and deprecation-impact decisions."
+   "explanation": "Because consumers present client credentials, gateway analytics break traffic down per client application — the basis for capacity, chargeback, and deprecation-impact decisions.",
+   "optionNotes": [
+    "CPU metrics describe infrastructure health, not per-consumer usage.",
+    "Correct — API Manager analytics attribute calls to client apps through their credentials/contracts.",
+    "Logs can show requests but aren't the governed per-consumer usage report.",
+    "Download counts measure discovery interest, not runtime API consumption."
+   ]
   },
   {
    "id": "pa-041",
@@ -577,13 +775,19 @@
    "section": "p6",
    "q": "What is the main advantage of enforcing policies via autodiscovery (embedded gateway) instead of an API proxy for a Mule implementation?",
    "options": [
-    "Proxies support more policies",
-    "No extra network hop or separate app to operate — policies run inside the implementation itself",
-    "Embedded enforcement needs no credentials",
-    "Proxies cannot do rate limiting"
+    "Proxies support a larger set of policies than embedded autodiscovery enforcement does",
+    "No extra hop or separate app — policies run inside the implementation",
+    "Embedded enforcement needs no platform credentials",
+    "Only proxies are capable of rate limiting"
    ],
    "answer": 1,
-   "explanation": "For Mule apps, the embedded gateway avoids the proxy's added latency, cost, and operational surface. Proxies exist for backends you can't modify."
+   "explanation": "For Mule apps, the embedded gateway avoids the proxy's added latency, cost, and operational surface. Proxies exist for backends you can't modify.",
+   "optionNotes": [
+    "Both enforcement modes support the same policy set; that isn't the advantage.",
+    "Correct — embedded enforcement avoids a separate proxy app and its network hop.",
+    "Embedded still needs Anypoint client credentials plus api.id to register.",
+    "Rate limiting works in both proxy and embedded modes."
+   ]
   },
   {
    "id": "pa-043",
@@ -607,104 +811,152 @@
    "section": "p6",
    "q": "A regulated customer must run integrations in their own AWS account on Kubernetes, managed from the Anypoint control plane. Which option and trade-off apply?",
    "options": [
-    "CloudHub — no trade-offs",
-    "Runtime Fabric — platform-managed deployments on customer infrastructure, but the customer owns cluster operations (nodes, upgrades, capacity)",
-    "PCE — identical to CloudHub",
-    "Standalone runtimes are the only choice"
+    "CloudHub — with no operational trade-offs to consider",
+    "Runtime Fabric — platform-managed on customer-owned cluster infrastructure",
+    "Private Cloud Edition, which is operationally identical to CloudHub in every respect",
+    "Customer-hosted standalone runtimes, the only supported option here"
    ],
    "answer": 1,
-   "explanation": "RTF gives control-plane management with runtime-plane ownership: flexibility and residency at the cost of operating the underlying cluster — the classic control/effort trade-off vs CloudHub."
+   "explanation": "RTF gives control-plane management with runtime-plane ownership: flexibility and residency at the cost of operating the underlying cluster — the classic control/effort trade-off vs CloudHub.",
+   "optionNotes": [
+    "CloudHub runs on MuleSoft's infrastructure, not the customer's AWS/K8s account.",
+    "Correct — Runtime Fabric gives control-plane-managed deployments on customer infra; the customer runs the cluster.",
+    "PCE is a self-managed control plane and is not identical to CloudHub operationally.",
+    "Standalone runtimes work but aren't the platform-managed K8s option the scenario asks for."
+   ]
   },
   {
    "id": "pa-045",
    "section": "p6",
    "q": "Which test belongs at which level? (1) Choice router picks the right branch per input; (2) the deployed API rejects requests lacking client credentials; (3) the DataWeave mapping handles a null address",
    "options": [
-    "1=integration, 2=unit, 3=integration",
-    "1=MUnit unit test, 2=integration test against the managed instance (policy behavior), 3=MUnit unit test",
-    "All MUnit",
-    "All integration"
+    "1=integration test, 2=unit test, 3=integration test",
+    "MUnit units for router/mapping; an integration test for policy enforcement",
+    "All three are covered by MUnit unit tests alone",
+    "All three are covered by integration tests alone"
    ],
    "answer": 1,
-   "explanation": "Flow logic and mappings are unit-testable with mocks. Policy enforcement exists only on the deployed, managed instance — verifying it is integration testing by definition."
+   "explanation": "Flow logic and mappings are unit-testable with mocks. Policy enforcement exists only on the deployed, managed instance — verifying it is integration testing by definition.",
+   "optionNotes": [
+    "Router branch selection and DataWeave null handling are unit-level, not integration.",
+    "Correct — logic/mapping are MUnit units; policy enforcement on the deployed instance is an integration test.",
+    "Policy enforcement can only be verified against the deployed, managed instance — not a pure unit test.",
+    "Pure logic and mapping are wasteful to test only at the integration level."
+   ]
   },
   {
    "id": "pa-046",
    "section": "p6",
    "q": "Which components form the canonical automated pipeline for Mule applications?",
    "options": [
-    "Manual Studio exports and Runtime Manager uploads",
-    "CI server driving mule-maven-plugin (build/deploy) + munit-maven-plugin (test/coverage gates) + Exchange as artifact repo, authenticated with a Connected App",
-    "FTP uploads to workers",
-    "Copying JARs between environments by hand"
+    "Manual Anypoint Studio exports uploaded through Runtime Manager by hand each time",
+    "CI + mule-maven-plugin + munit + Exchange, authenticated by a Connected App",
+    "Scheduled FTP uploads of the JAR to each worker",
+    "Copying built JARs between environments manually"
    ],
    "answer": 1,
-   "explanation": "The Maven plugins cover build-test-deploy for every target; Exchange stores versioned artifacts; connected apps provide machine credentials. Any CI product orchestrates the same spine."
+   "explanation": "The Maven plugins cover build-test-deploy for every target; Exchange stores versioned artifacts; connected apps provide machine credentials. Any CI product orchestrates the same spine.",
+   "optionNotes": [
+    "Manual exports aren't a repeatable automated pipeline.",
+    "Correct — CI + mule-maven-plugin + munit-maven-plugin + Exchange, authenticated by a Connected App.",
+    "FTP to workers bypasses the platform's deploy and governance tooling.",
+    "Hand-copying artifacts breaks build-once/deploy-many and traceability."
+   ]
   },
   {
    "id": "pa-047",
    "section": "p6",
    "q": "Immediately after deploying a new version, the pipeline should verify the API is functional before promoting. Which check fits?",
    "options": [
-    "Re-running MUnit",
-    "A smoke/functional test calling the deployed instance's endpoints (optionally BAT monitors) and asserting real responses",
-    "Checking the JAR file size",
-    "Reading the RAML again"
+    "Re-running the same MUnit unit suite that already passed during the build stage",
+    "A smoke test calling the deployed endpoints and asserting real responses",
+    "Checking the built JAR's file size is within range",
+    "Re-reading the RAML specification for syntax errors"
    ],
    "answer": 1,
-   "explanation": "Post-deployment verification must exercise the RUNNING system — deployed app, applied policies, real connectivity. MUnit already ran at build time and proves nothing about the deployment."
+   "explanation": "Post-deployment verification must exercise the RUNNING system — deployed app, applied policies, real connectivity. MUnit already ran at build time and proves nothing about the deployment.",
+   "optionNotes": [
+    "MUnit ran pre-deploy against mocks; it doesn't prove the live deployment works.",
+    "Correct — a smoke/functional test hits the deployed endpoints and asserts real responses before promotion.",
+    "JAR size tells you nothing about runtime behavior.",
+    "RAML linting is a design-time check, not post-deploy verification."
+   ]
   },
   {
    "id": "pa-048",
    "section": "p6",
    "q": "Why should the same application artifact (JAR) be promoted across environments rather than rebuilt per environment?",
    "options": [
-    "Rebuilding is slow",
-    "Only the promoted artifact was actually tested; rebuilds risk deploying something different (dependencies, timing) to production — environment differences belong in externalized configuration",
-    "Maven forbids rebuilding",
-    "JARs cannot be rebuilt"
+    "Rebuilding per environment is simply slower than reusing a JAR",
+    "Only the promoted artifact was tested; rebuilds risk shipping something untested",
+    "Maven does not permit rebuilding the same module twice",
+    "Mule JARs are technically impossible to rebuild"
    ],
    "answer": 1,
-   "explanation": "Build-once/promote guarantees production runs the tested bits. Per-environment rebuilds reintroduce variability exactly where it hurts most."
+   "explanation": "Build-once/promote guarantees production runs the tested bits. Per-environment rebuilds reintroduce variability exactly where it hurts most.",
+   "optionNotes": [
+    "Speed is minor; the real risk is shipping an untested artifact.",
+    "Correct — promote the one tested artifact; rebuilds can differ, and env specifics belong in externalized config.",
+    "Maven can rebuild freely; the issue is trust, not tooling limits.",
+    "JARs can be rebuilt; doing so just yields a potentially different, untested artifact."
+   ]
   },
   {
    "id": "pa-049",
    "section": "p7",
    "q": "An API processes small requests but must sustain high TPS with high availability. Which CloudHub sizing approach fits?",
    "options": [
-    "One 4-vCore worker",
-    "Multiple smaller workers (horizontal scaling) behind the load balancer — throughput scales out and a worker loss doesn't take the API down",
-    "One 0.1-vCore worker",
-    "Vertical scaling only"
+    "A single 4-vCore worker sized for peak load",
+    "Multiple smaller workers (horizontal scale-out) for throughput and HA",
+    "A single 0.1-vCore worker with autoscaling disabled",
+    "Vertical scaling of a single large worker"
    ],
    "answer": 1,
-   "explanation": "TPS + availability = horizontal. One big worker is a single point of failure regardless of size; multiple workers give both capacity and redundancy across AZs."
+   "explanation": "TPS + availability = horizontal. One big worker is a single point of failure regardless of size; multiple workers give both capacity and redundancy across AZs.",
+   "optionNotes": [
+    "One big worker is a single point of failure and caps HA.",
+    "Correct — small requests at high TPS with HA favor multiple workers (scale-out + resilience).",
+    "A single tiny worker neither sustains high TPS nor provides availability.",
+    "Vertical scaling adds capacity to one instance but no redundancy."
+   ]
   },
   {
    "id": "pa-050",
    "section": "p7",
    "q": "A flow parses occasional 800 MB files. TPS is low. Which sizing approach fits?",
    "options": [
-    "Many 0.1-vCore workers",
-    "A larger worker (vertical scaling) for memory headroom — plus streaming so the file never fully materializes",
-    "The shared load balancer",
-    "More availability zones"
+    "Many small 0.1-vCore workers sharing the load",
+    "A larger worker (vertical scaling) for memory headroom, plus streaming",
+    "The shared load balancer to spread the work",
+    "More availability zones for the deployment"
    ],
    "answer": 1,
-   "explanation": "Large payload processing is a per-instance memory/CPU problem: scale UP (and stream). Horizontal scaling doesn't give any single worker more memory."
+   "explanation": "Large payload processing is a per-instance memory/CPU problem: scale UP (and stream). Horizontal scaling doesn't give any single worker more memory.",
+   "optionNotes": [
+    "Many tiny workers can't each hold an 800 MB file in memory.",
+    "Correct — low TPS but large payloads call for a bigger worker plus streaming to bound memory.",
+    "A load balancer distributes requests; it doesn't solve per-request memory needs.",
+    "More AZs add availability, not the memory headroom a large file requires."
+   ]
   },
   {
    "id": "pa-051",
    "section": "p7",
    "q": "An app uses VM queues to buffer work between its flows on CloudHub 1.0 with 2 workers. Which platform feature makes those messages survive worker restarts AND be consumable by both workers?",
    "options": [
-    "Object Store v2",
+    "Object Store v2 for cross-worker shared state",
     "Enabling persistent queues for the application",
-    "The dedicated load balancer",
-    "Static IPs"
+    "The dedicated load balancer in front of the workers",
+    "Static IP addresses for the application"
    ],
    "answer": 1,
-   "explanation": "CH 1.0 persistent queues back VM queues with a durable cloud service shared across the app's workers — surviving restarts and distributing work. Without it, VM queues are per-worker memory."
+   "explanation": "CH 1.0 persistent queues back VM queues with a durable cloud service shared across the app's workers — surviving restarts and distributing work. Without it, VM queues are per-worker memory.",
+   "optionNotes": [
+    "Object Store shares state but isn't the VM-queue durability/consumption mechanism asked about.",
+    "Correct — persistent queues make VM messages survive restarts and be consumable across both workers.",
+    "A DLB handles ingress routing, not queue durability.",
+    "Static IPs address egress identity, not message persistence."
+   ]
   },
   {
    "id": "pa-052",
@@ -745,65 +997,95 @@
    "section": "p7",
    "q": "Which state survives a CloudHub worker crash WITHOUT any extra design?",
    "options": [
-    "Mule event variables in flight",
-    "In-memory VM queue contents",
+    "Mule event variables held in flight while the request is being processed",
+    "In-memory (transient) VM queue contents",
     "Object Store v2 entries and persistent-queue messages",
-    "The payload of the request being processed"
+    "The payload of the request currently being processed"
    ],
    "answer": 2,
-   "explanation": "Platform-persisted state (OSv2, persistent queues) survives; anything in worker memory — in-flight events, transient queues — is gone. Reliability patterns exist precisely to persist-before-processing."
+   "explanation": "Platform-persisted state (OSv2, persistent queues) survives; anything in worker memory — in-flight events, transient queues — is gone. Reliability patterns exist precisely to persist-before-processing.",
+   "optionNotes": [
+    "In-flight variables live in the worker's memory and are lost on crash.",
+    "Transient VM queues aren't persisted, so their contents don't survive a crash.",
+    "Correct — Object Store v2 and persistent queues are durable, surviving a worker crash without extra design.",
+    "An in-progress request's payload is in memory and is lost if the worker dies."
+   ]
   },
   {
    "id": "pa-055",
    "section": "p7",
    "q": "A production deployment consists of: one worker, calling one on-prem system through one VPN tunnel. List the single points of failure.",
    "options": [
-    "None — CloudHub is HA by default",
-    "The single worker, the single VPN tunnel, and the single backend — each needs redundancy or an accepted, documented risk",
-    "Only the worker",
-    "Only the VPN"
+    "None — CloudHub already provides high availability for this topology by default",
+    "The single worker, VPN tunnel, and backend — each needs redundancy",
+    "Only the single worker is a point of failure",
+    "Only the single VPN tunnel is a point of failure"
    ],
    "answer": 1,
-   "explanation": "SPOF analysis spans the whole path: 2+ workers fix the first; redundant tunnels/routes the second; the backend's availability strategy (or buffering toward it) the third."
+   "explanation": "SPOF analysis spans the whole path: 2+ workers fix the first; redundant tunnels/routes the second; the backend's availability strategy (or buffering toward it) the third.",
+   "optionNotes": [
+    "A one-worker, one-tunnel, one-backend chain is not HA by default.",
+    "Correct — all three single elements are SPOFs; each needs redundancy or an explicit accepted risk.",
+    "The worker isn't the only SPOF — the tunnel and backend are too.",
+    "The tunnel is one SPOF among three, not the only one."
+   ]
   },
   {
    "id": "pa-056",
    "section": "p7",
    "q": "Two applications must both be reachable on port 443 under one custom domain, with paths /orders and /customers routed to each app. How is this achieved on CloudHub?",
    "options": [
-    "Impossible",
+    "It is impossible to host two apps under one domain on port 443",
     "A Dedicated Load Balancer with mapping rules routing paths to each app's workers (VPC required)",
-    "Two shared load balancers",
-    "A domain project"
+    "Two shared load balancers, one per application",
+    "A Mule domain project shared between the apps"
    ],
    "answer": 1,
-   "explanation": "DLB mapping rules translate external paths/domains to internal app endpoints — the CloudHub answer to path-based routing under one branded domain."
+   "explanation": "DLB mapping rules translate external paths/domains to internal app endpoints — the CloudHub answer to path-based routing under one branded domain.",
+   "optionNotes": [
+    "It's entirely possible with a Dedicated Load Balancer.",
+    "Correct — a DLB (which requires a VPC) maps /orders and /customers to each app under one domain on 443.",
+    "The shared load balancer can't serve a custom domain with path routing; and you don't get two of them.",
+    "A domain project shares runtime configuration, not external URL routing."
+   ]
   },
   {
    "id": "pa-057",
    "section": "p8",
    "q": "Product data changes nightly, is requested 50,000×/day via GET, and freshness within 24 h is acceptable. The optimization must be configurable by the API owner WITHOUT touching the implementation. Which mechanism?",
    "options": [
-    "Cache scope in the flow",
-    "HTTP Caching policy on the API instance in API Manager",
-    "A bigger worker",
-    "An Object Store watermark"
+    "A Cache scope inside the implementation's flow",
+    "An HTTP Caching policy on the API instance in API Manager",
+    "A larger CloudHub worker to serve the high read volume faster",
+    "An Object Store watermark on the product data"
    ],
    "answer": 1,
-   "explanation": "The gateway-level HTTP Caching policy serves repeated GETs without invoking the implementation and is applied/tuned in API Manager — no code change, no redeploy. The Cache scope would require touching the flow."
+   "explanation": "The gateway-level HTTP Caching policy serves repeated GETs without invoking the implementation and is applied/tuned in API Manager — no code change, no redeploy. The Cache scope would require touching the flow.",
+   "optionNotes": [
+    "A Cache scope lives in the code, so tuning it means changing the implementation.",
+    "Correct — the HTTP Caching policy is owner-configurable on the instance without touching the implementation.",
+    "A bigger worker adds capacity but isn't the configurable caching mechanism required.",
+    "Watermarking tracks sync progress; it isn't a response cache."
+   ]
   },
   {
    "id": "pa-058",
    "section": "p8",
    "q": "Inside a flow, one of three backend calls (a currency-rate lookup) is expensive and its result is valid for an hour. What optimizes ONLY that call?",
    "options": [
-    "HTTP Caching policy on the whole API",
-    "A Cache scope wrapping just the currency lookup, keyed by currency pair, TTL ~1 h (shared object store if multi-worker)",
-    "maxConcurrency=1",
-    "A Batch Job"
+    "An HTTP Caching policy applied across the whole API instance in API Manager",
+    "A Cache scope around only the currency lookup, keyed by pair (~1 h TTL)",
+    "Setting maxConcurrency=1 on the flow",
+    "Moving the lookup into a Batch Job"
    ],
    "answer": 1,
-   "explanation": "Sub-flow granularity is the Cache scope's territory: cache the expensive piece, keep the rest fresh. Gateway caching would wrongly cache the whole composed response."
+   "explanation": "Sub-flow granularity is the Cache scope's territory: cache the expensive piece, keep the rest fresh. Gateway caching would wrongly cache the whole composed response.",
+   "optionNotes": [
+    "A policy on the whole API caches every response, not just the one expensive call.",
+    "Correct — a Cache scope around only the currency lookup, keyed by pair with a ~1 h TTL, optimizes exactly that call.",
+    "maxConcurrency throttles concurrency; it doesn't cache a result.",
+    "A Batch Job is for bulk record processing, not memoizing a single lookup."
+   ]
   },
   {
    "id": "pa-059",
@@ -843,26 +1125,38 @@
    "section": "p8",
    "q": "When a backend is down, the business prefers showing slightly stale reference data over an error. Which pattern implements this?",
    "options": [
-    "Fail immediately with 500",
-    "Fallback to last-known-good cached data (e.g., First Successful: live call, then cache read) with staleness indicated where appropriate",
-    "Retry forever",
-    "Queue the GET requests"
+    "Fail immediately with a 500 error whenever the backend is unavailable or slow",
+    "Fall back to last-known-good cached data and flag staleness",
+    "Retry the backend indefinitely until it recovers",
+    "Queue incoming GET requests until the backend returns"
    ],
    "answer": 1,
-   "explanation": "Graceful degradation: serve the cached copy when live fails. The First Successful router (or try/fallback logic) with a cache/OS-backed copy is the idiomatic Mule construction."
+   "explanation": "Graceful degradation: serve the cached copy when live fails. The First Successful router (or try/fallback logic) with a cache/OS-backed copy is the idiomatic Mule construction.",
+   "optionNotes": [
+    "Failing hard contradicts the goal of degrading gracefully to stale data.",
+    "Correct — fall back to cached last-known-good data (First Successful) and signal staleness where it matters.",
+    "Infinite retries hang the caller instead of returning something useful.",
+    "Queuing GETs stalls responses rather than serving cached data now."
+   ]
   },
   {
    "id": "pa-062",
    "section": "p8",
    "q": "What does horizontal scaling do for p99 LATENCY of a single, sequential request chain?",
    "options": [
-    "Reduces it linearly with worker count",
-    "Approximately nothing — it raises throughput and availability; single-request latency needs caching, parallelism, or fewer hops",
-    "Doubles it",
-    "Eliminates it"
+    "It reduces p99 latency roughly linearly with worker count",
+    "Little — it raises throughput and availability, not single-request latency",
+    "It roughly doubles single-request latency",
+    "It eliminates latency entirely"
    ],
    "answer": 1,
-   "explanation": "More instances process more requests concurrently, but each request still walks the same sequential path. Latency engineering and capacity engineering are different levers."
+   "explanation": "More instances process more requests concurrently, but each request still walks the same sequential path. Latency engineering and capacity engineering are different levers.",
+   "optionNotes": [
+    "Adding workers doesn't speed up one sequential request chain.",
+    "Correct — horizontal scaling helps throughput/availability; per-request latency needs caching, parallelism, or fewer hops.",
+    "More workers don't add latency to a single request either.",
+    "Latency can't be eliminated; work still takes time on the critical path."
+   ]
   },
   {
    "id": "pa-063",
@@ -887,12 +1181,18 @@
    "q": "Which source answers each question? (1) 'Which client apps drive 80% of traffic?' (2) 'Is worker memory trending toward exhaustion?' (3) 'What does the real call graph between our APIs look like?'",
    "options": [
     "1=Visualizer, 2=Exchange, 3=API analytics",
-    "1=API Manager analytics, 2=Anypoint Monitoring, 3=Anypoint Visualizer",
-    "1=Runtime Manager, 2=Visualizer, 3=BAT",
-    "All three from application logs"
+    "1=API analytics, 2=Anypoint Monitoring, 3=Anypoint Visualizer",
+    "1=Runtime Manager, 2=Anypoint Visualizer, 3=API Functional Monitoring (BAT)",
+    "All three answered from the application log files"
    ],
    "answer": 1,
-   "explanation": "Consumer attribution lives in gateway analytics; resource trends in Anypoint Monitoring; the traffic-derived dependency graph is Visualizer."
+   "explanation": "Consumer attribution lives in gateway analytics; resource trends in Anypoint Monitoring; the traffic-derived dependency graph is Visualizer.",
+   "optionNotes": [
+    "Exchange doesn't show worker memory, and Visualizer isn't the traffic-by-consumer source.",
+    "Correct — consumer traffic -> API analytics; worker memory trend -> Monitoring; live call graph -> Visualizer.",
+    "Runtime Manager isn't the per-consumer traffic source, and BAT/Functional Monitoring isn't the call graph.",
+    "Raw logs can't readily give per-consumer share, memory trends, or the dependency graph."
+   ]
   },
   {
    "id": "pa-065",
@@ -916,91 +1216,133 @@
    "section": "p9",
    "q": "Why should alerts be configured on APIs at ALL THREE layers rather than only the Experience layer?",
    "options": [
-    "More alerts look thorough",
-    "Failures originate anywhere in the chain; layer-specific alerts localize the fault (a System API breach often precedes and explains the Experience API breach)",
-    "Experience APIs cannot have alerts",
-    "Process APIs never fail"
+    "Configuring more alerts across the layers simply signals a thorough operations team",
+    "Failures arise anywhere; layered alerts localize the fault to the right API",
+    "Experience APIs are the only layer that supports alerts",
+    "Process APIs never fail, so alerting them is redundant"
    ],
    "answer": 1,
-   "explanation": "An Experience-only view says 'something is slow'; per-layer alerts say WHERE. System-layer degradation is frequently the earliest signal of backend trouble."
+   "explanation": "An Experience-only view says 'something is slow'; per-layer alerts say WHERE. System-layer degradation is frequently the earliest signal of backend trouble.",
+   "optionNotes": [
+    "Volume of alerts isn't the point; localizing faults is.",
+    "Correct — layered alerts pinpoint where a failure starts, since a System API issue often explains the Experience symptom.",
+    "All layers support alerts, not just Experience.",
+    "Process APIs can and do fail; assuming otherwise leaves a blind spot."
+   ]
   },
   {
    "id": "pa-067",
    "section": "p9",
    "q": "Which alert belongs to RUNTIME MANAGER rather than API Manager?",
    "options": [
-    "Policy violation count exceeded",
-    "Application/worker not responding or deployment failed",
-    "Response time SLA breach on an API instance",
-    "4xx ratio threshold"
+    "A policy-violation count threshold exceeded on a managed API instance",
+    "Application/worker not responding or a deployment failed",
+    "Response-time SLA breach on an API instance",
+    "4xx error-ratio threshold crossed on an API"
    ],
    "answer": 1,
-   "explanation": "Runtime Manager alerts cover the operational lifecycle of apps/workers (up/down, deployments). API-instance metrics (violations, latency, response codes) alert from API Manager/Monitoring."
+   "explanation": "Runtime Manager alerts cover the operational lifecycle of apps/workers (up/down, deployments). API-instance metrics (violations, latency, response codes) alert from API Manager/Monitoring.",
+   "optionNotes": [
+    "Policy-violation alerts are API Manager's domain.",
+    "Correct — worker health and deployment status are Runtime Manager alerts.",
+    "SLA response-time breaches are tracked in API Manager.",
+    "4xx ratio thresholds are API-Manager-level API alerts."
+   ]
   },
   {
    "id": "pa-068",
    "section": "p9",
    "q": "The C4E wants to prove the application network's value to leadership. Which metric drawn from platform data is the strongest evidence?",
    "options": [
-    "Total lines of DataWeave written",
-    "Growth in API consumption and reuse — consumers per API, share of projects consuming existing APIs, traffic on reused assets",
-    "Number of workers deployed",
-    "Average JAR size"
+    "The total number of lines of DataWeave written across all of the projects",
+    "Growth in API consumption and reuse across projects and consumers",
+    "The number of workers deployed platform-wide",
+    "The average built JAR size across applications"
    ],
    "answer": 1,
-   "explanation": "The network's value thesis IS reuse/consumption. API analytics and Exchange data quantify it; infrastructure counts measure cost, not value."
+   "explanation": "The network's value thesis IS reuse/consumption. API analytics and Exchange data quantify it; infrastructure counts measure cost, not value.",
+   "optionNotes": [
+    "Lines of code is an activity metric, not a value/reuse outcome.",
+    "Correct — reuse and consumption growth is the network's value story for leadership.",
+    "Worker count measures spend/footprint, not delivered value.",
+    "JAR size is a build detail irrelevant to network value."
+   ]
   },
   {
    "id": "pa-069",
    "section": "p9",
    "q": "A business KPI requires alerting when fewer than 100 orders/hour flow through the platform (regardless of technical health). What implements this?",
    "options": [
-    "Worker CPU alerts",
-    "Business-level telemetry: custom business events or structured log metrics feeding a custom dashboard/alert on the order rate",
-    "Deployment notifications",
-    "VPC flow logs"
+    "Worker CPU-utilization threshold alerts configured in Runtime Manager",
+    "Business telemetry driving a custom order-rate dashboard/alert",
+    "Deployment success and failure notifications",
+    "VPC flow logs collected for the environment"
    ],
    "answer": 1,
-   "explanation": "Technically healthy ≠ business healthy. Business events/metrics expose domain throughput so monitoring can alert on business anomalies (e.g., upstream stopped sending orders)."
+   "explanation": "Technically healthy ≠ business healthy. Business events/metrics expose domain throughput so monitoring can alert on business anomalies (e.g., upstream stopped sending orders).",
+   "optionNotes": [
+    "CPU is technical health and says nothing about order throughput.",
+    "Correct — a business KPI needs business telemetry (custom events/metrics) driving a dashboard/alert on order rate.",
+    "Deployment notifications are lifecycle events, not business volume.",
+    "Flow logs describe network traffic, not business order counts."
+   ]
   },
   {
    "id": "pa-070",
    "section": "p9",
    "q": "API Functional Monitoring (BAT) differs from metric alerts how?",
    "options": [
-    "It is cheaper",
-    "It actively CALLS the API on a schedule from chosen locations and asserts on real responses — catching functional breakage even when traffic-based metrics look normal",
-    "It only works in dev",
-    "It replaces MUnit"
+    "It is a cheaper alternative to metric-based alerting",
+    "It actively calls the API on a schedule and asserts on real responses",
+    "It only runs in lower development environments and never against production",
+    "It is a drop-in replacement for MUnit unit tests"
    ],
    "answer": 1,
-   "explanation": "Metrics observe passing traffic; BAT generates verifying traffic. A wrong-but-fast response never trips a latency alert — a functional monitor catches it."
+   "explanation": "Metrics observe passing traffic; BAT generates verifying traffic. A wrong-but-fast response never trips a latency alert — a functional monitor catches it.",
+   "optionNotes": [
+    "Cost isn't the distinction; active synthetic testing is.",
+    "Correct — Functional Monitoring (BAT) actively calls the API on a schedule and asserts on responses, catching silent breakage.",
+    "It runs against real deployed environments, not just dev.",
+    "It complements MUnit; it doesn't replace unit testing."
+   ]
   },
   {
    "id": "pa-071",
    "section": "p9",
    "q": "During an incident, the team must quickly see which upstream APIs and consumers are affected by a degraded System API. Which tool shows the blast radius fastest?",
    "options": [
-    "Reading every app's pom.xml",
-    "Anypoint Visualizer — the live dependency graph shows what calls the degraded node",
-    "Exchange asset list",
-    "The RAML files"
+    "Reading every application's pom.xml for dependencies",
+    "Anypoint Visualizer — its live graph shows what calls the degraded node",
+    "Browsing the Exchange asset list for related APIs",
+    "Opening the RAML files to infer the relationships"
    ],
    "answer": 1,
-   "explanation": "Visualizer renders actual runtime dependencies, making impact analysis (who calls whom) immediate — far faster than tracing code or specs."
+   "explanation": "Visualizer renders actual runtime dependencies, making impact analysis (who calls whom) immediate — far faster than tracing code or specs.",
+   "optionNotes": [
+    "poms show build dependencies, not the live runtime call graph.",
+    "Correct — Visualizer's live dependency graph shows the blast radius around a degraded node fastest.",
+    "Exchange lists assets but not live runtime call relationships.",
+    "RAML describes contracts, not who is actually calling whom at runtime."
+   ]
   },
   {
    "id": "pa-072",
    "section": "p9",
    "q": "What operational practice turns monitoring data into reliability improvements?",
    "options": [
-    "Collecting dashboards nobody owns",
-    "Every alert has an owning team and threshold tied to an SLA; incidents feed review of thresholds, capacity, and design (e.g., adding fallbacks where alerts fire repeatedly)",
-    "Disabling alerts that fire often",
-    "Only monitoring production"
+    "Collecting dashboards that no team owns or reviews",
+    "Every alert has an owner and SLA-tied threshold; incidents drive reviews",
+    "Disabling alerts that fire too often to reduce noise",
+    "Monitoring only the production environment"
    ],
    "answer": 1,
-   "explanation": "Monitoring pays off through ownership and feedback loops: SLA-derived thresholds, owned alerts, and post-incident adjustments. Unowned dashboards and silenced alerts are monitoring theater."
+   "explanation": "Monitoring pays off through ownership and feedback loops: SLA-derived thresholds, owned alerts, and post-incident adjustments. Unowned dashboards and silenced alerts are monitoring theater.",
+   "optionNotes": [
+    "Unowned dashboards produce no action or improvement.",
+    "Correct — owned alerts tied to SLAs, with incidents feeding threshold/capacity/design reviews, close the loop.",
+    "Muting noisy alerts hides problems instead of fixing them.",
+    "Monitoring prod alone misses issues that should be caught earlier."
+   ]
   },
   {
    "id": "pa-073",
@@ -1008,8 +1350,8 @@
    "level": "medium",
    "q": "A new mobile project delivers in 6 weeks instead of the estimated 16 because the team discovered existing Customer and Order APIs in Exchange and consumed them without involving the teams that built them. Which property of an application network does this illustrate?",
    "options": [
-    "Self-service reuse of discoverable assets, which makes delivery faster with each API added to the network",
-    "Point-to-point integration, which minimizes the number of APIs",
+    "Self-service reuse of discoverable assets that speeds each new project",
+    "Point-to-point integration, which keeps the number of APIs to an absolute minimum",
     "Centralized delivery, where one team builds all integrations",
     "The network effect of adding more middleware servers"
    ],
@@ -1028,9 +1370,9 @@
    "level": "medium",
    "q": "A conglomerate has two divisions whose teams must manage their own APIs, environments, and client applications without seeing each other's assets, while central IT retains overall administration. How should Anypoint Platform be organized?",
    "options": [
-    "One organization with a business group per division, each with its own environments, permissions, and (optionally) vCore allocations",
+    "One org with a business group per division, each self-managing its assets",
     "Two entirely separate Anypoint organizations with separate contracts",
-    "One organization and one environment, separated by naming conventions",
+    "One organization and a single shared environment, separated only by naming conventions",
     "A shared DESIGN environment with production access granted by ticket"
    ],
    "answer": 0,
@@ -1069,8 +1411,8 @@
    "q": "Refer to the exhibit. What kind of RAML construct is 'pageable', and why is it defined this way?",
    "exhibit": "#%RAML 1.0 Trait\nusage: Apply to any collection GET\nqueryParameters:\n  offset:\n    type: integer\n    default: 0\n  limit:\n    type: integer\n    maximum: 200\n    default: 50",
    "options": [
-    "A trait — a reusable fragment applied to methods (is: [pageable]) so pagination is defined once and shared, e.g. via Exchange, across APIs",
-    "A resourceType — it defines a complete resource with its methods",
+    "A trait — a reusable method fragment (is: [pageable]) shared via Exchange",
+    "A resourceType — it defines a complete reusable resource together with its methods",
     "A securityScheme — it restricts who may call the method",
     "An annotation — metadata with no effect on the contract"
    ],
@@ -1089,8 +1431,8 @@
    "level": "medium",
    "q": "An API published as /api/v2 needs a change that removes a field from a response. Existing consumers must keep working while new consumers adopt the change. What is the correct approach?",
    "options": [
-    "Publish the breaking change as a new major version (/api/v3) and run v2 alongside it during a deprecation window",
-    "Remove the field from v2 and email consumers about the improvement",
+    "Publish it as a new major version (/v3), running v2 alongside during deprecation",
+    "Remove the field from v2 directly and email the consumers about the schema improvement",
     "Increase only the Exchange asset's patch version and republish",
     "Add the change to v2 but only after business hours"
    ],
@@ -1109,9 +1451,9 @@
    "level": "easy",
    "q": "Before any implementation exists, consumers of a newly designed API want to start building against it. Which Anypoint Platform capability enables this?",
    "options": [
-    "The mocking service on the API specification in Exchange/API Designer",
-    "CloudHub autoscaling",
-    "The API's MUnit test suite",
+    "The mocking service on the spec in Exchange/API Designer",
+    "CloudHub autoscaling of the workers",
+    "The API's MUnit test suite running in the delivery pipeline",
     "Runtime Manager application logs"
    ],
    "answer": 0,
@@ -1130,7 +1472,7 @@
    "q": "An order-fulfillment capability must check inventory in SAP, reserve stock, charge the customer through a payment provider, and trigger a shipment — coordinating these steps and their compensations. In API-led connectivity, where does this logic belong?",
    "options": [
     "A process API that orchestrates the underlying system APIs",
-    "The experience API serving the web storefront",
+    "The experience API that serves the public web storefront channel",
     "The SAP system API",
     "A stored procedure in the SAP database"
    ],
@@ -1149,7 +1491,7 @@
    "level": "medium",
    "q": "The same Customer 360 process API is consumed by a web portal, a mobile app, and a partner B2B channel. The mobile team needs a trimmed, flattened JSON with only 12 fields to minimize bandwidth. Where should that reshaping live?",
    "options": [
-    "In a mobile experience API that adapts the process API's canonical response for that channel",
+    "In a mobile experience API that adapts the process API's canonical response",
     "In the process API, with a ?channel=mobile parameter switching response shapes",
     "In each system API, returning mobile-ready fields",
     "In the mobile app itself, downloading the full payload and discarding most of it"
@@ -1169,8 +1511,8 @@
    "level": "hard",
    "q": "A company plans to replace its on-premises SAP ECC with a cloud ERP in two years. Today, eight process APIs need ERP data. How does API-led connectivity minimize the future migration's impact?",
    "options": [
-    "Expose the ERP only through system APIs with a backend-agnostic contract; at migration, reimplement those system APIs while the eight process APIs keep the same contract",
-    "Let each process API query SAP directly to avoid an extra hop before the migration",
+    "Expose the ERP only via system APIs with a stable contract; reimplement them at migration",
+    "Let each process API query SAP directly to avoid an extra hop, then fix them up at migration",
     "Freeze all API development until the ERP decision is final",
     "Build the process APIs inside SAP so they migrate together"
    ],
@@ -1213,7 +1555,7 @@
    "q": "Refer to the exhibit. A consumer registered on the Silver tier sends 800 requests in one minute. What happens to the excess requests, and what must the consumer's requests include for tiers to apply at all?",
    "exhibit": "API instance policy: SLA-based rate limiting\n\nTiers:\n  Gold:   1000 requests / minute (auto-approved)\n  Silver:  500 requests / minute (auto-approved)",
    "options": [
-    "Requests beyond 500 in that minute are rejected with HTTP 429; requests must carry valid client credentials (client ID/secret) identifying the approved application",
+    "Excess is rejected with HTTP 429; requests must carry valid client credentials",
     "All 800 succeed but the surplus is billed at Gold rates",
     "Excess requests queue on the gateway until the next minute",
     "The consumer is silently upgraded to Gold"
@@ -1233,8 +1575,8 @@
    "level": "medium",
    "q": "A Mule application implementing an API is deployed to CloudHub, and policies are configured on the API instance in API Manager — but calls to the application are not being policed. Which platform mechanism is most likely missing?",
    "options": [
-    "API autodiscovery linking the running Mule application to the API instance (api.id plus platform client credentials)",
-    "A CNAME record pointing at the application",
+    "API autodiscovery linking the app to its API instance (api.id + credentials)",
+    "A CNAME record pointing consumers at the application",
     "The mocking service must be disabled first",
     "An Exchange rating of at least four stars"
    ],
@@ -1254,7 +1596,7 @@
    "q": "Refer to the exhibit. Both policies limit traffic. What is the essential difference in purpose between them?",
    "exhibit": "Policy A — Rate limiting:\n  500 requests per minute per client application\n  (rejects with 429 once exceeded)\n\nPolicy B — Spike control:\n  50 requests per second overall,\n  queue up to 100 excess requests, retry delay 1s",
    "options": [
-    "A enforces a business contract (each consumer's entitled quota); B protects the backend from bursts by smoothing short traffic spikes for all traffic combined",
+    "A enforces each consumer's quota; B smooths spikes to protect the backend",
     "A applies to REST APIs, B only to SOAP services",
     "B replaces A: spike control makes rate limiting obsolete",
     "A runs on CloudHub, B only on customer-hosted runtimes"
@@ -1274,8 +1616,8 @@
    "level": "medium",
    "q": "A public developer portal exposes an API in Exchange. The API team wants every consuming application to be known, individually revocable, and approved by an API owner before receiving access. Which platform workflow provides this?",
    "options": [
-    "Client applications request access to the API in Exchange under a contract; with manual approval configured, an owner reviews each request before credentials are honored, and contracts can be revoked per application",
-    "Publish the API's shared API key on the portal page for all consumers",
+    "Consumers request access under a contract an owner approves and can revoke per app",
+    "Publish the API's single shared API key on the public portal page for every consumer",
     "Add consumers' office IP ranges to an allowlist policy",
     "Send credentials by email to developers who ask"
    ],
@@ -1294,7 +1636,7 @@
    "level": "medium",
    "q": "An API's implementation is a legacy .NET service that cannot run Mule policies natively. The organization still wants API Manager policies (rate limiting, client ID enforcement) applied. What is the standard approach?",
    "options": [
-    "Deploy a gateway in front of it — an auto-generated Mule proxy application or Flex Gateway — and manage that instance's policies in API Manager",
+    "Front it with a Mule proxy or Flex Gateway and manage its policies in API Manager",
     "Rewrite the .NET service as a Mule application first",
     "Implement the policies inside the .NET code by hand",
     "Skip governance for non-Mule implementations"
@@ -1314,7 +1656,7 @@
    "level": "medium",
    "q": "A process API implementation needs substantial internal changes (refactoring plus a library upgrade) with no change to its RAML contract. What should consumers experience when the new implementation is deployed to the same API instance?",
    "options": [
-    "Nothing — same endpoint, same contract, same policies and contracts remain in force; implementation and interface lifecycles are deliberately decoupled",
+    "Nothing — same endpoint and contract; interface and implementation are decoupled",
     "They must re-request access because contracts reset on redeploy",
     "They must switch to a new URL containing the build number",
     "A mandatory one-hour maintenance outage"
@@ -1334,8 +1676,8 @@
    "level": "medium",
    "q": "A read-heavy system API serves country and currency reference data that changes monthly. Response times must improve and backend load must drop, without touching the implementation. Which policy achieves this?",
    "options": [
-    "An HTTP caching policy on the API instance, serving repeated GETs from the gateway cache with an appropriate TTL",
-    "A rate limiting policy set very low so fewer requests reach the backend",
+    "An HTTP caching policy on the instance, serving repeated GETs with a TTL",
+    "A rate limiting policy set very low so that fewer requests ever reach the backend system",
     "A JSON threat protection policy",
     "Client ID enforcement, since identified traffic is faster"
    ],
@@ -1354,7 +1696,7 @@
    "level": "hard",
    "q": "An experience API aggregates three process APIs. Its 95th-percentile latency SLA is 800 ms. The three downstream calls are independent of each other, each with a p95 around 400 ms. Which implementation guidance follows?",
    "options": [
-    "Invoke the three process APIs in parallel (e.g. Scatter-Gather) so total latency approaches the slowest single call instead of the sum, and set downstream timeouts consistent with the 800 ms budget",
+    "Call the three in parallel (Scatter-Gather) so latency approaches the slowest, not the sum",
     "Call the three APIs sequentially and hope caching absorbs the difference",
     "Lower the SLA to 1500 ms to fit sequential calls",
     "Merge the three process APIs into one so only one call is needed"
@@ -1374,9 +1716,9 @@
    "level": "medium",
    "q": "A production API on CloudHub must remain available through the failure of a single worker AND the failure of an entire availability zone. What is the minimal deployment characteristic that provides this?",
    "options": [
-    "Deploy with at least two workers — CloudHub automatically spreads a multi-worker application across availability zones and load-balances between them",
+    "Deploy at least two workers — CloudHub spreads them across availability zones",
     "One very large worker with auto-restart enabled",
-    "Two identical applications with DNS switched manually on failure",
+    "Two identical applications with DNS manually switched over on any failure event",
     "A nightly backup of the application archive"
    ],
    "answer": 0,
@@ -1394,8 +1736,8 @@
    "level": "medium",
    "q": "APIs deployed to an Anypoint VPC must be callable ONLY from the corporate network via the dedicated load balancer — direct calls to the workers' public cloudhub.io endpoints must be impossible. How is this enforced?",
    "options": [
-    "Have the applications listen on the VPC-internal ports (8091/8092) that only the DLB reaches, so the shared load balancer's public route no longer terminates at the app",
-    "Publish the APIs without documentation so outsiders cannot find them",
+    "Listen only on the VPC-internal ports the DLB reaches, disabling the public route",
+    "Publish the APIs without any documentation so that outsiders simply cannot find them",
     "Rely on client ID enforcement alone to keep outsiders out",
     "Lower the workers' DNS TTL"
    ],
@@ -1414,10 +1756,10 @@
    "level": "medium",
    "q": "A CloudHub 1.0 application handling live traffic must be updated without dropping in-flight or incoming requests. Which platform capability supports this?",
    "options": [
-    "Zero-downtime redeployment: CloudHub starts replacement workers with the new version and switches the load balancer over only when they report healthy",
+    "Zero-downtime redeployment — cut over to new workers only once they are healthy",
     "Stopping the application, deploying, and starting it quickly",
     "Deploying at 3 AM when traffic is lower",
-    "Asking consumers to retry failed requests during the deployment"
+    "Asking consumers to retry any failed requests during the deployment window themselves"
    ],
    "answer": 0,
    "optionNotes": [
@@ -1434,8 +1776,8 @@
    "level": "medium",
    "q": "An experience API calls a process API whose own SLA allows responses up to 30 seconds in the worst case, but the experience API must answer its clients within 3 seconds or return a graceful error. Which resilience configuration is correct?",
    "options": [
-    "Set the experience API's outbound response timeout below its own 3-second budget and map the timeout to a controlled error response for its clients",
-    "Set the outbound timeout to 30 seconds to match the downstream SLA",
+    "Set the outbound timeout under the 3 s budget; map timeouts to a graceful error",
+    "Set the outbound response timeout to 30 seconds to match the downstream SLA exactly",
     "Remove timeouts so no request is ever cut short",
     "Retry the downstream call five times on timeout"
    ],
@@ -1454,9 +1796,9 @@
    "level": "medium",
    "q": "An API owner wants to formalize with consumers not just endpoints and schemas, but expected availability, latency percentiles, and support hours. What is being defined, and where does the platform surface consumer-specific enforcement of usage limits?",
    "options": [
-    "Non-functional requirements captured in the API's SLA; usage entitlements are enforced per consumer through SLA tiers and their policies in API Manager",
+    "The API's SLA (its NFRs); enforced per consumer via SLA tiers and policies",
     "The RAML alone covers all of this; nothing else is needed",
-    "A firewall rule set; enforcement happens at the network layer",
+    "A firewall rule set, since all enforcement should happen at the network layer",
     "A Slack channel agreement between the teams"
    ],
    "answer": 0,
@@ -1474,9 +1816,9 @@
    "level": "medium",
    "q": "Product management asks: 'Which consumer applications drive the most traffic to our Orders API, which resources do they hit, and how did that change after last month's release?' Where does this information come from?",
    "options": [
-    "API analytics in Anypoint Platform — request metrics attributable per client application (via enforced client IDs), by resource/method, over time",
+    "API analytics — per-client request metrics by resource and method over time",
     "The load balancer's TCP connection counts",
-    "A survey sent to registered developers",
+    "A survey sent to registered developer consumers",
     "Worker CPU utilization graphs in Runtime Manager"
    ],
    "answer": 0,
@@ -1494,7 +1836,7 @@
    "level": "medium",
    "q": "Operations must be paged when a production API instance's error rate or response time breaches thresholds — even if the underlying workers look healthy — and separately when a worker's CPU stays high. How should alerting be organized?",
    "options": [
-    "API-level alerts (response time, policy violations, error ratios) on the API instance, plus infrastructure alerts (CPU, memory, app events) in Runtime Manager/Anypoint Monitoring — the two cover different failure classes",
+    "API-level alerts on the instance + infra alerts (CPU/memory) in Runtime Manager",
     "A single CPU alert, since resource health implies API health",
     "Grepping worker logs manually every morning",
     "Relying on consumers to open support tickets promptly"
@@ -1507,6 +1849,90 @@
     "Consumer complaints are the outcome alerting exists to prevent."
    ],
    "explanation": "Two alerting planes: API-quality metrics on the managed API instance, resource metrics on the deployment target. Wiring thresholds and notification channels on both gives operations coverage for logical failures and infrastructure failures alike."
+  },
+  {
+   "id": "pa-098",
+   "section": "p5",
+   "level": "medium",
+   "q": "Refer to the exhibit. The application deploys successfully, but its API instance shows as 'Unregistered' in API Manager and no policies are enforced. Which cause best fits this configuration?",
+   "exhibit": "<!-- global.xml -->\n<api-gateway:autodiscovery apiId=\"${api.id}\" flowRef=\"orders-main\"/>\n\n# deploy-time properties (prod)\napi.id=17206543\nanypoint.platform.client_id=6f2a...\nanypoint.platform.client_secret=b91c...",
+   "options": [
+    "The api.id value does not match the API instance ID for this environment",
+    "The flowRef names a private subflow instead of the app's main flow",
+    "Autodiscovery also needs the RAML to be re-published to Exchange first",
+    "The platform client_id and client_secret must be unique per worker"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — api.id must equal the target environment's instance ID; an id from another environment leaves the app unregistered.",
+    "A wrong flowRef fails the deployment rather than silently leaving the instance unregistered.",
+    "Re-publishing the spec isn't required for autodiscovery to bind a running app to its instance.",
+    "One Connected App credential pair is used per environment, not per worker."
+   ],
+   "explanation": "Autodiscovery binds a running app to its API instance via api.id plus platform credentials; the classic 'Unregistered' cause is an api.id that doesn't match the instance in that environment."
+  },
+  {
+   "id": "pa-099",
+   "section": "p7",
+   "level": "easy",
+   "q": "Refer to the exhibit. The API must survive both a single worker failure and an availability-zone outage. What is the minimal change to this deployment?",
+   "exhibit": "CloudHub deployment:\n  workers: 1\n  vCores: 1.0\n  region: us-east-1\n  persistent-queues: disabled",
+   "options": [
+    "Increase to at least two workers so CloudHub spreads them across availability zones",
+    "Move the deployment to a different CloudHub region that offers more availability zones",
+    "Increase the single worker to 4 vCores to add processing headroom",
+    "Enable persistent queues so in-flight messages survive a restart"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — two or more workers are auto-distributed across AZs and load-balanced, covering both worker and AZ failure.",
+    "Every CloudHub region already provides multiple AZs; the gap is worker count, not region.",
+    "A bigger single worker is still one point of failure in one AZ.",
+    "Persistent queues protect in-flight messages, not the availability of the application."
+   ],
+   "explanation": "High availability on CloudHub comes from running multiple workers (auto-spread across AZs), not from vertical sizing or queue persistence."
+  },
+  {
+   "id": "pa-100",
+   "section": "p9",
+   "level": "medium",
+   "q": "Refer to the exhibit. Where is each of these alerts configured?",
+   "exhibit": "Alert requirements:\n  A) page when API response-time p95 > 800 ms\n  B) page when worker CPU > 85% for 5 min\n  C) page when a policy is violated > 100x/min",
+   "options": [
+    "A and C in API Manager (API-level); B in Runtime Manager / Anypoint Monitoring",
+    "All three configured in Runtime Manager, since it owns every runtime and API alert",
+    "All three configured in API Manager, since they all ultimately concern the API",
+    "A and B in API Manager; C in Runtime Manager as a security event"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — response-time and policy-violation alerts are API-Manager API alerts; worker CPU is Runtime Manager / Monitoring.",
+    "Runtime Manager doesn't own API response-time or policy-violation alerts.",
+    "Worker CPU is an infrastructure metric that API Manager doesn't alert on.",
+    "This reverses the split — CPU belongs in Runtime Manager and policy violations in API Manager."
+   ],
+   "explanation": "API-level SLA and policy alerts live in API Manager; worker/infrastructure alerts live in Runtime Manager and Anypoint Monitoring — different failure classes, different homes."
+  },
+  {
+   "id": "pa-101",
+   "section": "p4",
+   "level": "medium",
+   "q": "Refer to the exhibit. A new 'Partner Orders' channel needs the same order-placement logic. Which addition follows API-led connectivity?",
+   "exhibit": "Current design:\n  Web xAPI     -> Orders pAPI -> Orders sAPI (SAP)\n                              \\-> Shipping sAPI (FedEx)\n  Mobile xAPI  -> Orders pAPI",
+   "options": [
+    "Add a Partner xAPI that calls the existing Orders pAPI, reusing its orchestration",
+    "Add a Partner xAPI that calls the Orders and Shipping sAPIs directly for speed",
+    "Duplicate the Orders pAPI orchestration inside a new Partner pAPI",
+    "Let the Partner channel call the Orders pAPI's SAP backend directly"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — a thin Experience API per channel reuses the one Process API; that reuse is exactly what the layers exist for.",
+    "Skipping the Process API scatters orchestration and consistency logic into the channel.",
+    "Duplicating the Process logic invites drift and double maintenance.",
+    "Channels must not reach past the layers into a System API's backend."
+   ],
+   "explanation": "New channels get a thin Experience API over the existing Process API; the orchestration lives once in the pAPI and is reused."
   }
  ],
  "sections": [
@@ -1518,7 +1944,7 @@
     "API implementation technologies": "https://docs.mulesoft.com/general/api-led-overview",
     "Roles in a web API interaction": "https://docs.mulesoft.com/general/api-led-overview",
     "Assigning APIs to tiers": "https://docs.mulesoft.com/general/api-led-overview",
-    "Anypoint Platform capabilities": "https://docs.mulesoft.com/general/"
+    "Anypoint Platform capabilities": "https://docs.mulesoft.com/general/glossary"
    },
    "objectives": [
     "Differentiate between technologies for implementing APIs",
@@ -1533,9 +1959,9 @@
    "title": "Establishing Organizational and Platform Foundations",
    "weight": 10,
    "topicDocs": {
-    "Center for Enablement (C4E) in practice": "https://docs.mulesoft.com/general/",
-    "MuleSoft Catalyst": "https://docs.mulesoft.com/general/",
-    "Platform hosting options and data residency": "https://docs.mulesoft.com/runtime-fabric/latest/",
+    "Center for Enablement (C4E) in practice": "https://www.salesforce.com/blog/what-is-a-center-for-enablement/",
+    "MuleSoft Catalyst": "https://docs.mulesoft.com/general/api-led-overview",
+    "Platform hosting options and data residency": "https://docs.mulesoft.com/hosting-home/",
     "Identity management vs client management": "https://docs.mulesoft.com/access-management/"
    },
    "objectives": [
@@ -1554,9 +1980,9 @@
    "topicDocs": {
     "API dependencies and consumption": "https://docs.mulesoft.com/exchange/",
     "Publishing and reusing assets in Exchange": "https://docs.mulesoft.com/exchange/asset-types",
-    "Semantic versioning decisions": "https://docs.mulesoft.com/exchange/",
+    "Semantic versioning decisions": "https://semver.org/",
     "Mapping between bounded contexts": "https://docs.mulesoft.com/general/api-led-overview",
-    "Idempotency and optimistic concurrency in HTTP": "https://docs.mulesoft.com/http-connector/latest/"
+    "Idempotency and optimistic concurrency in HTTP": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods"
    },
    "objectives": [
     "Identify dependencies between API specifications and implementations",
@@ -1612,9 +2038,9 @@
    "weight": 11,
    "topicDocs": {
     "Autodiscovery: linking implementation to instance": "https://docs.mulesoft.com/api-manager/latest/latest-overview-concept",
-    "Choosing runtime plane hosting": "https://docs.mulesoft.com/runtime-fabric/latest/",
+    "Choosing runtime plane hosting": "https://docs.mulesoft.com/hosting-home/",
     "When an Anypoint VPC is required": "https://docs.mulesoft.com/cloudhub/cloudhub-networking-guide",
-    "Testing: unit vs integration": "https://docs.mulesoft.com/munit/latest/",
+    "Testing: unit vs integration": "https://docs.mulesoft.com/munit/latest/munit-test-concept",
     "Automated build, test, and deployment": "https://docs.mulesoft.com/mule-runtime/latest/mmp-concept"
    },
    "objectives": [
