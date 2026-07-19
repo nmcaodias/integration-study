@@ -1,0 +1,45 @@
+/* EIP length-balance + flip. Trim over-long correct options (detail is in the
+ * notes) and extend the top distractor decisively past the correct answer with a
+ * plausible, still-wrong clause. Leaves a minority correct-longest (target
+ * ~25-40%, like MCD1). */
+module.exports = {
+  questions: {
+    "eip-802": { optionEdits: { 1: "Competing consumers self-balance off the channel; a dispatcher assigns work to performers by its own logic", 2: "A dispatcher always discards any message that no performer currently wants, whereas competing consumers never discard" } },
+    "eip-804": { optionEdits: { 1: "The request stays hidden inside the uncommitted transaction, so the reply that would complete it can never arrive", 0: "Transactions are fundamentally unable to include any network or messaging operations of any kind at all whatsoever" } },
+    "eip-608": { optionEdits: { 1: "Promise: endpoints know only the hub, ending point-to-point spaghetti; risk: the hub becomes a bottleneck full of logic", 2: "Promise: it guarantees strict message ordering; risk: one slow consumer can stall the entire pipeline for everyone" } },
+    "eip-807": { optionEdits: { 1: "It exposes a domain-shaped API hiding messaging mechanics, and gives a seam for a stub that makes the app testable", 0: "It transparently compresses all outbound message traffic to save network bandwidth across the whole system" } },
+    "eip-809": { optionEdits: { 1: "Order isn't guaranteed across consumers; use one consumer or a Dispatcher routing a customer's orders to one performer", 0: "There is no problem at all, because point-to-point channels always preserve processing order across every consumer" } },
+    "eip-803": { optionEdits: { 1: "A selective consumer receives only matching messages and leaves the rest; a filter consumes everything and discards", 0: "A selective consumer discards whatever it does not match, whereas a filter simply leaves it sitting on the channel" } },
+    "eip-707": { optionEdits: { 1: "Each segment (security gateway, WAN, partner network) adds its own envelope, unwrapped in reverse order on exit", 2: "The receiving application always requires two identical copies of every single header on the message for safety" } },
+    "eip-708": { optionEdits: { 1: "Claim Check — park the sensitive data, route a slim message with a ticket, re-attach only at the authorized endpoint", 3: "Apply a shared Canonical Data Model across all four of the intermediate routing components in the path" } },
+    "eip-801": { optionEdits: { 1: "Retries and redeliveries create duplicates; dedupe by tracking message ids, or design naturally idempotent handling", 2: "Because consumers can crash mid-processing; the strategies are transactions plus durable subscriptions for recovery" } },
+    "eip-902": { optionEdits: { 1: "Replies return to the proxy, which correlates each with its stored request, records metrics, then forwards it on", 2: "Because two different Return Addresses simply cannot coexist within a single message header at the same time" } },
+    "eip-305": { optionEdits: { 2: "The messaging system flatly refuses any direct application connections for important security reasons of its own" } },
+    "eip-905": { optionEdits: { 0: "A pre-planned backup route that is used only when the primary channel fails or becomes unavailable for any reason" } },
+    "eip-206": { optionEdits: { 0: "It is the only integration style that needs no agreement whatsoever on data format between the two sides at all" } },
+    "eip-908": { optionEdits: { 2: "The component simply needs a durable subscription added so that it stops silently producing the wrong output" } },
+    "eip-602": { optionEdits: { 0: "A filter transforms the message body into another form, whereas a content-based router leaves the body unchanged" } },
+    "eip-903": { optionEdits: { 2: "History is a central database holding every message; Store is just a single field carried in the message header" } },
+    "eip-107": { optionEdits: { 0: "Messages are unable to carry any structured data, so shared state has to be kept in an external database instead" } },
+    "eip-705": { optionEdits: { 2: "An Envelope Wrapper chained together with a Content Filter that strips the fields down to the common format" } },
+    "eip-204": { optionEdits: { 0: "That remote calls are inherently secure simply because they cross a process or machine boundary on the network" } },
+    "eip-703": { optionEdits: { 0: "It cryptographically signs each message so that any tampering is reliably detected at the destination endpoint" } },
+    "eip-808": { optionEdits: { 2: "A Transactional Client — wrap the synchronous service call in a transaction so callers and messages stay consistent" } },
+    "eip-606": { optionEdits: { 0: "It broadcasts every message to all recipients and measures which one happens to answer the fastest each time" } },
+    "eip-503": { optionEdits: { 2: "The messaging system itself strictly requires the Return Address in order to route the original request at all" } },
+    "eip-302": { optionEdits: { 2: "A router merges several separate input channels together into one single combined output message for the receiver" } },
+    "eip-603": { optionEdits: { 2: "A Content-Based Router feeding a Message Filter that keeps only the single best bid from the incoming replies" } },
+    "eip-901": { optionEdits: { 0: "Add a second competing consumer dedicated to the monitoring tool so it can read the messages off the channel too" } },
+    "eip-502": { optionEdits: { 3: "Each reply arrives on a dedicated channel that is named after the original request's exact submission timestamp" } },
+    "eip-507": { optionEdits: { 3: "Publish-subscribe channels enforce a strict, very small maximum size limit on every message body they carry" } },
+    "eip-207": { optionEdits: { 1: "File Transfer — export a full price file every night for each of the twelve downstream systems to import" } },
+    "eip-306": { optionEdits: { 0: "A single physical TCP network connection established directly between two specific machines in the network" } },
+    "eip-506": { optionEdits: { 3: "Resend the same quote every 30 seconds continuously and simply let the duplicate messages accumulate downstream" } },
+    "eip-706": { optionEdits: { 0: "A reply arriving from a service must be matched back to the specific original request that it answers" } },
+    "eip-408": { optionEdits: { 2: "A Channel Adapter — connect the MSMQ queues directly to each of the JMS-based applications on the other side" } },
+    "eip-609": { optionEdits: { 0: "Messages numbered #18 and beyond all end up being delivered twice each to the downstream consumers" } },
+    "eip-607": { optionEdits: { 0: "A plain Scatter-Gather broadcast to all of the inventory systems at once, waiting for their replies" } },
+    "eip-605": { optionEdits: { 0: "They actively modify the bodies of the messages that pass through them before emitting the output" } },
+    "eip-401": { optionEdits: { 0: "The Dead Letter Channel, and the underlying messaging system is the one that makes the decision here" } },
+  }
+};
