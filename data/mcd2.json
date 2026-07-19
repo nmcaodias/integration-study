@@ -2771,5 +2771,377 @@
    "front": "Deprecation flow for a breaking API change?",
    "back": "Release v2 as a NEW instance alongside v1 → mark v1 deprecated (Exchange/API Manager) → notify contract holders with a sunset date → monitor traffic → retire."
   }
+ ],
+ "exercises": [
+  {
+   "id": "m2-ex-01",
+   "section": "d1",
+   "title": "Reliable acquisition: never lose an accepted order",
+   "level": "hard",
+   "where": "Anypoint Studio",
+   "task": "<p>An HTTP-triggered flow accepts orders but must <strong>never lose one</strong>, even if the downstream ERP call fails or the app restarts mid-processing. Build the <em>reliable acquisition</em> pattern: accept + persist first, process asynchronously afterwards.</p><ul><li>An <strong>acquisition flow</strong> that receives the order, writes it to a <strong>persistent VM queue</strong>, and immediately returns <code>202 Accepted</code>.</li><li>A separate <strong>processing flow</strong> whose VM Listener consumes the queue with <code>transactionalAction=\"ALWAYS_BEGIN\"</code> and calls a (failable) ERP subflow.</li></ul><p>Then prove it: make the ERP call fail and confirm the message returns to the queue instead of being lost.</p>",
+   "given": [
+    {
+     "label": "Acquisition flow (sketch)",
+     "code": "<flow name=\"accept-order\">\n  <http:listener path=\"/orders\"/>\n  <!-- publish to VM, then respond 202 -->\n  <http:response statusCode=\"202\"/>\n</flow>"
+    },
+    {
+     "label": "Failable ERP subflow",
+     "code": "<sub-flow name=\"callErp\">\n  <raise-error type=\"APP:ERP_DOWN\"/>   <!-- toggle to simulate an outage -->\n</sub-flow>"
+    }
+   ],
+   "steps": [
+    "Create a VM config with a PERSISTENT queue named 'orders'",
+    "Acquisition flow: vm:publish to 'orders', then set the HTTP response to 202",
+    "Processing flow: vm:listener on 'orders' with transactionalAction=ALWAYS_BEGIN, then flow-ref callErp",
+    "Run with the ERP subflow raising an error; watch the message roll back and redeliver",
+    "Remove the raise-error and confirm the order is processed exactly once"
+   ],
+   "solution": [
+    {
+     "label": "app.xml (essential parts)",
+     "code": "<vm:config name=\"VM\">\n  <vm:queues>\n    <vm:queue queueName=\"orders\" queueType=\"PERSISTENT\"/>\n  </vm:queues>\n</vm:config>\n\n<flow name=\"accept-order\">\n  <http:listener config-ref=\"HTTP\" path=\"/orders\"/>\n  <vm:publish config-ref=\"VM\" queueName=\"orders\"/>\n  <set-payload value='#[{accepted: true}]'/>\n  <http:response statusCode=\"202\"/>\n</flow>\n\n<flow name=\"process-order\">\n  <vm:listener config-ref=\"VM\" queueName=\"orders\"\n               transactionalAction=\"ALWAYS_BEGIN\"/>\n  <flow-ref name=\"callErp\"/>\n  <logger message=\"#['delivered ' ++ (payload.id default '?')]\"/>\n</flow>"
+    }
+   ],
+   "solutionNotes": "<p>The pattern splits a non-transactional source (HTTP) from transactional processing. Because the VM queue is <strong>persistent</strong> and the listener <strong>begins a transaction</strong>, a failure anywhere in <code>process-order</code> rolls the message back onto the queue for redelivery — the caller already got its 202, so nothing is lost. Contrast with calling the ERP directly inside <code>accept-order</code>: an outage there would fail the client's request and drop the order.</p>"
+  },
+  {
+   "id": "m2-ex-02",
+   "section": "d1",
+   "title": "Bound a fragile backend with Until Successful + idempotency",
+   "level": "medium",
+   "where": "Anypoint Studio",
+   "task": "<p>A flow calls a flaky payment API that occasionally returns transient errors. Requirement: retry it a few times before giving up, but the payment operation is <strong>not idempotent</strong>, so a naive retry could double-charge. Build a retrying call that is safe.</p>",
+   "given": [
+    {
+     "label": "Given",
+     "code": "- Payment API: POST /charge  (sometimes 503, succeeds on retry)\n- Each request carries a unique orderId in the payload\n- A double charge for the same orderId is unacceptable"
+    }
+   ],
+   "steps": [
+    "Wrap the HTTP Request in an Until Successful scope (maxRetries=3, millisBetweenRetries=2000)",
+    "Make the call idempotent from the API's side by sending an idempotency key header derived from orderId",
+    "Decide what to do when retries are exhausted (MULE:RETRY_EXHAUSTED) — route to a DLQ or alert",
+    "Confirm: on a transient 503 it retries; on repeated success for the same key the backend charges once"
+   ],
+   "solution": [
+    {
+     "label": "Flow fragment",
+     "code": "<until-successful maxRetries=\"3\" millisBetweenRetries=\"2000\">\n  <http:request method=\"POST\" path=\"/charge\" config-ref=\"Payment\">\n    <http:headers>#[{ 'Idempotency-Key': payload.orderId }]</http:headers>\n  </http:request>\n</until-successful>\n<error-handler>\n  <on-error-propagate type=\"MULE:RETRY_EXHAUSTED\">\n    <vm:publish queueName=\"payment-dlq\" config-ref=\"VM\"/>\n  </on-error-propagate>\n</error-handler>"
+    }
+   ],
+   "solutionNotes": "<p>Until Successful runs 1 initial attempt + <code>maxRetries</code>, so <code>maxRetries=3</code> means up to 4 calls; exhaustion raises <code>MULE:RETRY_EXHAUSTED</code>. Retrying a non-idempotent operation is only safe if the <em>receiver</em> can dedupe — hence the idempotency key. Retries alone don't make an operation safe; the key is what prevents the double charge.</p>"
+  },
+  {
+   "id": "m2-ex-03",
+   "section": "d1",
+   "title": "Choose and configure a streaming strategy for a 2 GB file",
+   "level": "medium",
+   "where": "Anypoint Studio",
+   "task": "<p>A flow reads a 2 GB CSV from SFTP, and <strong>two</strong> downstream components each need to read the full stream. Configure streaming so the app doesn't run out of memory <em>and</em> both consumers can read it. Then change the requirement to a single read-once passthrough and adjust.</p>",
+   "given": [
+    {
+     "label": "Given",
+     "code": "- Source: <sftp:read path=\"huge.csv\"/>\n- Consumer 1: a DataWeave transform\n- Consumer 2: a Logger of a summary\n- Worker memory is limited (well under 2 GB)"
+    }
+   ],
+   "steps": [
+    "Because two components read it, the stream must be REPEATABLE — pick repeatable file-stored streaming",
+    "Set a small inMemorySize so most of the 2 GB spills to disk instead of RAM",
+    "Then, for the alternative single-read case, switch to a non-repeatable stream and explain the trade-off"
+   ],
+   "solution": [
+    {
+     "label": "Repeatable, two readers",
+     "code": "<sftp:read path=\"huge.csv\" config-ref=\"SFTP\">\n  <repeatable-file-store-stream inMemorySize=\"1\" bufferUnit=\"MB\"/>\n</sftp:read>\n<!-- both the Transform and the Logger can now read the payload -->"
+    },
+    {
+     "label": "Non-repeatable, single reader",
+     "code": "<sftp:read path=\"huge.csv\" config-ref=\"SFTP\">\n  <non-repeatable-stream/>\n</sftp:read>\n<!-- fastest, lowest memory; the payload can be read ONCE -->"
+    }
+   ],
+   "solutionNotes": "<p>Two questions pick the strategy: <em>how big?</em> and <em>read how many times?</em> Multiple reads → repeatable (buffered so it can replay); huge payload → file-store variant with a small in-memory threshold so it overflows to disk. Read-once passthrough → non-repeatable (zero buffering, lowest memory) — but a second read then fails. Logging <code>#[payload]</code> mid-flow secretly consumes a non-repeatable stream: a classic exam trap.</p>"
+  },
+  {
+   "id": "m2-ex-04",
+   "section": "d1",
+   "title": "Atomic write to two systems with an XA transaction",
+   "level": "hard",
+   "where": "Anypoint Studio",
+   "task": "<p>A flow must consume a JMS message and insert derived rows into a database so that <strong>both commit or both roll back</strong> — a failure after the DB insert must return the message to the queue. Configure it correctly, then prove the rollback.</p>",
+   "given": [
+    {
+     "label": "Given",
+     "code": "- Source: JMS listener on queue 'events'\n- Then: <db:insert> into an audit table\n- Then: a step that can fail (raise APP:BOOM to test)\n- Requirement: JMS redelivery AND DB rollback together"
+    }
+   ],
+   "steps": [
+    "Configure BOTH the JMS and Database connectors for XA transactions",
+    "Set the JMS listener's transactionalAction to ALWAYS_BEGIN (it starts the XA transaction)",
+    "Put the db:insert and the failing step inside that transactional scope",
+    "Raise APP:BOOM after the insert; confirm the row is NOT committed and the JMS message is redelivered"
+   ],
+   "solution": [
+    {
+     "label": "Flow (essential parts)",
+     "code": "<jms:listener config-ref=\"JMS_XA\" destination=\"events\"\n              transactionalAction=\"ALWAYS_BEGIN\"\n              transactionType=\"XA\"/>\n<db:insert config-ref=\"DB_XA\">\n  <db:sql>INSERT INTO audit(payload) VALUES(:p)</db:sql>\n  <db:input-parameters>#[{ p: write(payload,'application/json') }]</db:input-parameters>\n</db:insert>\n<raise-error type=\"APP:BOOM\"/>   <!-- both JMS + DB roll back -->"
+    }
+   ],
+   "solutionNotes": "<p>An XA (two-phase commit) transaction spans multiple resources as one atomic unit — only <strong>transactional</strong> connectors (JMS, VM, Database) can enrol; HTTP/File/SFTP cannot. The source with <code>ALWAYS_BEGIN</code> owns the transaction; an error reaching an <strong>On Error Propagate</strong> at that level rolls everything back, so the DB insert is undone and the JMS message redelivered. Watch the trap: an <strong>On Error Continue</strong> would <em>commit</em> the partial work instead.</p>"
+  },
+  {
+   "id": "m2-ex-05",
+   "section": "d2",
+   "title": "Standardize builds with a Mule parent POM",
+   "level": "medium",
+   "where": "Any editor / Maven",
+   "task": "<p>Three Mule projects duplicate the same plugin versions, repository definitions, and common properties. Create a <strong>parent POM</strong> they can all inherit from so those are declared once, and show how a child references it.</p>",
+   "given": [
+    {
+     "label": "Duplicated across every child pom.xml",
+     "code": "<properties>\n  <app.runtime>4.4.0</app.runtime>\n  <mule.maven.plugin.version>4.1.1</mule.maven.plugin.version>\n</properties>\n<!-- + the same <pluginRepositories> and <distributionManagement> block -->"
+    }
+   ],
+   "steps": [
+    "Create a new Maven module with <packaging>pom</packaging> holding the shared properties, pluginManagement, and repositories",
+    "Deploy/install the parent so children can resolve it",
+    "In each child pom.xml, add a <parent> element pointing at it and delete the now-inherited blocks",
+    "Confirm a child still builds with mvn clean package, inheriting everything"
+   ],
+   "solution": [
+    {
+     "label": "parent/pom.xml",
+     "code": "<project>\n  <groupId>com.acme</groupId>\n  <artifactId>mule-parent</artifactId>\n  <version>1.0.0</version>\n  <packaging>pom</packaging>\n  <properties>\n    <app.runtime>4.4.0</app.runtime>\n    <mule.maven.plugin.version>4.1.1</mule.maven.plugin.version>\n  </properties>\n  <build><pluginManagement>...</pluginManagement></build>\n  <pluginRepositories>...</pluginRepositories>\n  <distributionManagement>...</distributionManagement>\n</project>"
+    },
+    {
+     "label": "child/pom.xml",
+     "code": "<parent>\n  <groupId>com.acme</groupId>\n  <artifactId>mule-parent</artifactId>\n  <version>1.0.0</version>\n</parent>\n<artifactId>orders-api</artifactId>\n<!-- properties, pluginManagement, repos all inherited -->"
+    }
+   ],
+   "solutionNotes": "<p>A <code>pom</code>-packaged parent is the standard Maven mechanism for organization-wide consistency: declare plugin versions, repositories, and properties once and inherit them everywhere. Children override only what differs. This is exam-relevant for 'maintainable and modular' — the alternative (copy-paste) is exactly the drift the objective warns against.</p>"
+  },
+  {
+   "id": "m2-ex-06",
+   "section": "d2",
+   "title": "Publish and consume a reusable module via Exchange",
+   "level": "hard",
+   "where": "Anypoint Studio / Maven",
+   "task": "<p>Twelve apps re-implement the same error-response formatting and logging. Package it <strong>once</strong> as a reusable Mule plugin/library, publish it to <strong>Exchange</strong>, and consume it from another app as a dependency — no copy-paste.</p>",
+   "given": [
+    {
+     "label": "The shared logic (today copy-pasted)",
+     "code": "<sub-flow name=\"format-error\">\n  <ee:transform>...standard error envelope...</ee:transform>\n  <logger level=\"ERROR\" message=\"#[payload]\"/>\n</sub-flow>"
+    }
+   ],
+   "steps": [
+    "Create a Mule project containing the shared flows; give it a groupId/artifactId and a proper version",
+    "Configure Exchange as the distribution repository and run mvn deploy to publish it as a reusable asset",
+    "In a consumer app, add it as a dependency (from Exchange) in pom.xml",
+    "Reference the imported sub-flow from the consumer's flows and build"
+   ],
+   "solution": [
+    {
+     "label": "Library pom.xml (publish)",
+     "code": "<distributionManagement>\n  <repository>\n    <id>exchange</id>\n    <url>https://maven.anypoint.mulesoft.com/api/v3/organizations/${orgId}/maven</url>\n  </repository>\n</distributionManagement>\n<!-- then: mvn deploy  (authenticated via a connected app / settings.xml) -->"
+    },
+    {
+     "label": "Consumer pom.xml (reuse)",
+     "code": "<dependency>\n  <groupId>${orgId}</groupId>\n  <artifactId>common-error-handling</artifactId>\n  <version>1.0.0</version>\n  <classifier>mule-plugin</classifier>\n</dependency>"
+    }
+   ],
+   "solutionNotes": "<p>Publishing shared code as a <strong>versioned Exchange asset</strong> gives controlled reuse, discoverability, and upgrade management across teams — the opposite of copy-paste drift. The <code>mule-plugin</code> classifier makes the artifact's flows/configs importable; consumers pin a version and upgrade deliberately. This is the 'modular applications' story the exam expects, and it's why one giant app-of-everything is the wrong answer.</p>"
+  },
+  {
+   "id": "m2-ex-07",
+   "section": "d3",
+   "title": "Encrypt secrets with the Secure Properties module",
+   "level": "medium",
+   "where": "Anypoint Studio (Secure Properties Tool)",
+   "task": "<p>A properties file holds a plaintext database password committed to Git. Move it to <strong>encrypted secure properties</strong> so the artifact is safe to share, with the decryption key supplied at deploy time (never in the repo).</p>",
+   "given": [
+    {
+     "label": "config.yaml (before)",
+     "code": "db:\n  user: app\n  password: S3cr3tP@ss   # plaintext, in Git — must be fixed"
+    }
+   ],
+   "steps": [
+    "Encrypt the value with the Secure Properties Tool (algorithm Blowfish/AES) to get an ![...] ciphertext",
+    "Store the ciphertext in config.yaml and reference it via a Secure Configuration Properties element",
+    "Read the value in the app with ${secure::db.password}",
+    "Supply the key ONLY at deploy time via -Dsecure.key=... (or a hidden platform property), never committed"
+   ],
+   "solution": [
+    {
+     "label": "config.yaml (after)",
+     "code": "db:\n  user: app\n  password: \"![qW8v...ciphertext...==]\""
+    },
+    {
+     "label": "app.xml + run",
+     "code": "<secure-properties:config name=\"Secure_Props\"\n    file=\"config.yaml\" key=\"${secure.key}\">\n  <secure-properties:encrypt algorithm=\"Blowfish\" mode=\"CBC\"/>\n</secure-properties:config>\n\n<db:config ...><db:my-connection password=\"${secure::db.password}\"/></db:config>\n\n<!-- deploy:  -Dsecure.key=THEKEY   (or a hidden CloudHub property) -->"
+    }
+   ],
+   "solutionNotes": "<p>The whole point of encrypting properties is defeated if the <strong>key</strong> travels with the artifact (or in the same repo). The <code>![...]</code> ciphertext is safe to commit; the key is supplied out-of-band — a startup argument, CI/CD secret, or platform property marked hidden. Reference encrypted values with the <code>secure::</code> prefix. A common failure to recognize: <code>Could not resolve placeholder secure::db.password</code> means the key/config wasn't provided.</p>"
+  },
+  {
+   "id": "m2-ex-08",
+   "section": "d3",
+   "title": "Configure two-way TLS for a partner mutual-auth API",
+   "level": "hard",
+   "where": "Anypoint Studio",
+   "task": "<p>An HTTP Request to a partner API fails the TLS handshake with <code>Received fatal alert: certificate_required</code>. The partner enforces <strong>mutual TLS</strong>. Configure a TLS context so your app presents a client certificate <em>and</em> trusts the partner's CA.</p>",
+   "given": [
+    {
+     "label": "Given",
+     "code": "- keystore.jks : your client key + cert (present to the partner)\n- truststore.jks : the partner's CA cert (to validate their server)\n- Current config has NO tls:context on the requester"
+    }
+   ],
+   "steps": [
+    "Add a tls:context to the HTTP Request config",
+    "Configure tls:key-store (your identity) so the app can present a client certificate",
+    "Configure tls:trust-store (the partner's CA) so the app validates the partner's server cert",
+    "Re-run and confirm the handshake completes"
+   ],
+   "solution": [
+    {
+     "label": "HTTP Request config with mTLS",
+     "code": "<http:request-config name=\"Partner\">\n  <http:request-connection host=\"partner.example.com\" port=\"443\" protocol=\"HTTPS\">\n    <tls:context>\n      <tls:key-store type=\"jks\" path=\"keystore.jks\"\n                     keyPassword=\"${secure::ks.key}\" password=\"${secure::ks.pass}\"/>\n      <tls:trust-store type=\"jks\" path=\"truststore.jks\"\n                       password=\"${secure::ts.pass}\"/>\n    </tls:context>\n  </http:request-connection>\n</http:request-config>"
+    }
+   ],
+   "solutionNotes": "<p>Mutual TLS needs both halves: the <strong>key-store</strong> holds your identity (the client cert you present — its absence caused <code>certificate_required</code>), and the <strong>trust-store</strong> holds the CA you use to validate the partner's server. One-way TLS configures only the trust-store. Note the passwords themselves are pulled from secure properties, tying this exercise back to secrets management.</p>"
+  },
+  {
+   "id": "m2-ex-09",
+   "section": "d4",
+   "title": "Structured logging: async loggers, levels, and a JSON layout",
+   "level": "medium",
+   "where": "Anypoint Studio (log4j2.xml)",
+   "task": "<p>Tune an app's <code>log4j2.xml</code>: make application logs <strong>async</strong> for throughput, quiet the runtime to WARN, keep your package at INFO, and emit a layout that includes the <strong>correlation ID</strong> so one transaction can be traced across apps.</p>",
+   "given": [
+    {
+     "label": "Requirements",
+     "code": "- com.acme.orders  -> INFO, asynchronous\n- org.mule.runtime -> WARN\n- every log line must include the correlationId\n- audit logger com.acme.audit must stay SYNCHRONOUS (no loss on crash)"
+    }
+   ],
+   "steps": [
+    "Use AsyncLogger for com.acme.orders and a plain Logger for com.acme.audit",
+    "Set org.mule.runtime to WARN",
+    "Add %X{correlationId} to the PatternLayout (or use a JSON layout)",
+    "Explain the async trade-off you are accepting"
+   ],
+   "solution": [
+    {
+     "label": "log4j2.xml (essential parts)",
+     "code": "<Appenders>\n  <RollingFile name=\"file\" fileName=\"app.log\" ...>\n    <PatternLayout pattern=\"%d %-5p [%X{correlationId}] %c{1} - %m%n\"/>\n  </RollingFile>\n</Appenders>\n<Loggers>\n  <AsyncLogger name=\"com.acme.orders\" level=\"INFO\"/>\n  <Logger name=\"com.acme.audit\" level=\"INFO\" additivity=\"false\">\n    <AppenderRef ref=\"file\"/>\n  </Logger>\n  <AsyncLogger name=\"org.mule.runtime\" level=\"WARN\"/>\n  <Root level=\"INFO\"><AppenderRef ref=\"file\"/></Root>\n</Loggers>"
+    }
+   ],
+   "solutionNotes": "<p><code>%X{correlationId}</code> pulls Mule's correlation ID from the thread context so a single search returns a transaction's lines across apps (Mule propagates it via the X-Correlation-ID header). <strong>Async</strong> loggers raise throughput and lower latency, but buffered entries can be lost on a crash and strict ordering weakens — so audit-critical logs stay <strong>synchronous</strong>. That selective-sync decision is the exam's favourite async-logging nuance.</p>"
+  },
+  {
+   "id": "m2-ex-10",
+   "section": "d4",
+   "title": "Emit a business-level metric with Custom Business Events",
+   "level": "medium",
+   "where": "Anypoint Studio",
+   "task": "<p>Operations wants to alert when fewer than 100 orders/hour flow through the platform — a <strong>business</strong> signal, independent of CPU/HTTP health. Instrument the order flow so this can be tracked and alerted in Anypoint Monitoring.</p>",
+   "given": [
+    {
+     "label": "Given",
+     "code": "- The order flow processes each order and knows payload.orderId and payload.amount\n- Alert target: orders-per-hour and total order value"
+    }
+   ],
+   "steps": [
+    "Add a Custom Business Event (tracking:transaction) to the order flow",
+    "Attach tracking metadata: the orderId (KPI identifier) and amount (a numeric tracking value)",
+    "Explain where this surfaces (Anypoint Monitoring business events / custom dashboards) vs. infra metrics",
+    "Note what would NOT work: a CPU alert says nothing about order volume"
+   ],
+   "solution": [
+    {
+     "label": "Flow fragment",
+     "code": "<flow name=\"process-order\">\n  ...\n  <tracking:transaction name=\"OrderProcessed\">\n    <tracking:meta-data key=\"orderId\" value=\"#[payload.orderId]\"/>\n    <tracking:meta-data key=\"amount\"  value=\"#[payload.amount]\"/>\n  </tracking:transaction>\n</flow>"
+    }
+   ],
+   "solutionNotes": "<p>Custom Business Events attach business KPIs (order id, value) to a transaction so they surface in Anypoint Monitoring dashboards and alerts — the right tool when the requirement is about <em>business</em> throughput, not technical health. Infrastructure metrics (CPU, memory, HTTP 5xx) cannot answer 'are enough orders flowing?'. Recognizing that gap is exactly what the monitoring objective tests.</p>"
+  },
+  {
+   "id": "m2-ex-11",
+   "section": "d5",
+   "title": "Write an MUnit test with Mock When and Assert That",
+   "level": "medium",
+   "where": "Anypoint Studio (MUnit)",
+   "task": "<p>Unit-test <code>getFlightsFlow</code> without a real database. Mock the <code>db:select</code> to return two canned rows, run the flow, and assert the response has size 2 — all with no broker or DB.</p>",
+   "given": [
+    {
+     "label": "Flow under test",
+     "code": "<flow name=\"getFlightsFlow\">\n  <http:listener path=\"/flights\"/>\n  <db:select doc:name=\"Select flights\" config-ref=\"DB\">\n    <db:sql>SELECT code FROM flights</db:sql>\n  </db:select>\n</flow>"
+    }
+   ],
+   "steps": [
+    "Create a suite under src/test/munit",
+    "Behavior: mock-when the db:select (matched by doc:name) to then-return a 2-element payload",
+    "Execution: flow-ref getFlightsFlow",
+    "Validation: assert-that sizeOf(payload) equalTo 2"
+   ],
+   "solution": [
+    {
+     "label": "getFlights-test.xml",
+     "code": "<munit:test name=\"getFlights-returns-200\">\n  <munit:behavior>\n    <munit-tools:mock-when processor=\"db:select\">\n      <munit-tools:with-attributes>\n        <munit-tools:with-attribute attributeName=\"doc:name\" whereValue=\"Select flights\"/>\n      </munit-tools:with-attributes>\n      <munit-tools:then-return>\n        <munit-tools:payload value='#[[{code:\"ER38sd\"},{code:\"ER45if\"}]]'/>\n      </munit-tools:then-return>\n    </munit-tools:mock-when>\n  </munit:behavior>\n  <munit:execution>\n    <flow-ref name=\"getFlightsFlow\"/>\n  </munit:execution>\n  <munit:validation>\n    <munit-tools:assert-that expression=\"#[sizeOf(payload)]\"\n        is=\"#[MunitTools::equalTo(2)]\"/>\n  </munit:validation>\n</munit:test>"
+    }
+   ],
+   "solutionNotes": "<p>The MUnit shape is Behavior → Execution → Validation (arrange/mock → act → assert). <strong>Mock When</strong> replaces a processor matched by name/attributes with a canned result, so the DB never runs; <strong>Assert That</strong> checks an expression against a <code>MunitTools</code> matcher. To drive an error path instead, Mock When's <em>then-throw</em> raises a typed error (e.g. <code>DB:CONNECTIVITY</code>) deterministically.</p>"
+  },
+  {
+   "id": "m2-ex-12",
+   "section": "d5",
+   "title": "Verify interactions with Spy and Verify Call",
+   "level": "hard",
+   "where": "Anypoint Studio (MUnit)",
+   "task": "<p>A flow should call the audit logger <strong>exactly once</strong> and must enrich the event before the HTTP request runs. Write MUnit assertions that (a) <strong>verify</strong> the audit processor was called once, and (b) <strong>spy</strong> the event just before the HTTP Request to assert a header was set — without replacing either processor.</p>",
+   "given": [
+    {
+     "label": "Flow under test",
+     "code": "<flow name=\"submit\">\n  <flow-ref name=\"audit\" doc:name=\"Audit\"/>\n  <set-variable variableName=\"traceId\" value=\"#[uuid()]\"/>\n  <http:request doc:name=\"Send\" .../>\n</flow>"
+    }
+   ],
+   "steps": [
+    "Verify Call: assert the 'Audit' flow-ref was invoked times=1",
+    "Spy the 'Send' HTTP Request: in the before-block assert vars.traceId is not null",
+    "Note the distinction: Mock replaces, Spy observes without replacing, Verify counts"
+   ],
+   "solution": [
+    {
+     "label": "submit-test.xml (assertions)",
+     "code": "<munit:validation>\n  <munit-tools:verify-call processor=\"flow-ref\" times=\"1\">\n    <munit-tools:with-attributes>\n      <munit-tools:with-attribute attributeName=\"doc:name\" whereValue=\"Audit\"/>\n    </munit-tools:with-attributes>\n  </munit-tools:verify-call>\n</munit:validation>\n\n<munit-tools:spy processor=\"http:request\">\n  <munit-tools:with-attributes>\n    <munit-tools:with-attribute attributeName=\"doc:name\" whereValue=\"Send\"/>\n  </munit-tools:with-attributes>\n  <munit-tools:before-call>\n    <munit-tools:assert-that expression=\"#[vars.traceId]\"\n        is=\"#[MunitTools::notNullValue()]\"/>\n  </munit-tools:before-call>\n</munit-tools:spy>"
+    }
+   ],
+   "solutionNotes": "<p>The most-tested MUnit distinction: <strong>Mock When</strong> replaces a processor; <strong>Spy</strong> observes the event immediately before/after a processor that still runs; <strong>Verify Call</strong> asserts how many times a processor executed (times/atLeast/atMost). Here Verify proves the audit call happened once, and Spy checks state at a point in the flow without altering behaviour.</p>"
+  },
+  {
+   "id": "m2-ex-13",
+   "section": "d5",
+   "title": "Gate the build on MUnit coverage",
+   "level": "medium",
+   "where": "Any editor / Maven",
+   "task": "<p>CI must <strong>fail the build</strong> when MUnit coverage drops below thresholds. Configure the munit-maven-plugin so coverage runs, enforces 80% application / 70% resource / 60% flow coverage, and breaks <code>mvn test</code> when unmet.</p>",
+   "given": [
+    {
+     "label": "Given",
+     "code": "- Tests live in src/test/munit and pass\n- Pipeline runs 'mvn clean test'\n- Requirement: fail the build below the thresholds above"
+    }
+   ],
+   "steps": [
+    "Add the coverage block to the munit-maven-plugin configuration",
+    "Set runCoverage=true and failBuild=true",
+    "Set requiredApplicationCoverage / requiredResourceCoverage / requiredFlowCoverage",
+    "Confirm mvn test fails when a flow is under-covered"
+   ],
+   "solution": [
+    {
+     "label": "pom.xml (munit-maven-plugin)",
+     "code": "<plugin>\n  <groupId>com.mulesoft.munit.tools</groupId>\n  <artifactId>munit-maven-plugin</artifactId>\n  <configuration>\n    <coverage>\n      <runCoverage>true</runCoverage>\n      <failBuild>true</failBuild>\n      <requiredApplicationCoverage>80</requiredApplicationCoverage>\n      <requiredResourceCoverage>70</requiredResourceCoverage>\n      <requiredFlowCoverage>60</requiredFlowCoverage>\n      <formats><format>html</format><format>json</format></formats>\n    </coverage>\n  </configuration>\n</plugin>"
+    }
+   ],
+   "solutionNotes": "<p>MUnit binds to the Maven <strong>test</strong> phase; the coverage block with <code>failBuild=true</code> turns coverage into a CI quality gate — the build breaks below the application/resource/flow thresholds. Tests are excluded from the deployable JAR. The typical pipeline is <code>mvn clean package</code> (compile + MUnit + coverage) → publish → <code>mvn deploy -DmuleDeploy</code> per environment, promoting the same artifact.</p>"
+  }
  ]
 }
