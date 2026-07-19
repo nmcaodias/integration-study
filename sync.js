@@ -74,6 +74,9 @@
        exams  — union deduped by date, dropping attempts older than the reset
        srs    — latest review per card; auto-cards also honour their
                 question's tombstone
+       ex     — hands-on exercise done-marks keyed "<sid>:<exId>"; like read,
+                but the key's sid prefix also honours resets.topics[sid], and
+                resets.exq["<sid>:<exId>"] tombstones a single un-marked one
      So a reset propagates across devices, while progress made anywhere AFTER
      the reset is preserved. */
   function mergeCert(a, b) {
@@ -118,8 +121,16 @@
       srs[k] = !x ? y : !y ? x : ((y.t || 0) > (x.t || 0) ? y : x); // latest review wins
     });
 
+    const exqReset = k => Math.max((ra.exq || {})[k] || 0, (rb.exq || {})[k] || 0);
+    const ex = {};
+    new Set([...Object.keys(a.ex || {}), ...Object.keys(b.ex || {})]).forEach(k => {
+      const rt = Math.max(rmax("ex"), topicReset(k.split(":")[0]), exqReset(k));
+      const val = Math.max(Number((a.ex || {})[k] || 0), Number((b.ex || {})[k] || 0));
+      if (val > rt) ex[k] = val;
+    });
+
     const resets = {};
-    ["read", "qstats", "exams", "srs"].forEach(f => {
+    ["read", "qstats", "exams", "srs", "ex"].forEach(f => {
       const t = rmax(f);
       if (t) resets[f] = t;
     });
@@ -131,8 +142,13 @@
       qmap[qid] = Math.max((ra.q || {})[qid] || 0, (rb.q || {})[qid] || 0);
     });
     if (Object.keys(qmap).length) resets.q = qmap;
+    const exqmap = {};
+    new Set([...Object.keys(ra.exq || {}), ...Object.keys(rb.exq || {})]).forEach(k => {
+      exqmap[k] = Math.max((ra.exq || {})[k] || 0, (rb.exq || {})[k] || 0);
+    });
+    if (Object.keys(exqmap).length) resets.exq = exqmap;
 
-    return { read, qstats, exams, srs, resets };
+    return { read, qstats, exams, srs, ex, resets };
   }
   function merge(a, b) {
     a = a || {}; b = b || {};
