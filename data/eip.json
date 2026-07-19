@@ -223,13 +223,19 @@
    "level": "easy",
    "q": "In messaging, what does \"send and forget\" mean?",
    "options": [
-    "The sender deletes the message after sending so it cannot be traced",
-    "The sender writes the message to a channel and continues working; the messaging system delivers it, retrying as needed",
-    "The sender broadcasts the message to every application and ignores errors",
-    "The message is delivered only if the receiver is online at the moment of sending"
+    "The sender deletes the message after sending so it can no longer be traced anywhere",
+    "The sender puts the message on a channel and continues; the system delivers it, retrying if needed",
+    "The sender broadcasts the message to every application at once and simply ignores any errors",
+    "The message is delivered only if the receiver happens to be online at the moment of sending"
    ],
    "answer": 1,
-   "explanation": "The sender's only job is to hand the message to the channel. From then on the messaging system owns delivery — it stores the message and forwards it (retrying after failures) until the receiver consumes it, like e-mail for programs."
+   "explanation": "The sender's only job is to hand the message to the channel. From then on the messaging system owns delivery — it stores the message and forwards it (retrying after failures) until the receiver consumes it, like e-mail for programs.",
+   "optionNotes": [
+    "'Forget' doesn't mean delete or untraceable; the system still handles delivery.",
+    "Correct — the sender hands off to the channel and moves on; the messaging system ensures delivery.",
+    "It isn't broadcast-and-ignore-errors; delivery is reliable, not fire-blind.",
+    "The message is held and retried, so the receiver needn't be online at send time."
+   ]
   },
   {
    "id": "eip-102",
@@ -255,13 +261,19 @@
    "level": "medium",
    "q": "What does \"store and forward\" refer to?",
    "options": [
-    "A message archive kept for auditing and reporting",
-    "The messaging system persisting a message at each hop and retrying delivery until it succeeds",
-    "The sender keeping a copy of every message until the receiver acknowledges it in the application code",
-    "Forwarding messages to a backup data center"
+    "A long-term message archive kept purely for auditing and reporting",
+    "The system persists a message at each hop and retries delivery until it succeeds",
+    "The sender keeps a copy of every message until the receiver acknowledges it in app code",
+    "Forwarding all messages to a backup data center for resilience"
    ],
    "answer": 1,
-   "explanation": "Store and forward is the delivery mechanism that makes messaging reliable: the messaging system stores the message (memory or disk), forwards it toward the receiver, and repeats after any failure — without the applications doing anything."
+   "explanation": "Store and forward is the delivery mechanism that makes messaging reliable: the messaging system stores the message (memory or disk), forwards it toward the receiver, and repeats after any failure — without the applications doing anything.",
+   "optionNotes": [
+    "Store-and-forward is about reliable transit, not an audit archive.",
+    "Correct — each hop persists then forwards, retrying until the next hop accepts it.",
+    "The messaging system (not the application) holds and retries the message.",
+    "It isn't about data-center replication."
+   ]
   },
   {
    "id": "eip-104",
@@ -286,13 +298,19 @@
    "level": "medium",
    "q": "A company wants one implementation of \"credit check\" that its ordering, leasing, and onboarding systems all invoke. Which integration problem class is this?",
    "options": [
-    "Information portal",
-    "Data replication",
-    "Shared business function",
-    "Business-to-business integration"
+    "An Information Portal aggregation",
+    "A Data Replication problem",
+    "A Shared Business Function",
+    "A Business-to-Business integration"
    ],
    "answer": 2,
-   "explanation": "Providing one function used by many systems is the shared business function class. A portal aggregates data on a screen, replication keeps copies of data in sync, and B2B crosses company boundaries — different problems that call for different patterns."
+   "explanation": "Providing one function used by many systems is the shared business function class. A portal aggregates data on a screen, replication keeps copies of data in sync, and B2B crosses company boundaries — different problems that call for different patterns.",
+   "optionNotes": [
+    "A portal aggregates data for viewing; this is about invoking shared logic.",
+    "Data replication copies data; here systems call one shared operation.",
+    "Correct — one 'credit check' invoked by many systems is a shared business function.",
+    "B2B spans organizations; this is an internal shared function."
+   ]
   },
   {
    "id": "eip-106",
@@ -301,12 +319,18 @@
    "q": "Which scenario is messaging LEAST suited for?",
    "options": [
     "Propagating an address change to five downstream systems as it happens",
-    "Letting a warehouse system keep accepting orders while the ERP is down for maintenance",
+    "Letting a warehouse keep accepting orders while the ERP is down for maintenance",
     "A one-time migration of an entire 2 TB customer database into a new system",
     "Smoothing bursty request traffic in front of a slow legacy system"
    ],
    "answer": 2,
-   "explanation": "Messaging shines for frequent, small, immediate packets of data — not for bulk-moving a huge data set, where per-message overhead dominates and a bulk load (file transfer / ETL) is the right tool. The other three are textbook messaging wins (timeliness, disconnected operation, throttling)."
+   "explanation": "Messaging shines for frequent, small, immediate packets of data — not for bulk-moving a huge data set, where per-message overhead dominates and a bulk load (file transfer / ETL) is the right tool. The other three are textbook messaging wins (timeliness, disconnected operation, throttling).",
+   "optionNotes": [
+    "Incremental propagation of small changes is a messaging sweet spot.",
+    "Buffering during outages is exactly where messaging shines.",
+    "Correct — bulk one-time data movement suits File Transfer/ETL, not message-by-message.",
+    "Throttling bursts is a classic messaging use."
+   ]
   },
   {
    "id": "eip-107",
@@ -314,13 +338,19 @@
    "level": "hard",
    "q": "Why does the book say there is \"no call stack\" in asynchronous messaging, and what follows from it?",
    "options": [
-    "Messages cannot carry structured data, so state must be stored in a database",
-    "The sender's execution context is gone when the reply arrives, so state a reply needs must travel in the messages themselves",
-    "The messaging system limits message depth to prevent recursion",
-    "Handlers must be written in a stackless language"
+    "Messages are unable to carry any structured data, so shared state has to be kept in an external database instead",
+    "The sender's execution context is gone when the reply arrives, so needed state must travel in the messages",
+    "The messaging system caps message depth to prevent runaway recursion",
+    "Handlers therefore have to be written in a stackless language"
    ],
    "answer": 1,
-   "explanation": "With a synchronous call, the call stack holds where to return to and all local state. Asynchronously, the reply is a brand-new message processed later — possibly by another thread or process — so patterns like Return Address and Correlation Identifier exist to carry that lost context inside the messages."
+   "explanation": "With a synchronous call, the call stack holds where to return to and all local state. Asynchronously, the reply is a brand-new message processed later — possibly by another thread or process — so patterns like Return Address and Correlation Identifier exist to carry that lost context inside the messages.",
+   "optionNotes": [
+    "Messages carry structured data fine; the point is the lost context.",
+    "Correct — with no call stack, any state a reply depends on must be carried in the messages themselves.",
+    "There's no such recursion-depth cap involved.",
+    "No special stackless language is required."
+   ]
   },
   {
    "id": "eip-108",
@@ -328,13 +358,19 @@
    "level": "easy",
    "q": "According to the book, what is loose coupling?",
    "options": [
-    "Using as few integration points as possible",
+    "Using as few integration points between systems as possible",
     "Minimizing the assumptions integrated applications make about each other",
-    "Always preferring asynchronous communication",
+    "Always preferring asynchronous communication over synchronous",
     "Encrypting data so applications cannot inspect each other's messages"
    ],
    "answer": 1,
-   "explanation": "Coupling is measured in assumptions: about location, availability, language, data format. Loose coupling reduces those assumptions (channel names instead of addresses, self-contained messages in a common format, asynchrony) — at the price of a more complex, less deterministic system."
+   "explanation": "Coupling is measured in assumptions: about location, availability, language, data format. Loose coupling reduces those assumptions (channel names instead of addresses, self-contained messages in a common format, asynchrony) — at the price of a more complex, less deterministic system.",
+   "optionNotes": [
+    "Coupling is about assumptions, not the count of integration points.",
+    "Correct — loose coupling means each side assumes as little as possible about the other.",
+    "Async helps but isn't the definition of loose coupling.",
+    "Encryption is unrelated to coupling."
+   ]
   },
   {
    "id": "eip-201",
@@ -342,13 +378,19 @@
    "level": "easy",
    "q": "Which integration style keeps data instantly consistent for all applications but forces them all to agree on one schema?",
    "options": [
-    "File Transfer",
-    "Shared Database",
-    "Remote Procedure Invocation",
-    "Messaging"
+    "File Transfer between the applications",
+    "A Shared Database all applications use",
+    "Remote Procedure Invocation between them",
+    "Messaging over a broker"
    ],
    "answer": 1,
-   "explanation": "A shared database gives everyone the same, always-current data — but the single schema must satisfy every application, so any change becomes a negotiation among all of them, and packaged apps often can't participate at all."
+   "explanation": "A shared database gives everyone the same, always-current data — but the single schema must satisfy every application, so any change becomes a negotiation among all of them, and packaged apps often can't participate at all.",
+   "optionNotes": [
+    "File Transfer leaves consumers with stale, batch-delayed data.",
+    "Correct — a shared database gives instant consistency but forces one agreed schema on everyone.",
+    "RPC shares behavior, not one consistent data store.",
+    "Messaging decouples formats and doesn't impose one schema."
+   ]
   },
   {
    "id": "eip-202",
@@ -356,13 +398,19 @@
    "level": "medium",
    "q": "What is the principal weakness of File Transfer as an integration style?",
    "options": [
-    "It requires expensive middleware",
+    "It requires expensive specialized middleware to run",
     "Data timeliness — consumers work with stale data between batch exports",
-    "It cannot cross platform boundaries",
-    "Files cannot represent structured data"
+    "It cannot cross operating-system or platform boundaries",
+    "Files are unable to represent richly structured data"
    ],
    "answer": 1,
-   "explanation": "Files are universal and need no special infrastructure, but they are produced on a schedule. Between exports, every consumer sees out-of-date data, and shortening the interval just multiplies files, collisions and processing overhead."
+   "explanation": "Files are universal and need no special infrastructure, but they are produced on a schedule. Between exports, every consumer sees out-of-date data, and shortening the interval just multiplies files, collisions and processing overhead.",
+   "optionNotes": [
+    "File Transfer needs no special middleware — that's part of its appeal.",
+    "Correct — the main weakness is staleness: data is only as fresh as the last batch.",
+    "Files cross platforms easily; that's a strength.",
+    "Files can carry structured data (XML, etc.)."
+   ]
   },
   {
    "id": "eip-203",
@@ -387,13 +435,19 @@
    "level": "hard",
    "q": "The book criticizes RPC for creating a dangerous illusion. What is it?",
    "options": [
-    "That remote calls are secure because they cross process boundaries",
-    "That a remote call can be treated like a local call, hiding that it is far slower and can fail in ways a local call cannot",
-    "That every remote interface is versioned automatically",
-    "That the callee can process calls in any order"
+    "That remote calls are inherently secure simply because they cross a process or machine boundary on the network",
+    "That a remote call can be treated like a local one, hiding that it is far slower and can fail differently",
+    "That every remote interface is automatically versioned for you",
+    "That the callee may process incoming calls in any order it likes"
    ],
    "answer": 1,
-   "explanation": "RPC's whole point is making remote invocation look like a normal function call. But the network makes it orders of magnitude slower and adds failure modes (timeouts, partial failure) that local calls don't have — designs that ignore this are brittle and slow."
+   "explanation": "RPC's whole point is making remote invocation look like a normal function call. But the network makes it orders of magnitude slower and adds failure modes (timeouts, partial failure) that local calls don't have — designs that ignore this are brittle and slow.",
+   "optionNotes": [
+    "The illusion isn't about security.",
+    "Correct — RPC makes a remote call look local, masking latency and new failure modes.",
+    "RPC doesn't auto-version interfaces.",
+    "Ordering isn't the illusion the book warns about."
+   ]
   },
   {
    "id": "eip-205",
@@ -401,13 +455,19 @@
    "level": "medium",
    "q": "Which style shares FUNCTIONALITY rather than just data, while keeping the data owner's encapsulation?",
    "options": [
-    "File Transfer",
-    "Shared Database",
+    "File Transfer of shared data",
+    "A Shared Database of record",
     "Remote Procedure Invocation",
     "A shared network drive"
    ],
    "answer": 2,
-   "explanation": "With RPC, others invoke functions the owning application exposes, so its business logic always mediates access to its data. File transfer and shared database expose raw data, bypassing the owner's logic entirely."
+   "explanation": "With RPC, others invoke functions the owning application exposes, so its business logic always mediates access to its data. File transfer and shared database expose raw data, bypassing the owner's logic entirely.",
+   "optionNotes": [
+    "File Transfer shares data, not functionality.",
+    "A shared database shares data while breaking encapsulation.",
+    "Correct — RPC shares functionality while each system keeps its own data encapsulated.",
+    "A shared drive is just file sharing."
+   ]
   },
   {
    "id": "eip-206",
@@ -415,13 +475,19 @@
    "level": "medium",
    "q": "Why does the book present Messaging as combining the strengths of the other three styles?",
    "options": [
-    "It is the only style that needs no agreement on data format",
-    "It offers timely, frequent exchange like RPC, decoupled formats via transformation, and no requirement that both sides be up at once",
-    "It is always the cheapest option to operate",
-    "It removes the need for any middleware"
+    "It is the only integration style that needs no agreement whatsoever on data format between the two sides at all",
+    "It offers timely exchange like RPC, decoupled formats via transformation, and no need for both sides up at once",
+    "It is always the cheapest style to build and operate",
+    "It removes the need for any middleware whatsoever"
    ],
    "answer": 1,
-   "explanation": "Messaging delivers small data packets near-real-time (fixing file transfer's staleness), lets transformers reconcile formats (fixing the shared schema problem), can trigger behavior in the receiver (like RPC), and is asynchronous and store-and-forward (fixing RPC's temporal coupling). Its cost is a harder programming model — and it definitely still needs middleware."
+   "explanation": "Messaging delivers small data packets near-real-time (fixing file transfer's staleness), lets transformers reconcile formats (fixing the shared schema problem), can trigger behavior in the receiver (like RPC), and is asynchronous and store-and-forward (fixing RPC's temporal coupling). Its cost is a harder programming model — and it definitely still needs middleware.",
+   "optionNotes": [
+    "Messaging still coordinates formats (often via transformation).",
+    "Correct — it blends RPC's timeliness, format decoupling, and availability decoupling.",
+    "Cost isn't the book's argument.",
+    "Messaging relies on middleware (the broker)."
+   ]
   },
   {
    "id": "eip-207",
@@ -429,13 +495,19 @@
    "level": "hard",
    "q": "A retailer must push each price change to 12 downstream systems within a minute, without those systems being able to block the pricing team's releases. Which style fits best, and why?",
    "options": [
-    "Shared Database — everyone sees the change instantly",
-    "File Transfer — export a price file every night",
-    "Messaging — publish a price-change message; each consumer stays decoupled in format and availability",
+    "Shared Database — so everyone sees the change instantly",
+    "File Transfer — export a full price file every night for each of the twelve downstream systems to import",
+    "Messaging — publish a price-change message; consumers stay decoupled in format and availability",
     "RPC — call each of the 12 systems' update functions in sequence"
    ],
    "answer": 2,
-   "explanation": "The requirements are timeliness (minutes, not nightly), independence of the 12 consumers (no shared schema to negotiate, no lock-step availability), and one-to-many distribution — the messaging profile. A shared database would couple all 13 teams to one schema; sequential RPC couples releases and availability to all 12 consumers."
+   "explanation": "The requirements are timeliness (minutes, not nightly), independence of the 12 consumers (no shared schema to negotiate, no lock-step availability), and one-to-many distribution — the messaging profile. A shared database would couple all 13 teams to one schema; sequential RPC couples releases and availability to all 12 consumers.",
+   "optionNotes": [
+    "A shared database forces one schema and couples releases together.",
+    "Nightly files are far too slow for a one-minute requirement.",
+    "Correct — publish once; each consumer reacts decoupled, unable to block the pricing team.",
+    "Sequential RPC couples the producer to every consumer's availability."
+   ]
   },
   {
    "id": "eip-208",
@@ -446,10 +518,16 @@
     "File Transfer > Messaging > Shared Database",
     "Shared Database ≈ Messaging > File Transfer",
     "File Transfer > Shared Database > Messaging",
-    "All three offer the same timeliness"
+    "All three offer essentially the same timeliness"
    ],
    "answer": 1,
-   "explanation": "A shared database exposes changes the instant they commit, and messaging propagates them within moments; file transfer waits for the next batch export, which may be hours or days away."
+   "explanation": "A shared database exposes changes the instant they commit, and messaging propagates them within moments; file transfer waits for the next batch export, which may be hours or days away.",
+   "optionNotes": [
+    "File Transfer is the least timely, not the most.",
+    "Correct — shared DB and messaging are near-immediate; file transfer lags by its batch interval.",
+    "This inverts the ranking.",
+    "Their timeliness differs markedly."
+   ]
   },
   {
    "id": "eip-301",
@@ -457,13 +535,19 @@
    "level": "easy",
    "q": "What are the two parts of a message, and who uses each?",
    "options": [
-    "Header (used by the messaging system) and body (payload the messaging system ignores)",
+    "Header (used by the messaging system) and body (payload the system ignores)",
     "Envelope (used by the sender) and letter (used by the receiver)",
     "Key and value, both used only by the receiver",
-    "Header (used by the receiver) and body (used by the messaging system for routing)"
+    "Header (used by the receiver) and body (used by the system for routing)"
    ],
    "answer": 0,
-   "explanation": "The header carries the metadata the messaging system needs to move the message (destination, ids, expiration); the body is the application payload, which the messaging system treats as opaque bytes."
+   "explanation": "The header carries the metadata the messaging system needs to move the message (destination, ids, expiration); the body is the application payload, which the messaging system treats as opaque bytes.",
+   "optionNotes": [
+    "Correct — the header carries system metadata; the body is the payload the system doesn't interpret.",
+    "That's an analogy, not the header/body split the book defines.",
+    "A message isn't just a key/value used by the receiver.",
+    "This reverses the roles — the system uses the header, not the body, for routing."
+   ]
   },
   {
    "id": "eip-302",
@@ -472,12 +556,18 @@
    "q": "What distinguishes a Message Router from a general filter in a pipes-and-filters chain?",
    "options": [
     "A router transforms the message body into the destination's format",
-    "A router consumes from one channel and republishes the message unmodified to one of several output channels",
-    "A router merges several input channels into one output message",
-    "A router persists messages for auditing"
+    "A router consumes from one channel and republishes the message unmodified to one of several outputs",
+    "A router merges several separate input channels together into one single combined output message for the receiver",
+    "A router persists messages to disk for later auditing"
    ],
    "answer": 1,
-   "explanation": "A router's only job is deciding the next channel — it does not modify the message. Changing content is the translator's job; merging messages is the aggregator's."
+   "explanation": "A router's only job is deciding the next channel — it does not modify the message. Changing content is the translator's job; merging messages is the aggregator's.",
+   "optionNotes": [
+    "Transforming the body is a Message Translator's job, not a router's.",
+    "Correct — a router redirects a message unchanged to one of several output channels.",
+    "Merging inputs is an Aggregator's job.",
+    "Persisting for audit isn't routing."
+   ]
   },
   {
    "id": "eip-303",
@@ -521,13 +611,19 @@
    "level": "medium",
    "q": "Why does the book insist applications talk to the messaging system only through Message Endpoints?",
    "options": [
-    "Endpoints compress messages to save bandwidth",
-    "Encapsulating messaging code in one layer keeps the application messaging-unaware, so the messaging details can change without rewriting the app",
-    "The messaging system refuses direct connections for security reasons",
-    "Endpoints are required to make messages transactional"
+    "Endpoints compress messages to save network bandwidth",
+    "Encapsulating messaging code in one layer keeps the app messaging-unaware, so details can change without rewrites",
+    "The messaging system flatly refuses any direct application connections for important security reasons of its own",
+    "Endpoints are required to make any message transactional"
    ],
    "answer": 1,
-   "explanation": "It's the same argument as a data-access layer: isolate the specialized API in one place. The application calls its own methods; the endpoint code turns those into sends and receives."
+   "explanation": "It's the same argument as a data-access layer: isolate the specialized API in one place. The application calls its own methods; the endpoint code turns those into sends and receives.",
+   "optionNotes": [
+    "Endpoints aren't about compression.",
+    "Correct — endpoints isolate messaging code so the app stays unaware and the plumbing can change freely.",
+    "The system doesn't forbid direct connections; endpoints are a design choice.",
+    "Transactions don't require the endpoint abstraction."
+   ]
   },
   {
    "id": "eip-306",
@@ -535,13 +631,19 @@
    "level": "easy",
    "q": "In messaging terms, what is a channel?",
    "options": [
-    "A physical TCP connection between two machines",
-    "A named, logical address inside the messaging system that senders write to and receivers read from",
-    "A thread pool that processes messages",
-    "A database table holding pending work"
+    "A single physical TCP network connection established directly between two specific machines in the network",
+    "A named, logical address in the messaging system that senders write to and receivers read from",
+    "A thread pool that processes incoming messages",
+    "A database table that holds pending work items"
    ],
    "answer": 1,
-   "explanation": "Channels are logical addresses, decoupled from physical machines. The sender knows the channel name and the message format — not who reads it or where they run."
+   "explanation": "Channels are logical addresses, decoupled from physical machines. The sender knows the channel name and the message format — not who reads it or where they run.",
+   "optionNotes": [
+    "A channel is logical, not a physical TCP link.",
+    "Correct — a channel is a named logical address that connects senders and receivers.",
+    "It isn't a thread pool.",
+    "It isn't a database table."
+   ]
   },
   {
    "id": "eip-307",
@@ -549,13 +651,19 @@
    "level": "hard",
    "q": "Three instances of a slow enrichment filter are deployed to drain a backlog. What consequence should the designer anticipate?",
    "options": [
-    "Messages will be duplicated three times downstream",
+    "Messages will be duplicated three times to the downstream step",
     "Messages may leave the enrichment step in a different order than they arrived",
-    "The upstream pipe will reject concurrent consumers",
-    "The messages' bodies will be merged"
+    "The upstream pipe will refuse to serve concurrent consumers",
+    "The messages' bodies will be silently merged together"
    ],
    "answer": 1,
-   "explanation": "Parallel instances process at different speeds, so completion order diverges from arrival order. If downstream steps need the original order, a Resequencer must restore it — a classic pipes-and-filters trade-off."
+   "explanation": "Parallel instances process at different speeds, so completion order diverges from arrival order. If downstream steps need the original order, a Resequencer must restore it — a classic pipes-and-filters trade-off.",
+   "optionNotes": [
+    "Competing consumers don't duplicate each message.",
+    "Correct — parallel consumers can finish out of order, so ordering across the step isn't preserved.",
+    "A pipe happily serves multiple competing consumers.",
+    "Bodies aren't merged by parallel processing."
+   ]
   },
   {
    "id": "eip-308",
@@ -563,13 +671,19 @@
    "level": "medium",
    "q": "Which root pattern answers the question \"how can systems using different data formats communicate\"?",
    "options": [
-    "Message Channel",
-    "Message Router",
-    "Message Translator",
-    "Message Endpoint"
+    "The Message Channel pattern",
+    "The Message Router pattern",
+    "The Message Translator pattern",
+    "The Message Endpoint pattern"
    ],
    "answer": 2,
-   "explanation": "The translator converts between message formats so neither side must adopt the other's. Routers move messages unchanged, channels connect, endpoints attach applications to the messaging system."
+   "explanation": "The translator converts between message formats so neither side must adopt the other's. Routers move messages unchanged, channels connect, endpoints attach applications to the messaging system.",
+   "optionNotes": [
+    "A channel moves messages; it doesn't reconcile formats.",
+    "A router redirects; it doesn't translate formats.",
+    "Correct — the Message Translator bridges systems that use different data formats.",
+    "An endpoint connects an app to the system; it doesn't translate."
+   ]
   },
   {
    "id": "eip-401",
@@ -577,13 +691,19 @@
    "level": "medium",
    "q": "An order message arrives with a negative quantity. The receiving application cannot process it. Where should the message go, and who decides?",
    "options": [
-    "The Dead Letter Channel — the messaging system decides",
-    "The Invalid Message Channel — the receiving application decides, based on the message's content",
+    "The Dead Letter Channel, and the underlying messaging system is the one that makes the decision here",
+    "The Invalid Message Channel, and the receiving application decides based on content",
     "Back to the sender's channel for automatic correction",
-    "It should be discarded to keep the queue clean"
+    "It should simply be discarded to keep the queue clean"
    ],
    "answer": 1,
-   "explanation": "The messaging system delivered the message just fine; it's the CONTENT the application can't accept. That's the Invalid Message Channel, and the receiver makes the call. The Dead Letter Channel is for messages the messaging system itself fails to DELIVER (expired, no destination, too many retries)."
+   "explanation": "The messaging system delivered the message just fine; it's the CONTENT the application can't accept. That's the Invalid Message Channel, and the receiver makes the call. The Dead Letter Channel is for messages the messaging system itself fails to DELIVER (expired, no destination, too many retries).",
+   "optionNotes": [
+    "Dead Letter is for system-level delivery failures, not content the app judges invalid.",
+    "Correct — the application routes content it can't process to the Invalid Message Channel.",
+    "There's no automatic sender-side correction.",
+    "Discarding loses the message and its diagnostic value."
+   ]
   },
   {
    "id": "eip-402",
@@ -608,13 +728,19 @@
    "level": "easy",
    "q": "Five services all need to react to every \"customer address changed\" event. Which channel type fits?",
    "options": [
-    "Point-to-Point Channel",
-    "Publish-Subscribe Channel",
-    "Dead Letter Channel",
-    "Datatype Channel"
+    "A Point-to-Point Channel to each service",
+    "A Publish-Subscribe Channel for the event",
+    "A Dead Letter Channel for the event",
+    "A Datatype Channel per message type"
    ],
    "answer": 1,
-   "explanation": "Publish-subscribe delivers a copy of each message to every subscriber — one publish, five deliveries, and a sixth consumer can be added without touching the publisher. Point-to-point would give the event to only one of the five."
+   "explanation": "Publish-subscribe delivers a copy of each message to every subscriber — one publish, five deliveries, and a sixth consumer can be added without touching the publisher. Point-to-point would give the event to only one of the five.",
+   "optionNotes": [
+    "Point-to-point delivers to one consumer, not all five.",
+    "Correct — pub-sub delivers a copy of each event to every interested subscriber.",
+    "Dead Letter is for undeliverable messages.",
+    "Datatype channels segregate by type, not fan-out to many."
+   ]
   },
   {
    "id": "eip-404",
@@ -622,13 +748,19 @@
    "level": "medium",
    "q": "What does Guaranteed Delivery add to ordinary store-and-forward, and at what cost?",
    "options": [
-    "It encrypts messages; the cost is CPU",
-    "It persists messages to disk at every hop so they survive broker crashes; the cost is performance",
-    "It adds automatic ordering; the cost is throughput",
-    "It guarantees the receiver processes the message exactly once; the cost is duplicate detection"
+    "It encrypts messages in transit; the cost is extra CPU",
+    "It persists messages to disk at each hop so they survive broker crashes; the cost is performance",
+    "It adds automatic ordering of messages; the cost is throughput",
+    "It guarantees the receiver processes each message exactly once; the cost is duplicate detection"
    ],
    "answer": 1,
-   "explanation": "Ordinary store-and-forward may hold messages in memory, which a crash wipes out. Guaranteed delivery makes the store persistent, surviving restarts — at the price of disk I/O per message. It says nothing about exactly-once processing; that's the Idempotent Receiver's territory."
+   "explanation": "Ordinary store-and-forward may hold messages in memory, which a crash wipes out. Guaranteed delivery makes the store persistent, surviving restarts — at the price of disk I/O per message. It says nothing about exactly-once processing; that's the Idempotent Receiver's territory.",
+   "optionNotes": [
+    "Guaranteed Delivery is about durability, not encryption.",
+    "Correct — messages are written to disk so a crash doesn't lose them, at a throughput cost.",
+    "It doesn't add ordering.",
+    "It ensures delivery, not exactly-once processing."
+   ]
   },
   {
    "id": "eip-405",
@@ -636,13 +768,19 @@
    "level": "hard",
    "q": "You must integrate a packaged application that exposes no API, but its database schema is documented. Which Channel Adapter approach does the book describe for this, and what caveat comes with it?",
    "options": [
-    "A user-interface adapter; caveat: it is the most robust option",
+    "A user-interface adapter; caveat: it is actually the most robust option",
     "A database adapter; caveat: it bypasses the application's business logic",
-    "A business-logic adapter; caveat: it requires source code access",
-    "A messaging bridge; caveat: it needs a second broker"
+    "A business-logic adapter; caveat: it needs source-code access",
+    "A messaging bridge; caveat: it requires a second broker"
    ],
    "answer": 1,
-   "explanation": "A database adapter reads (or watches) the app's tables directly — practical when no API exists, but writes made this way skip the application's validation and business rules. A business-logic adapter is preferred when an API exists; UI adapters (screen scraping) are the fragile last resort."
+   "explanation": "A database adapter reads (or watches) the app's tables directly — practical when no API exists, but writes made this way skip the application's validation and business rules. A business-logic adapter is preferred when an API exists; UI adapters (screen scraping) are the fragile last resort.",
+   "optionNotes": [
+    "UI-level adapters are the most fragile, not the most robust.",
+    "Correct — going at the database skips the app's validations and business rules, the key caveat.",
+    "There's no code access here — only the schema is documented.",
+    "A bridge connects two messaging systems, not an app with no API."
+   ]
   },
   {
    "id": "eip-406",
@@ -668,13 +806,19 @@
    "level": "easy",
    "q": "Why would you give each message type its own channel (Datatype Channel)?",
    "options": [
-    "To make the messaging system validate the payload schema",
+    "So the messaging system validates the payload's schema for you",
     "So the receiver knows from the channel alone how to interpret every message it gets",
-    "To increase total throughput",
-    "Because publish-subscribe requires it"
+    "To increase the total throughput of the system",
+    "Because publish-subscribe channels require one type each"
    ],
    "answer": 1,
-   "explanation": "The channel becomes the type declaration: all messages on it share one format, so receivers need no per-message inspection. The alternatives when channels are too costly are a Format Indicator in each message or Selective Consumers."
+   "explanation": "The channel becomes the type declaration: all messages on it share one format, so receivers need no per-message inspection. The alternatives when channels are too costly are a Format Indicator in each message or Selective Consumers.",
+   "optionNotes": [
+    "The channel doesn't perform schema validation.",
+    "Correct — one type per channel lets the receiver infer meaning from the channel itself.",
+    "It isn't a throughput optimization.",
+    "Pub-sub doesn't require one type per channel."
+   ]
   },
   {
    "id": "eip-408",
@@ -682,13 +826,19 @@
    "level": "hard",
    "q": "After a merger, half the company runs on MSMQ and half on a JMS broker, and orders must flow between them. Which pattern applies?",
    "options": [
-    "Message Bus — replace both with one new broker",
-    "Messaging Bridge — paired adapters forwarding messages between corresponding channels of the two systems",
-    "Channel Adapter — connect MSMQ directly to the JMS applications",
-    "Datatype Channel — one channel per company"
+    "A Message Bus — replace both systems with one new broker",
+    "A Messaging Bridge — paired adapters forwarding messages between the two systems' channels",
+    "A Channel Adapter — connect the MSMQ queues directly to each of the JMS-based applications on the other side",
+    "A Datatype Channel — one channel per company"
    ],
    "answer": 1,
-   "explanation": "A Messaging Bridge is precisely the connection between two messaging systems: adapters on each side forward between corresponding channels so every application keeps its native broker. Replacing both systems is rarely realistic, and a single Channel Adapter connects an APPLICATION, not a broker, to a channel."
+   "explanation": "A Messaging Bridge is precisely the connection between two messaging systems: adapters on each side forward between corresponding channels so every application keeps its native broker. Replacing both systems is rarely realistic, and a single Channel Adapter connects an APPLICATION, not a broker, to a channel.",
+   "optionNotes": [
+    "You don't rip-and-replace both brokers after a merger.",
+    "Correct — a Messaging Bridge links the two brokers, forwarding between corresponding channels.",
+    "A Channel Adapter connects an app to messaging, not two brokers together.",
+    "Datatype channels don't bridge separate messaging systems."
+   ]
   },
   {
    "id": "eip-501",
@@ -696,13 +846,19 @@
    "level": "easy",
    "q": "\"OrderShipped\" is published so any interested system can react. Which message intent is this?",
    "options": [
-    "Command Message",
-    "Document Message",
-    "Event Message",
-    "Request Message"
+    "A Command Message",
+    "A Document Message",
+    "An Event Message",
+    "A Request Message"
    ],
    "answer": 2,
-   "explanation": "It announces that something happened, addressed to whoever cares — an event, typically on a publish-subscribe channel, where timeliness matters more than a rich payload."
+   "explanation": "It announces that something happened, addressed to whoever cares — an event, typically on a publish-subscribe channel, where timeliness matters more than a rich payload.",
+   "optionNotes": [
+    "A command tells a specific receiver to act; this just announces a fact.",
+    "A document message transfers data without implying a reaction.",
+    "Correct — 'OrderShipped' announces something happened for any interested subscriber: an event.",
+    "A request expects a reply; an event doesn't."
+   ]
   },
   {
    "id": "eip-502",
@@ -710,13 +866,19 @@
    "level": "medium",
    "q": "How does a requestor with many outstanding requests know which request a given reply answers?",
    "options": [
-    "Replies always arrive in the order the requests were sent",
-    "The reply carries a correlation identifier — the unique id of its request, copied over by the replier",
-    "The reply repeats the full request body",
-    "Each reply arrives on a channel named after the request's timestamp"
+    "Replies always arrive in the same order the requests were sent",
+    "The reply carries a correlation identifier — the request's unique id, copied over by the replier",
+    "The reply repeats the full original request body for matching",
+    "Each reply arrives on a dedicated channel that is named after the original request's exact submission timestamp"
    ],
    "answer": 1,
-   "explanation": "The request carries a unique id (often its message id); the replier copies it into the reply's correlation identifier field, and the requestor matches it against its pending requests. Ordering can't be relied on in an asynchronous system."
+   "explanation": "The request carries a unique id (often its message id); the replier copies it into the reply's correlation identifier field, and the requestor matches it against its pending requests. Ordering can't be relied on in an asynchronous system.",
+   "optionNotes": [
+    "Reply ordering isn't guaranteed, so order can't identify the request.",
+    "Correct — the Correlation Identifier ties a reply back to its specific request.",
+    "Echoing the whole body is wasteful and unnecessary.",
+    "Timestamp-named channels aren't how correlation works."
+   ]
   },
   {
    "id": "eip-503",
@@ -724,13 +886,19 @@
    "level": "medium",
    "q": "Why does the request message carry a Return Address instead of the replier knowing the reply channel?",
    "options": [
-    "It encrypts the reply destination",
-    "Different requestors (or contexts) need replies on different channels, and the replier shouldn't be coupled to any of them",
-    "The messaging system requires it for routing the request",
+    "It encrypts the reply destination for security",
+    "Different requestors need replies on different channels, and the replier shouldn't be coupled to any",
+    "The messaging system itself strictly requires the Return Address in order to route the original request at all",
     "It lets the reply skip the messaging system entirely"
    ],
    "answer": 1,
-   "explanation": "Hardcoding a reply channel in the replier couples it to its callers. With a Return Address header, each request states where its answer should go and the replier simply honors it — like the return address on an envelope."
+   "explanation": "Hardcoding a reply channel in the replier couples it to its callers. With a Return Address header, each request states where its answer should go and the replier simply honors it — like the return address on an envelope.",
+   "optionNotes": [
+    "Return Address is about decoupling, not encryption.",
+    "Correct — the requestor names its own reply channel, so the replier stays decoupled from it.",
+    "The request routes without it; the address is for the reply.",
+    "Replies still go through the messaging system."
+   ]
   },
   {
    "id": "eip-504",
@@ -756,13 +924,19 @@
    "level": "easy",
    "q": "What is Request-Reply, structurally?",
    "options": [
-    "One bidirectional channel carrying both request and reply",
+    "One bidirectional channel carrying both the request and the reply",
     "A pair of one-way messages: a request on one channel and a reply on another",
     "A synchronous RPC call tunneled through the broker",
-    "A single message with two bodies"
+    "A single message that carries two separate bodies"
    ],
    "answer": 1,
-   "explanation": "Each direction is plain one-way messaging; the conversation is assembled from the two halves (with Return Address and Correlation Identifier holding it together). The requestor may block for the reply or handle it as a callback."
+   "explanation": "Each direction is plain one-way messaging; the conversation is assembled from the two halves (with Return Address and Correlation Identifier holding it together). The requestor may block for the reply or handle it as a callback.",
+   "optionNotes": [
+    "Channels are one-way; request-reply uses two of them.",
+    "Correct — it's two one-way messages over two channels, request and reply.",
+    "It isn't a tunneled synchronous RPC.",
+    "It's two messages, not one message with two bodies."
+   ]
   },
   {
    "id": "eip-506",
@@ -770,13 +944,19 @@
    "level": "hard",
    "q": "A stock-quote message is worthless 30 seconds after it is sent. What does the book recommend, and what happens when the limit passes?",
    "options": [
-    "Set a Message Expiration; the messaging system discards the message or dead-letters it instead of delivering it stale",
-    "Add a timestamp and let every receiver check freshness",
-    "Use Guaranteed Delivery so the quote always arrives",
-    "Resend the quote every 30 seconds and let duplicates accumulate"
+    "Set a Message Expiration; the system discards or dead-letters it instead of delivering stale",
+    "Add a timestamp and let every receiver check freshness itself",
+    "Use Guaranteed Delivery so the quote always eventually arrives",
+    "Resend the same quote every 30 seconds continuously and simply let the duplicate messages accumulate downstream"
    ],
    "answer": 0,
-   "explanation": "Message Expiration puts the shelf life in the header where the messaging SYSTEM enforces it — expired messages are never delivered as if fresh; they are discarded or parked on the Dead Letter Channel. Receiver-side timestamp checks work but burden every consumer."
+   "explanation": "Message Expiration puts the shelf life in the header where the messaging SYSTEM enforces it — expired messages are never delivered as if fresh; they are discarded or parked on the Dead Letter Channel. Receiver-side timestamp checks work but burden every consumer.",
+   "optionNotes": [
+    "Correct — Message Expiration lets the system drop/dead-letter a message that's no longer timely.",
+    "Pushing freshness checks onto every receiver duplicates effort and is error-prone.",
+    "Guaranteed Delivery ensures arrival, not timeliness — it can still be stale.",
+    "Flooding with resends creates duplicates without solving staleness."
+   ]
   },
   {
    "id": "eip-507",
@@ -784,13 +964,19 @@
    "level": "hard",
    "q": "For an Event Message, why does the book tolerate a minimal — even empty — body?",
    "options": [
-    "Events are not allowed to carry data",
-    "What matters is the timely fact that something happened; subscribers can fetch details on demand if they need them",
-    "Empty bodies compress better",
-    "Publish-subscribe channels have a small size limit"
+    "Events are not permitted to carry any data at all",
+    "What matters is the timely fact that something happened; subscribers can fetch details on demand",
+    "Empty message bodies compress more efficiently",
+    "Publish-subscribe channels enforce a strict, very small maximum size limit on every message body they carry"
    ],
    "answer": 1,
-   "explanation": "An event's value is its timeliness. The notification itself can be slim, with interested subscribers retrieving the current state when they react — trading an extra query for never distributing stale detail."
+   "explanation": "An event's value is its timeliness. The notification itself can be slim, with interested subscribers retrieving the current state when they react — trading an extra query for never distributing stale detail.",
+   "optionNotes": [
+    "Events may carry data; a minimal body is a choice, not a rule.",
+    "Correct — the notification's value is the timely fact; details can be pulled if needed.",
+    "Compression isn't the reason.",
+    "Pub-sub doesn't impose a tiny size limit."
+   ]
   },
   {
    "id": "eip-508",
@@ -833,13 +1019,19 @@
    "level": "easy",
    "q": "What distinguishes a Message Filter from a Content-Based Router?",
    "options": [
-    "A filter transforms the message; a router does not",
-    "A filter has one output channel and discards non-matching messages; a router chooses among several outputs and discards nothing",
-    "A filter is stateful; a router never is",
+    "A filter transforms the message body into another form, whereas a content-based router leaves the body unchanged",
+    "A filter has one output and discards non-matching messages; a router picks among outputs and discards nothing",
+    "A filter is stateful while a router is never stateful",
     "Nothing — they are two names for the same pattern"
    ],
    "answer": 1,
-   "explanation": "The CBR always delivers the message somewhere — it picks the destination. The filter's decision is pass-or-drop on a single output. (A duplicate-eliminating filter is a stateful VARIANT, but statefulness isn't the defining difference.)"
+   "explanation": "The CBR always delivers the message somewhere — it picks the destination. The filter's decision is pass-or-drop on a single output. (A duplicate-eliminating filter is a stateful VARIANT, but statefulness isn't the defining difference.)",
+   "optionNotes": [
+    "Neither transforms the body; that's a Translator.",
+    "Correct — a Message Filter drops what doesn't match; a Content-Based Router redirects everything to a chosen output.",
+    "Statefulness isn't the distinction.",
+    "They are distinct patterns."
+   ]
   },
   {
    "id": "eip-603",
@@ -847,13 +1039,19 @@
    "level": "hard",
    "q": "A quote request must go to all approved vendors, and the best bid received within 30 seconds should be returned. Which pattern combination is this?",
    "options": [
-    "Splitter + Resequencer",
-    "Scatter-Gather: broadcast (or Recipient List) + an Aggregator with a timeout completeness condition and a best-bid algorithm",
-    "Content-Based Router + Message Filter",
-    "Routing Slip through each vendor in sequence"
+    "A Splitter followed by a Resequencer",
+    "Scatter-Gather: broadcast (or Recipient List) plus an Aggregator with a timeout and a best-bid rule",
+    "A Content-Based Router feeding a Message Filter that keeps only the single best bid from the incoming replies",
+    "A Routing Slip visiting each vendor in sequence"
    ],
    "answer": 1,
-   "explanation": "Send one message to many parties, gather replies, condense to one answer = Scatter-Gather. The 30-second window is the aggregator's timeout completeness condition; picking the best bid is its aggregation algorithm. A routing slip would visit vendors one after another — wrong shape entirely."
+   "explanation": "Send one message to many parties, gather replies, condense to one answer = Scatter-Gather. The 30-second window is the aggregator's timeout completeness condition; picking the best bid is its aggregation algorithm. A routing slip would visit vendors one after another — wrong shape entirely.",
+   "optionNotes": [
+    "Splitter/Resequencer handles one message's parts, not parallel vendor bids.",
+    "Correct — broadcast to vendors, then aggregate the best bid within a timeout: Scatter-Gather.",
+    "Router+filter selects a path; it doesn't collect competing replies.",
+    "A Routing Slip is sequential, not a parallel solicitation."
+   ]
   },
   {
    "id": "eip-604",
@@ -878,13 +1076,19 @@
    "level": "medium",
    "q": "What makes the Aggregator and Resequencer different from most other routers in this chapter?",
    "options": [
-    "They modify message bodies",
-    "They are stateful — they must store messages across deliveries before they can emit output",
-    "They require publish-subscribe channels",
-    "They can only be implemented in a broker, never in an application"
+    "They actively modify the bodies of the messages that pass through them before emitting the output",
+    "They are stateful — they must store messages across deliveries before emitting output",
+    "They require publish-subscribe channels to work",
+    "They can only ever be implemented inside a broker"
    ],
    "answer": 1,
-   "explanation": "A CBR or filter can decide per message and forget. The aggregator holds partial groups and the resequencer buffers out-of-order messages — both must manage state, which brings persistence, memory, and never-completing-group concerns. (The resequencer, notably, does NOT modify messages — it only reorders them.)"
+   "explanation": "A CBR or filter can decide per message and forget. The aggregator holds partial groups and the resequencer buffers out-of-order messages — both must manage state, which brings persistence, memory, and never-completing-group concerns. (The resequencer, notably, does NOT modify messages — it only reorders them.)",
+   "optionNotes": [
+    "They don't alter bodies.",
+    "Correct — Aggregator and Resequencer hold messages (state) until they can emit a result.",
+    "They don't require pub-sub.",
+    "They can live in an application, not only a broker."
+   ]
   },
   {
    "id": "eip-606",
@@ -892,13 +1096,19 @@
    "level": "hard",
    "q": "How does a Dynamic Router learn where to send messages?",
    "options": [
-    "It broadcasts every message and measures which recipient answers fastest",
-    "Potential recipients announce their criteria on a control channel, and the router stores these rules in its rule base",
+    "It broadcasts every message to all recipients and measures which one happens to answer the fastest each time",
+    "Recipients announce their criteria on a control channel, and the router stores these in its rule base",
     "An administrator edits its configuration file for each new recipient",
-    "It reads the recipient from each message's Return Address"
+    "It reads the target from each message's Return Address field"
    ],
    "answer": 1,
-   "explanation": "The defining feature is self-registration: recipients publish their routing criteria to the router's control channel at startup (or on change), so routing stays efficient like a CBR without centrally maintained rules."
+   "explanation": "The defining feature is self-registration: recipients publish their routing criteria to the router's control channel at startup (or on change), so routing stays efficient like a CBR without centrally maintained rules.",
+   "optionNotes": [
+    "It doesn't race recipients by speed.",
+    "Correct — a Dynamic Router builds its rule base from recipients' self-announced criteria on a control channel.",
+    "The point is to avoid manual reconfiguration per recipient.",
+    "Return Address is for replies, not dynamic routing rules."
+   ]
   },
   {
    "id": "eip-607",
@@ -906,13 +1116,19 @@
    "level": "medium",
    "q": "An order containing many line items must have each item checked by a different inventory system, with one confirmation returned. Which composite pattern is this?",
    "options": [
-    "Scatter-Gather",
-    "Composed Message Processor — split the order, route each item, aggregate the results",
-    "Message Broker",
-    "Dynamic Router"
+    "A plain Scatter-Gather broadcast to all of the inventory systems at once, waiting for their replies",
+    "A Composed Message Processor — split the order, route each item, aggregate the results",
+    "A Message Broker hub",
+    "A Dynamic Router"
    ],
    "answer": 1,
-   "explanation": "The elements of ONE message need different handling: Splitter breaks the order apart, a router sends each item to the right system, an Aggregator reassembles one reply. Scatter-Gather instead sends the SAME message to multiple parties."
+   "explanation": "The elements of ONE message need different handling: Splitter breaks the order apart, a router sends each item to the right system, an Aggregator reassembles one reply. Scatter-Gather instead sends the SAME message to multiple parties.",
+   "optionNotes": [
+    "Scatter-Gather broadcasts one message; here the order is split into items first.",
+    "Correct — split, route each item to the right inventory system, then aggregate into one confirmation.",
+    "A broker is a hub topology, not this split/route/aggregate composite.",
+    "A Dynamic Router chooses a destination; it doesn't split and aggregate."
+   ]
   },
   {
    "id": "eip-608",
@@ -921,12 +1137,18 @@
    "q": "What is the architectural promise of a Message Broker, and its main risk?",
    "options": [
     "Promise: no middleware needed; risk: message loss",
-    "Promise: senders and receivers know only the hub, ending point-to-point spaghetti; risk: the broker becomes a monolithic bottleneck accumulating business logic",
-    "Promise: guaranteed ordering; risk: slow consumers",
+    "Promise: endpoints know only the hub, ending point-to-point spaghetti; risk: the hub becomes a bottleneck full of logic",
+    "Promise: it guarantees strict message ordering; risk: one slow consumer can stall the entire pipeline for everyone",
     "Promise: automatic schema evolution; risk: vendor lock-in"
    ],
    "answer": 1,
-   "explanation": "Hub-and-spoke decouples every application from every other — at the price of centralization: the hub must scale, stay available, and be governed so integration logic doesn't quietly turn into business logic nobody owns."
+   "explanation": "Hub-and-spoke decouples every application from every other — at the price of centralization: the hub must scale, stay available, and be governed so integration logic doesn't quietly turn into business logic nobody owns.",
+   "optionNotes": [
+    "A broker IS middleware; that's not its promise.",
+    "Correct — the hub decouples endpoints but risks becoming a monolithic bottleneck full of business logic.",
+    "Ordering isn't the broker's headline promise.",
+    "Schema evolution isn't what a broker guarantees."
+   ]
   },
   {
    "id": "eip-609",
@@ -934,13 +1156,19 @@
    "level": "hard",
    "q": "A resequencer sits behind three competing consumers. Message #17 is lost upstream. What is the operational risk?",
    "options": [
-    "Messages #18 and beyond are delivered twice",
-    "The resequencer buffers everything after #16 indefinitely, stalling the stream and growing its buffer",
-    "The resequencer reorders #18 in front of #16",
+    "Messages numbered #18 and beyond all end up being delivered twice each to the downstream consumers",
+    "It buffers everything after #16 indefinitely, stalling the stream and growing its buffer",
+    "It reorders #18 ahead of the missing #16",
     "Nothing — resequencers handle gaps transparently"
    ],
    "answer": 1,
-   "explanation": "A resequencer cannot emit #18 before #17 without violating order, so a permanent gap stalls the stream and fills the buffer. Real designs bound the buffer and use timeouts or gap-skipping rules — the same never-complete problem the aggregator faces."
+   "explanation": "A resequencer cannot emit #18 before #17 without violating order, so a permanent gap stalls the stream and fills the buffer. Real designs bound the buffer and use timeouts or gap-skipping rules — the same never-complete problem the aggregator faces.",
+   "optionNotes": [
+    "A lost message doesn't cause duplicates downstream.",
+    "Correct — waiting for the missing #17, the resequencer buffers indefinitely and stalls.",
+    "It won't emit #18 before #17 arrives — that's the whole problem.",
+    "Gaps are exactly what a resequencer can't handle transparently."
+   ]
   },
   {
    "id": "eip-701",
@@ -948,13 +1176,19 @@
    "level": "easy",
    "q": "A message carries a customer id, but the shipping system needs the full delivery address. Which pattern applies?",
    "options": [
-    "Content Filter",
-    "Content Enricher",
-    "Claim Check",
-    "Envelope Wrapper"
+    "A Content Filter",
+    "A Content Enricher",
+    "A Claim Check",
+    "An Envelope Wrapper"
    ],
    "answer": 1,
-   "explanation": "The message lacks data its target requires, so an enricher obtains it (here, by querying the customer system) and emits the augmented message. The filter does the opposite — it removes data."
+   "explanation": "The message lacks data its target requires, so an enricher obtains it (here, by querying the customer system) and emits the augmented message. The filter does the opposite — it removes data.",
+   "optionNotes": [
+    "A Content Filter removes fields; here data must be added.",
+    "Correct — a Content Enricher adds the missing address by looking it up from the id.",
+    "Claim Check stores and retrieves a payload; it doesn't look up new data.",
+    "Envelope Wrapper adds transport wrapping, not business data."
+   ]
   },
   {
    "id": "eip-702",
@@ -980,13 +1214,19 @@
    "level": "medium",
    "q": "How does the Claim Check pattern work?",
    "options": [
-    "It signs each message so tampering is detected at the destination",
-    "It stores the payload in a persistent store and passes a slim message with a claim ticket; a later step retrieves the data by ticket when needed",
-    "It splits the payload across several messages for size limits",
+    "It cryptographically signs each message so that any tampering is reliably detected at the destination endpoint",
+    "It stores the payload and passes a slim message with a claim ticket; a later step retrieves it by ticket",
+    "It splits the payload across several messages to fit size limits",
     "It compresses the body and adds a decompression header"
    ],
    "answer": 1,
-   "explanation": "Check the luggage, carry the stub: intermediate steps handle a lightweight reference, and only the component that needs the full data claims it back — cutting message size across hops and keeping sensitive content out of components that shouldn't see it."
+   "explanation": "Check the luggage, carry the stub: intermediate steps handle a lightweight reference, and only the component that needs the full data claims it back — cutting message size across hops and keeping sensitive content out of components that shouldn't see it.",
+   "optionNotes": [
+    "Claim Check isn't a signing/integrity mechanism.",
+    "Correct — park the data in a store, carry a ticket, and re-fetch the data when needed.",
+    "It stores externally rather than splitting across messages.",
+    "It isn't compression."
+   ]
   },
   {
    "id": "eip-704",
@@ -994,13 +1234,19 @@
    "level": "hard",
    "q": "Twelve applications each parse the other eleven's formats today. What does moving to a Canonical Data Model change?",
    "options": [
-    "Translator count drops from up to 132 pairwise translators to 24 (one in, one out per application)",
-    "Translation is no longer needed anywhere",
-    "The apps must all adopt the canonical format internally",
-    "Each app needs 11 new translators for safety"
+    "Translator count drops from up to 132 pairwise to 24 (one in, one out per app)",
+    "Translation is no longer needed anywhere in the system",
+    "The applications must all adopt the canonical format internally",
+    "Each application needs 11 new translators for safety"
    ],
    "answer": 0,
-   "explanation": "Pairwise: N×(N−1) = 12×11 = 132 directional translators in the worst case. Canonical: 2N = 24, and application #13 costs 2 translators instead of 24. Apps keep their internal formats — they translate at their edges; that indirection is the whole pattern."
+   "explanation": "Pairwise: N×(N−1) = 12×11 = 132 directional translators in the worst case. Canonical: 2N = 24, and application #13 costs 2 translators instead of 24. Apps keep their internal formats — they translate at their edges; that indirection is the whole pattern.",
+   "optionNotes": [
+    "Correct — a canonical model turns N×(N-1) pairwise translators into 2 per app (in/out).",
+    "Translation is still needed — just to/from the canonical model.",
+    "Apps keep their internal formats; only the integration uses canonical.",
+    "The whole point is fewer translators, not more."
+   ]
   },
   {
    "id": "eip-705",
@@ -1008,13 +1254,19 @@
    "level": "medium",
    "q": "What is a Normalizer composed of?",
    "options": [
-    "A splitter and an aggregator",
-    "A router that detects each message's format plus a set of translators, one per source format, all emitting the common format",
-    "An envelope wrapper chained with a content filter",
-    "A claim check and a datatype channel"
+    "A Splitter chained with an Aggregator",
+    "A router that detects each message's format plus one translator per source, all emitting the common format",
+    "An Envelope Wrapper chained together with a Content Filter that strips the fields down to the common format",
+    "A Claim Check paired with a Datatype Channel"
    ],
    "answer": 1,
-   "explanation": "Detect, dispatch, translate: the router recognizes which format arrived (typically via a Format Indicator) and hands the message to the translator for that format, so heterogeneous input becomes one normalized output."
+   "explanation": "Detect, dispatch, translate: the router recognizes which format arrived (typically via a Format Indicator) and hands the message to the translator for that format, so heterogeneous input becomes one normalized output.",
+   "optionNotes": [
+    "Splitter/Aggregator handle message parts, not varied formats.",
+    "Correct — a Normalizer detects the format then applies the matching translator to reach a common format.",
+    "Wrapper+filter don't reconcile multiple input formats.",
+    "Claim Check + Datatype Channel don't normalize formats."
+   ]
   },
   {
    "id": "eip-706",
@@ -1022,13 +1274,19 @@
    "level": "medium",
    "q": "Which scenario calls for a Content Filter?",
    "options": [
-    "A reply must be matched to its request",
-    "A mainframe response arrives as a 2,000-field record of which downstream needs 12 fields, some of them nested deep in the structure",
-    "Two brokers must exchange messages",
+    "A reply arriving from a service must be matched back to the specific original request that it answers",
+    "A 2,000-field mainframe record arrives and downstream needs only 12 fields, some nested deep",
+    "Two brokers must exchange messages across a boundary",
     "A message must survive a broker restart"
    ],
    "answer": 1,
-   "explanation": "Removing irrelevant fields and flattening cumbersome hierarchy down to the essentials is exactly the content filter's job — simplifying the inside of one message (unlike the ch. 7 Message Filter, which passes or drops whole messages)."
+   "explanation": "Removing irrelevant fields and flattening cumbersome hierarchy down to the essentials is exactly the content filter's job — simplifying the inside of one message (unlike the ch. 7 Message Filter, which passes or drops whole messages).",
+   "optionNotes": [
+    "Matching replies is Correlation Identifier, not a Content Filter.",
+    "Correct — trimming a large record down to the few needed fields is the Content Filter's job.",
+    "Bridging brokers is a Messaging Bridge.",
+    "Surviving restarts is Guaranteed Delivery."
+   ]
   },
   {
    "id": "eip-707",
@@ -1036,13 +1294,19 @@
    "level": "hard",
    "q": "Why do Envelope Wrappers routinely come in nested pairs across an integration path?",
    "options": [
-    "Each envelope doubles as a backup of the message",
-    "Each infrastructure segment (security gateway, WAN transport, partner network) imposes its own envelope, wrapped on entry and unwrapped in reverse order on exit",
-    "The receiving application requires two copies of every header",
+    "Each envelope also serves as a backup copy of the message",
+    "Each segment (security gateway, WAN, partner network) adds its own envelope, unwrapped in reverse order on exit",
+    "The receiving application always requires two identical copies of every single header on the message for safety",
     "Nesting is required for the message to be routable at all"
    ],
    "answer": 1,
-   "explanation": "A message crossing several infrastructure domains gets dressed for each in turn — like a letter in an envelope inside a courier pouch. Wrappers add compliance layers going in; unwrappers peel them in reverse coming out, leaving the application message untouched."
+   "explanation": "A message crossing several infrastructure domains gets dressed for each in turn — like a letter in an envelope inside a courier pouch. Wrappers add compliance layers going in; unwrappers peel them in reverse coming out, leaving the application message untouched.",
+   "optionNotes": [
+    "Envelopes aren't backups.",
+    "Correct — each infrastructure segment imposes its own wrapper, nested and unwrapped in reverse order.",
+    "It isn't about duplicate headers.",
+    "A message is routable without nested envelopes; nesting reflects the segments it crosses."
+   ]
   },
   {
    "id": "eip-708",
@@ -1050,13 +1314,19 @@
    "level": "medium",
    "q": "A message must pass through four intermediate routing steps, but its payload contains card data those components must not see. Which pattern does the book suggest?",
    "options": [
-    "Content Enricher at each step",
-    "Claim Check — park the sensitive data, route a slim message with the ticket, and re-attach the data only at the authorized endpoint",
-    "Message Filter in front of each component",
-    "Canonical Data Model"
+    "A Content Enricher at each routing step",
+    "Claim Check — park the sensitive data, route a slim message with a ticket, re-attach only at the authorized endpoint",
+    "A Message Filter in front of each component",
+    "Apply a shared Canonical Data Model across all four of the intermediate routing components in the path"
    ],
    "answer": 1,
-   "explanation": "Besides shrinking messages, the claim check's second classic use is data protection: intermediate components handle only a reference, and the sensitive payload reappears only where it is entitled to."
+   "explanation": "Besides shrinking messages, the claim check's second classic use is data protection: intermediate components handle only a reference, and the sensitive payload reappears only where it is entitled to.",
+   "optionNotes": [
+    "Enriching would spread the sensitive data further, the opposite of the goal.",
+    "Correct — Claim Check keeps card data out of the intermediaries and restores it only where authorized.",
+    "A filter drops messages; it doesn't hide sensitive fields from later steps.",
+    "A canonical model standardizes formats, not data confidentiality."
+   ]
   },
   {
    "id": "eip-801",
@@ -1065,12 +1335,18 @@
    "q": "Why does at-least-once delivery make the Idempotent Receiver pattern necessary, and what are its two strategies?",
    "options": [
     "Because messages can be lost; strategies: retries and acknowledgements",
-    "Because retries and redeliveries create duplicates; strategies: de-duplicate by tracking message ids, or design message semantics to be naturally idempotent",
-    "Because consumers can crash; strategies: transactions and durable subscriptions",
+    "Retries and redeliveries create duplicates; dedupe by tracking message ids, or design naturally idempotent handling",
+    "Because consumers can crash mid-processing; the strategies are transactions plus durable subscriptions for recovery",
     "Because order isn't guaranteed; strategies: resequencing and buffering"
    ],
    "answer": 1,
-   "explanation": "Reliable messaging retries until acknowledged, so the same message can arrive twice. Either remember processed ids and skip repeats, or make replays harmless (\"set balance to 100\" vs. \"add 10\")."
+   "explanation": "Reliable messaging retries until acknowledged, so the same message can arrive twice. Either remember processed ids and skip repeats, or make replays harmless (\"set balance to 100\" vs. \"add 10\").",
+   "optionNotes": [
+    "At-least-once causes duplicates, not loss — that's the driver here.",
+    "Correct — duplicates from redelivery force idempotency: dedupe by id or design idempotent semantics.",
+    "Crash recovery is a different concern from duplicate handling.",
+    "Ordering is a separate problem from idempotency."
+   ]
   },
   {
    "id": "eip-802",
@@ -1078,13 +1354,19 @@
    "level": "medium",
    "q": "What is the difference between Competing Consumers and a Message Dispatcher?",
    "options": [
-    "Competing consumers work on publish-subscribe channels; dispatchers only on point-to-point",
-    "With competing consumers the channel load-balances among independent consumers; a dispatcher is one consumer that distributes messages to performers using its own logic",
-    "A dispatcher discards messages no performer wants; competing consumers never discard",
-    "They are identical except for thread count"
+    "Competing consumers only work on pub-sub; dispatchers only on point-to-point",
+    "Competing consumers self-balance off the channel; a dispatcher assigns work to performers by its own logic",
+    "A dispatcher always discards any message that no performer currently wants, whereas competing consumers never discard",
+    "They are identical except for the number of threads used"
    ],
    "answer": 1,
-   "explanation": "Competing consumers let the point-to-point channel decide who gets each message. A dispatcher takes control of that decision — useful when distribution needs application knowledge (same customer → same performer) or on a pub-sub channel, where competing consumers would each receive every message."
+   "explanation": "Competing consumers let the point-to-point channel decide who gets each message. A dispatcher takes control of that decision — useful when distribution needs application knowledge (same customer → same performer) or on a pub-sub channel, where competing consumers would each receive every message.",
+   "optionNotes": [
+    "Competing consumers use point-to-point channels, not pub-sub.",
+    "Correct — competing consumers self-balance off the channel; a dispatcher centrally assigns work to performers.",
+    "Discarding isn't the distinction.",
+    "They differ in control model, not just thread count."
+   ]
   },
   {
    "id": "eip-803",
@@ -1092,13 +1374,19 @@
    "level": "medium",
    "q": "How does a Selective Consumer differ from a Message Filter?",
    "options": [
-    "A selective consumer discards what it doesn't match; a filter leaves it on the channel",
-    "A selective consumer receives only matching messages and leaves the rest for other consumers; a filter consumes everything and discards non-matches",
-    "A filter is configured at runtime; a selective consumer is not",
-    "There is no difference"
+    "A selective consumer discards whatever it does not match, whereas a filter simply leaves it sitting on the channel",
+    "A selective consumer receives only matching messages and leaves the rest; a filter consumes everything and discards",
+    "A filter is configured at runtime while a selective consumer is not",
+    "There is no real difference between them"
    ],
    "answer": 1,
-   "explanation": "The selector guards RECEPTION — non-matching messages stay available to other consumers sharing the channel. The filter is a pipe component that swallows what doesn't qualify. Watch for messages no consumer selects: they accumulate forever."
+   "explanation": "The selector guards RECEPTION — non-matching messages stay available to other consumers sharing the channel. The filter is a pipe component that swallows what doesn't qualify. Watch for messages no consumer selects: they accumulate forever.",
+   "optionNotes": [
+    "That reverses their behavior.",
+    "Correct — the selective consumer only takes matching messages (leaving others); a filter consumes all and drops non-matches.",
+    "Configuration timing isn't the distinction.",
+    "They are genuinely different patterns."
+   ]
   },
   {
    "id": "eip-804",
@@ -1106,13 +1394,19 @@
    "level": "hard",
    "q": "Why can't a transaction usefully span an entire request-reply exchange?",
    "options": [
-    "Transactions cannot include network operations",
-    "The request stays invisible inside the uncommitted transaction, so the replier never sees it and the reply that would complete the transaction can never arrive",
-    "Replies are always non-transactional",
-    "Two channels cannot join one transaction"
+    "Transactions are fundamentally unable to include any network or messaging operations of any kind at all whatsoever",
+    "The request stays hidden inside the uncommitted transaction, so the reply that would complete it can never arrive",
+    "Replies are by definition always non-transactional",
+    "Two channels are not allowed to join a single transaction"
    ],
    "answer": 1,
-   "explanation": "A transactional send only becomes visible at commit. If the transaction also waited for the reply before committing, it would deadlock: no commit → no visible request → no reply → no commit. Transactions wrap individual sends/receives (or receive+process units), not conversations."
+   "explanation": "A transactional send only becomes visible at commit. If the transaction also waited for the reply before committing, it would deadlock: no commit → no visible request → no reply → no commit. Transactions wrap individual sends/receives (or receive+process units), not conversations.",
+   "optionNotes": [
+    "Transactions can include messaging operations; that's not the issue.",
+    "Correct — until commit the request isn't visible, so no reply comes, so the transaction can never complete: a deadlock.",
+    "Replies can be transactional; that's not why this fails.",
+    "The problem is the commit ordering, not a two-channel rule."
+   ]
   },
   {
    "id": "eip-805",
@@ -1120,13 +1414,19 @@
    "level": "easy",
    "q": "A subscriber must not miss events published while it is down for nightly maintenance. Which pattern applies?",
    "options": [
-    "Selective Consumer",
-    "Durable Subscriber",
-    "Polling Consumer",
-    "Messaging Gateway"
+    "A Selective Consumer",
+    "A Durable Subscriber",
+    "A Polling Consumer",
+    "A Messaging Gateway"
    ],
    "answer": 1,
-   "explanation": "A durable subscription outlives the connection: the channel retains messages published during the disconnect and delivers them on reconnect. Note durability starts at first subscription and ends only when explicitly unsubscribed."
+   "explanation": "A durable subscription outlives the connection: the channel retains messages published during the disconnect and delivers them on reconnect. Note durability starts at first subscription and ends only when explicitly unsubscribed.",
+   "optionNotes": [
+    "Selective Consumer filters by content, not downtime.",
+    "Correct — a Durable Subscriber retains messages published while it was offline and delivers them on reconnect.",
+    "Polling only changes how it reads, not retention during downtime.",
+    "A Gateway hides messaging mechanics; it doesn't retain events."
+   ]
   },
   {
    "id": "eip-806",
@@ -1151,13 +1451,19 @@
    "level": "medium",
    "q": "What does a Messaging Gateway do for the application, besides tidiness?",
    "options": [
-    "It compresses all outbound traffic",
-    "It exposes a domain-shaped API hiding all messaging mechanics, and provides the seam where a dummy implementation makes the app testable without a messaging system",
-    "It guarantees exactly-once delivery",
-    "It converts between two message formats"
+    "It transparently compresses all outbound message traffic to save network bandwidth across the whole system",
+    "It exposes a domain-shaped API hiding messaging mechanics, and gives a seam for a stub that makes the app testable",
+    "It guarantees exactly-once delivery of messages",
+    "It converts between two different message formats"
    ],
    "answer": 1,
-   "explanation": "The app calls getCreditScore(customer); the gateway does the send/receive/correlate dance (synchronously or via callback). Because messaging hides behind an interface, tests swap in a stub gateway — no broker required."
+   "explanation": "The app calls getCreditScore(customer); the gateway does the send/receive/correlate dance (synchronously or via callback). Because messaging hides behind an interface, tests swap in a stub gateway — no broker required.",
+   "optionNotes": [
+    "A Gateway isn't about compression.",
+    "Correct — it wraps messaging behind a domain API and enables testing with a stub implementation.",
+    "It doesn't provide exactly-once semantics.",
+    "Format conversion is a Translator's job."
+   ]
   },
   {
    "id": "eip-808",
@@ -1165,13 +1471,19 @@
    "level": "hard",
    "q": "A synchronous credit-scoring service must also be invocable by message, while local code keeps calling it directly. Which pattern, and how?",
    "options": [
-    "Messaging Mapper — map the service's objects to messages",
-    "Service Activator — a component receives request messages, invokes the unchanged service, and sends the result back as the reply",
-    "Transactional Client — wrap the service call in a transaction",
-    "Channel Adapter — connect the service's database to a channel"
+    "A Messaging Mapper — map the service's objects to messages",
+    "A Service Activator — a component receives request messages, invokes the unchanged service, and replies",
+    "A Transactional Client — wrap the synchronous service call in a transaction so callers and messages stay consistent",
+    "A Channel Adapter — connect the service's database to a channel"
    ],
    "answer": 1,
-   "explanation": "The activator is an extra doorway: unpack request → call the ordinary synchronous service → package reply. The service stays messaging-unaware and both access paths coexist."
+   "explanation": "The activator is an extra doorway: unpack request → call the ordinary synchronous service → package reply. The service stays messaging-unaware and both access paths coexist.",
+   "optionNotes": [
+    "A Mapper converts between objects and messages but doesn't invoke the service on messages.",
+    "Correct — a Service Activator listens for messages and calls the existing service, so both callers work.",
+    "A Transactional Client manages transactions, not message-triggered invocation.",
+    "A Channel Adapter connects at the data/UI layer, bypassing the service."
+   ]
   },
   {
    "id": "eip-809",
@@ -1179,13 +1491,19 @@
    "level": "hard",
    "q": "Four competing consumers drain one order queue. Orders for the same customer must be processed in submission order. What is the problem, and the book-aligned fix?",
    "options": [
-    "No problem — point-to-point channels preserve processing order across consumers",
-    "Order across consumers isn't guaranteed; use a single consumer or a Message Dispatcher that routes each customer's orders to the same performer",
+    "There is no problem at all, because point-to-point channels always preserve processing order across every consumer",
+    "Order isn't guaranteed across consumers; use one consumer or a Dispatcher routing a customer's orders to one performer",
     "Duplicates will occur; add an Idempotent Receiver",
     "The queue will overflow; add a Claim Check"
    ],
    "answer": 1,
-   "explanation": "Competing consumers trade ordering for throughput — two orders for one customer can complete out of order on different consumers. Serializing per customer needs controlled distribution: one consumer, or a dispatcher with customer-affinity (Kafka gets the same effect by keying the partition on customer id)."
+   "explanation": "Competing consumers trade ordering for throughput — two orders for one customer can complete out of order on different consumers. Serializing per customer needs controlled distribution: one consumer, or a dispatcher with customer-affinity (Kafka gets the same effect by keying the partition on customer id).",
+   "optionNotes": [
+    "Competing consumers break per-customer ordering.",
+    "Correct — to keep order, serialize per customer via a single consumer or a Dispatcher keyed by customer.",
+    "The issue is ordering, not duplicates.",
+    "It's an ordering problem, not a size problem."
+   ]
   },
   {
    "id": "eip-901",
@@ -1193,13 +1511,19 @@
    "level": "medium",
    "q": "How do you inspect messages flowing on a point-to-point channel without depriving the real receiver of them?",
    "options": [
-    "Add a second competing consumer for the monitoring tool",
-    "Insert a Wire Tap that republishes each message to both the original destination and a secondary inspection channel",
+    "Add a second competing consumer dedicated to the monitoring tool so it can read the messages off the channel too",
+    "Insert a Wire Tap that republishes each message to both the destination and an inspection channel",
     "Enable Guaranteed Delivery on the channel",
-    "Read the receiver's database instead"
+    "Read the receiver's database instead of the channel"
    ],
    "answer": 1,
-   "explanation": "A competing consumer would STEAL messages from the receiver — each point-to-point message goes to only one consumer. The wire tap duplicates: original flow undisturbed, copy on a secondary channel for loggers and analyzers."
+   "explanation": "A competing consumer would STEAL messages from the receiver — each point-to-point message goes to only one consumer. The wire tap duplicates: original flow undisturbed, copy on a secondary channel for loggers and analyzers.",
+   "optionNotes": [
+    "A competing consumer would steal messages from the real receiver.",
+    "Correct — a Wire Tap duplicates each message to an inspection channel without depriving the receiver.",
+    "Guaranteed Delivery is about durability, not inspection.",
+    "Reading the DB is indirect and misses in-flight messages."
+   ]
   },
   {
    "id": "eip-902",
@@ -1208,12 +1532,18 @@
    "q": "Why does a Smart Proxy replace the Return Address on requests it forwards?",
    "options": [
     "To hide the requestor's identity from the replier",
-    "So replies come back to the proxy — which then correlates each reply with its stored request, records metrics, and forwards it to the requestor's original Return Address",
-    "Because two Return Addresses cannot coexist in one header",
-    "To force the replier to use a faster channel"
+    "Replies return to the proxy, which correlates each with its stored request, records metrics, then forwards it on",
+    "Because two different Return Addresses simply cannot coexist within a single message header at the same time",
+    "To force the replier onto a faster channel"
    ],
    "answer": 1,
-   "explanation": "Without the swap, replies would go straight to each requestor's own reply channel and the proxy would never see them. Storing the original address and substituting its own is the trick that lets it observe both halves of every exchange."
+   "explanation": "Without the swap, replies would go straight to each requestor's own reply channel and the proxy would never see them. Storing the original address and substituting its own is the trick that lets it observe both halves of every exchange.",
+   "optionNotes": [
+    "Anonymity isn't the purpose.",
+    "Correct — the Smart Proxy intercepts replies to measure and correlate them, then forwards to the real Return Address.",
+    "It's about interception, not a header limitation.",
+    "It isn't about channel speed."
+   ]
   },
   {
    "id": "eip-903",
@@ -1221,13 +1551,19 @@
    "level": "medium",
    "q": "Message History vs. Message Store — what does each give you?",
    "options": [
-    "They are synonyms",
-    "History: the path travelled, carried in each message's header. Store: a central copy of messages for reporting and analysis across messages",
-    "History: a database of all messages. Store: a header field",
-    "Both require stopping the message flow"
+    "They are essentially synonyms",
+    "History: the path travelled, carried in each message's header. Store: a central copy of messages for analysis",
+    "History is a central database holding every message; Store is just a single field carried in the message header",
+    "Both require stopping the message flow to use"
    ],
    "answer": 1,
-   "explanation": "History rides along inside the message — perfect for tracing one message's route (especially through pub-sub). The store persists message data centrally — perfect for questions across many messages. Together they reconstruct end-to-end flows."
+   "explanation": "History rides along inside the message — perfect for tracing one message's route (especially through pub-sub). The store persists message data centrally — perfect for questions across many messages. Together they reconstruct end-to-end flows.",
+   "optionNotes": [
+    "They are different patterns.",
+    "Correct — History travels in the message (its path); the Store is a central archive for cross-message reporting.",
+    "That reverses the two.",
+    "Neither requires halting the flow."
+   ]
   },
   {
    "id": "eip-904",
@@ -1253,13 +1589,19 @@
    "level": "medium",
    "q": "What is a Detour?",
    "options": [
-    "A backup route used when the primary channel fails",
+    "A pre-planned backup route that is used only when the primary channel fails or becomes unavailable for any reason",
     "A control-bus-switched router that sends traffic either straight through or via extra validation/debugging steps",
     "A router that randomly samples messages for QA",
-    "The channel used for dead letters"
+    "The dedicated channel used for dead letters"
    ],
    "answer": 1,
-   "explanation": "In normal operation messages take the direct path at no extra cost; when operators flip the switch over the control bus, traffic runs through the inspection steps. Failover routing is a different concern (First Successful-style routers)."
+   "explanation": "In normal operation messages take the direct path at no extra cost; when operators flip the switch over the control bus, traffic runs through the inspection steps. Failover routing is a different concern (First Successful-style routers).",
+   "optionNotes": [
+    "A Detour isn't a failover route.",
+    "Correct — a Detour can be toggled (via the control bus) to insert validation/debugging steps into the path.",
+    "It's a switched insertion, not random sampling.",
+    "It isn't the dead-letter channel."
+   ]
   },
   {
    "id": "eip-906",
@@ -1285,13 +1627,19 @@
    "level": "easy",
    "q": "Before an integration test run, the order queue still holds messages from last night's aborted run. Which pattern applies?",
    "options": [
-    "Message Store",
-    "Channel Purger",
-    "Wire Tap",
+    "A Message Store",
+    "A Channel Purger",
+    "A Wire Tap",
     "Message Expiration"
    ],
    "answer": 1,
-   "explanation": "The purger removes leftover messages so the test starts from a known-clean state. Expiration only helps if the old messages carried a TTL when they were sent."
+   "explanation": "The purger removes leftover messages so the test starts from a known-clean state. Expiration only helps if the old messages carried a TTL when they were sent.",
+   "optionNotes": [
+    "A Message Store archives messages; it doesn't clear a queue.",
+    "Correct — a Channel Purger removes stale leftover messages before the run.",
+    "A Wire Tap copies messages; it doesn't purge them.",
+    "Expiration relies on per-message TTL, not a deliberate pre-run cleanup."
+   ]
   },
   {
    "id": "eip-908",
@@ -1299,13 +1647,82 @@
    "level": "medium",
    "q": "A component's heartbeat is green, yet its output is wrong. What does the book conclude from this scenario?",
    "options": [
-    "Heartbeats should run more frequently",
-    "Liveness monitoring can't verify correctness — inject Test Messages through the live path and verify the answers",
-    "The component needs a durable subscription",
-    "The control bus has failed"
+    "Heartbeats simply need to run more frequently",
+    "Liveness monitoring can't verify correctness — inject Test Messages through the live path and check the answers",
+    "The component simply needs a durable subscription added so that it stops silently producing the wrong output",
+    "The control bus itself must have failed"
    ],
    "answer": 1,
-   "explanation": "A heartbeat proves the process is up, not that its logic is right (stale reference data, a bad deployment). Test messages exercise the real processing path and let a verifier compare actual results with expected ones."
+   "explanation": "A heartbeat proves the process is up, not that its logic is right (stale reference data, a bad deployment). Test messages exercise the real processing path and let a verifier compare actual results with expected ones.",
+   "optionNotes": [
+    "More frequent heartbeats still only prove liveness, not correctness.",
+    "Correct — a green heartbeat says 'alive', not 'correct'; Test Messages verify actual output.",
+    "Durable subscriptions are unrelated to correctness checking.",
+    "The control bus isn't implicated by a wrong-output-but-alive component."
+   ]
+  },
+  {
+   "id": "eip-109",
+   "section": "b6",
+   "level": "medium",
+   "q": "Refer to the exhibit. One input channel feeds a component that sends each message unchanged to exactly one of three output channels based on its type. Which pattern is shown?",
+   "exhibit": "            +-- typeA --> [ Channel A ]\n[ in ] --> ( ? ) --+-- typeB --> [ Channel B ]\n            +-- typeC --> [ Channel C ]\n(message body is not modified)",
+   "options": [
+    "Content-Based Router — it inspects each message and forwards it unchanged to one output",
+    "Message Translator — it converts each message into the destination system's format",
+    "Aggregator — it collects the three inputs and combines them into one output message",
+    "Publish-Subscribe Channel — it sends a copy of every message to all three outputs"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — routing an unmodified message to one of several outputs by its content is a Content-Based Router.",
+    "A Translator changes format; here the body is untouched.",
+    "An Aggregator combines many messages into one; this splits one to many outputs.",
+    "Pub-sub fans a copy to all subscribers; a router picks exactly one."
+   ],
+   "explanation": "A Content-Based Router examines a message and forwards it, unchanged, to exactly one of several output channels — distinct from a Translator (changes format), an Aggregator (combines), or pub-sub (copies to all)."
+  },
+  {
+   "id": "eip-610",
+   "section": "b6",
+   "level": "medium",
+   "q": "Refer to the exhibit. Each incoming order is broken into its line items, each item is processed by the right system, and the results are recombined into a single response. Which composite pattern is this?",
+   "exhibit": "[ order ] --> (Splitter) --> item --> (Router) --> systemX\n                                item --> (Router) --> systemY\n                     ... --> (Aggregator) --> [ one response ]",
+   "options": [
+    "Composed Message Processor — split, route each part, then aggregate the results",
+    "Routing Slip — attach an itinerary and pass the whole order through each step in turn",
+    "Process Manager — a central hub drives each step based on intermediate results",
+    "Message Broker — a hub that all systems connect to instead of each other"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — split into items, route each, then aggregate into one reply is the Composed Message Processor.",
+    "A Routing Slip passes one whole message sequentially through steps; it doesn't split into parts.",
+    "A Process Manager coordinates branching workflows, not this fixed split/route/aggregate.",
+    "A Message Broker is a topology (hub), not this split-and-recombine processor."
+   ],
+   "explanation": "The Composed Message Processor combines a Splitter, per-item routing, and an Aggregator to process the parts of one message and recombine them into a single result."
+  },
+  {
+   "id": "eip-810",
+   "section": "b8",
+   "level": "easy",
+   "q": "Refer to the exhibit. Three consumers all read from the same point-to-point queue to share the load. What consequence must the design account for?",
+   "exhibit": "                 +--> [ Consumer 1 ]\n[ orders queue ] +--> [ Consumer 2 ]\n                 +--> [ Consumer 3 ]\n(one point-to-point queue, competing consumers)",
+   "options": [
+    "Messages may be processed out of their original order, since consumers run in parallel",
+    "Every consumer receives a copy of every message, tripling the downstream work",
+    "The queue will reject the second and third consumers as duplicate subscribers",
+    "Delivery becomes exactly-once automatically because the load is shared out"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — Competing Consumers scale throughput but sacrifice ordering, since messages finish in parallel.",
+    "Point-to-point gives each message to one consumer, not a copy to all (that's pub-sub).",
+    "A point-to-point queue happily supports multiple competing consumers.",
+    "Sharing load doesn't change delivery semantics to exactly-once."
+   ],
+   "explanation": "Competing Consumers on one point-to-point channel load-balance messages (each to a single consumer) and raise throughput, but parallel processing means overall message order is no longer preserved."
   }
  ],
  "cards": [
