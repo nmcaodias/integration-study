@@ -117,7 +117,33 @@ for (const id of manifest.certs) {
     if (String(c.id).startsWith("q:")) fail(`${id}/${c.id}: card ids must not use the reserved 'q:' prefix`);
   }
 
-  info.push(`${id}: ${cert.sections.length} sections (weights ${weightSum}%), ${cert.questions.length} questions, ${(cert.cards || []).length} cards`);
+  // hands-on exercises (optional): done in Studio/Playground, the app only
+  // presents the use case and a revealable model solution
+  const exIds = new Set();
+  const codeBlocks = (x, field) => {
+    const arr = x[field];
+    if (!Array.isArray(arr) || !arr.length) return fail(`${id}/${x.id}: exercise '${field}' must be a non-empty array`);
+    for (const b of arr) {
+      if (!b || typeof b.code !== "string" || !b.code.trim()) fail(`${id}/${x.id}: '${field}' entries need a non-empty 'code'`);
+    }
+  };
+  for (const x of cert.exercises || []) {
+    if (exIds.has(x.id)) fail(`${id}/${x.id}: duplicate exercise id`);
+    exIds.add(x.id);
+    if (String(x.id).includes(":")) fail(`${id}/${x.id}: exercise ids must not contain ':' (reserved for the done-mark key)`);
+    if (!secIds.has(x.section)) fail(`${id}/${x.id}: exercise references unknown section '${x.section}'`);
+    if (!x.title || !x.task) fail(`${id}/${x.id}: exercise needs title and task`);
+    codeBlocks(x, "solution");
+    if ("given" in x) codeBlocks(x, "given");
+    if ("steps" in x && (!Array.isArray(x.steps) || x.steps.some(s => typeof s !== "string" || !s.trim()))) {
+      fail(`${id}/${x.id}: steps must be an array of non-empty strings`);
+    }
+    if ("level" in x && !["easy", "medium", "hard"].includes(x.level)) {
+      fail(`${id}/${x.id}: level must be easy, medium, or hard`);
+    }
+  }
+
+  info.push(`${id}: ${cert.sections.length} sections (weights ${weightSum}%), ${cert.questions.length} questions, ${(cert.cards || []).length} cards${(cert.exercises || []).length ? `, ${cert.exercises.length} exercises` : ""}`);
 }
 
 info.forEach(l => console.log(l));

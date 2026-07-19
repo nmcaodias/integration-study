@@ -540,3 +540,31 @@ h3 { font-size: 1.05rem; margin: 1rem 0 .4rem; }
   .setup-field select, .setup-field input[type="number"], .setup-field input[type="password"] { font-size: 16px; }
 }
 
+
+/* ---------- Hands-on exercises ---------- */
+.ex-group { margin: 1.6rem 0 .8rem; font-size: 1.15rem; }
+.ex-card { padding: 0; }
+.ex-card > summary {
+  cursor: pointer;
+  padding: 1rem 1.2rem;
+  display: flex; align-items: center; gap: .55rem; flex-wrap: wrap;
+  list-style: none;
+}
+.ex-card > summary::-webkit-details-marker { display: none; }
+.ex-card > summary::before { content: "▸"; color: var(--text-muted); transition: transform .15s; }
+.ex-card[open] > summary::before { transform: rotate(90deg); }
+.ex-card .ex-title { font-weight: 600; }
+.ex-card.done > summary .ex-title { color: var(--success); }
+.ex-done-badge { font-size: .82rem; color: var(--success); margin-left: auto; }
+.ex-body { padding: 0 1.2rem 1.2rem; border-top: 1px solid var(--border); }
+.ex-task { margin: .9rem 0; }
+.ex-task p { margin: .5rem 0; }
+.ex-code { margin: .8rem 0; }
+.ex-code-label {
+  font-size: .8rem; font-weight: 600; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: .03em; margin-bottom: .25rem;
+}
+.ex-steps { margin: .8rem 0 .8rem 1.2rem; }
+.ex-steps li { margin: .3rem 0; }
+.ex-solution { border-top: 1px dashed var(--border); margin-top: 1rem; padding-top: .6rem; }
+.ex-solution-notes { margin-top: .6rem; }

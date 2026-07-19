@@ -8,7 +8,9 @@
  *     questions: { "<qid>": { options?, answer?, answers?, explanation?,
  *                             optionNotes?, level?, exhibit?, q? }, ... },
  *     sections:  { "<sid>": { notes?, topicDocs?(merged), objectives? }, ... },
- *     addQuestions: [ { full question object }, ... ]   // optional
+ *     addQuestions: [ { full question object }, ... ],  // optional
+ *     addExercises: [ { full exercise object }, ... ],  // optional
+ *     exercises: { "<exId>": { partial exercise patch }, ... }  // optional
  *   }
  *
  * Only the keys present on a patch are changed; everything else is preserved.
@@ -62,6 +64,22 @@ for (const nq of patches.addQuestions || []) {
   if (qById.has(nq.id)) { console.error("!! addQuestions id already exists: " + nq.id); process.exit(1); }
   data.questions.push(nq);
   qById.set(nq.id, nq);
+  changed++;
+}
+
+// ---- hands-on exercises -----------------------------------------------
+const xById = new Map((data.exercises || []).map(x => [x.id, x]));
+for (const nx of patches.addExercises || []) {
+  if (xById.has(nx.id)) { console.error("!! addExercises id already exists: " + nx.id); process.exit(1); }
+  data.exercises = data.exercises || [];
+  data.exercises.push(nx);
+  xById.set(nx.id, nx);
+  changed++;
+}
+for (const [xid, patch] of Object.entries(patches.exercises || {})) {
+  const x = xById.get(xid);
+  if (!x) { console.error("!! unknown exercise id: " + xid); process.exit(1); }
+  for (const [k, v] of Object.entries(patch)) x[k] = v;
   changed++;
 }
 

@@ -12,7 +12,7 @@
 
   /* ---------------- State & persistence ---------------- */
   function blankCertState() {
-    return { read: {}, qstats: {}, exams: [], srs: {}, resets: {} };
+    return { read: {}, qstats: {}, exams: [], srs: {}, ex: {}, resets: {} };
   }
   function loadState() {
     try {
@@ -22,6 +22,7 @@
         if (!s[id]) s[id] = blankCertState();
         if (!s[id].srs) s[id].srs = {};       // backfill for saves from before flashcards
         if (!s[id].resets) s[id].resets = {}; // backfill for saves from before progress resets
+        if (!s[id].ex) s[id].ex = {};         // backfill for saves from before hands-on exercises
       });
       return s;
     } catch (e) {
@@ -86,6 +87,16 @@
 
   function sectionById(cert, sid) {
     return cert.sections.find(s => s.id === sid);
+  }
+
+  /* Hands-on exercises: done-marks live in state[cert].ex keyed "<sid>:<exId>"
+     (the section prefix lets the sync merge honour per-topic resets, the same
+     trick srs uses with its "q:" prefix). */
+  const exKey = x => x.section + ":" + x.id;
+  function exerciseCounts(certId) {
+    const list = CERTS[certId].exercises || [];
+    const done = list.filter(x => state[certId].ex[exKey(x)]).length;
+    return { total: list.length, done };
   }
 
   // a "book" entry offers notes, quizzes and flashcards but no exam simulation
@@ -253,6 +264,9 @@
       delete cs.srs["q:" + q.id];
       cs.resets.q[q.id] = now;
     });
+    (cert.exercises || []).forEach(x => {
+      if (x.section === sid) delete cs.ex[exKey(x)]; // merge honours resets.topics[sid] via the key's sid prefix
+    });
     save();
     return true;
   }
@@ -270,6 +284,7 @@
     if (parts.length === 0) return renderHome();
     if (parts[0] === "cert" && CERTS[parts[1]]) return renderCert(parts[1]);
     if (parts[0] === "notes" && CERTS[parts[1]] && sectionById(CERTS[parts[1]], parts[2])) return renderNotes(parts[1], parts[2]);
+    if (parts[0] === "ex" && CERTS[parts[1]]) return renderExercises(parts[1]);
     if (parts[0] === "quiz" && CERTS[parts[1]]) return renderQuizSetup(parts[1]);
     if (parts[0] === "quizrun") return session && session.mode === "quiz" ? renderQuizQuestion() : go("#/");
     if (parts[0] === "exam" && CERTS[parts[1]]) return isBook(parts[1]) ? go("#/cert/" + parts[1]) : renderExamIntro(parts[1]);
@@ -424,6 +439,10 @@
         <a class="btn" href="#/quiz/${certId}">📝 Practice quiz</a>
         <button class="btn" id="weak-quiz" title="15 questions picked from your weakest and least-practiced areas">🎯 Practice weak areas</button>
         <a class="btn" href="#/flash/${certId}">🃏 Flashcards${fc.due + fc.fresh ? ` <span class="pill warn">${fc.due + fc.fresh}</span>` : ""}</a>
+        ${(cert.exercises && cert.exercises.length) ? (() => {
+          const xc = exerciseCounts(certId);
+          return `<a class="btn" href="#/ex/${certId}">🛠️ Hands-on exercises <span class="pill ${xc.done === xc.total ? "ok" : "info"}">${xc.done}/${xc.total}</span></a>`;
+        })() : ""}
         ${book ? "" : `
         <a class="btn" href="#/exam/${certId}">⏱️ Exam simulation</a>
         <a class="btn secondary" href="#/history/${certId}">📈 Exam history ${lastExams ? "· " + lastExams : ""}</a>`}
@@ -481,8 +500,8 @@
     document.getElementById("reset-quiz").onclick = () => doReset(["qstats"], book ? "quiz stats (per-topic percentages)" : "quiz stats (per-topic percentages and readiness)");
     if (!book) document.getElementById("reset-exams").onclick = () => doReset(["exams"], "the exam history");
     document.getElementById("reset-all").onclick = () => book
-      ? doReset(["read", "qstats", "srs"], "ALL progress (notes, quiz stats, flashcards)")
-      : doReset(["read", "qstats", "exams", "srs"], "ALL progress (notes, quiz stats, exams, flashcards)");
+      ? doReset(["read", "qstats", "srs", "ex"], "ALL progress (notes, quiz stats, flashcards, exercises)")
+      : doReset(["read", "qstats", "exams", "srs", "ex"], "ALL progress (notes, quiz stats, exams, flashcards, exercises)");
   }
 
   function renderNotes(certId, sid) {
@@ -544,6 +563,98 @@
     };
     document.getElementById("quiz-section").onclick = () => startQuiz(certId, sid, QUIZ_SIZE);
     document.getElementById("topic-reset").onclick = () => { if (resetTopic(certId, sid)) renderNotes(certId, sid); };
+  }
+
+  /* ---------------- Hands-on exercises ----------------
+     Exercises are done OUTSIDE the site (Anypoint Studio, DataWeave Playground,
+     etc.). The page presents each use case with its given assets, a revealable
+     model solution, and a self-assessed "mark done" that persists and syncs. */
+  function renderExercises(certId) {
+    setNav(certId);
+    const cert = CERTS[certId];
+    const list = cert.exercises || [];
+    if (!list.length) return go("#/cert/" + certId);
+    const cs = state[certId];
+    const xc = exerciseCounts(certId);
+
+    const codeBlocks = (blocks) => (blocks || []).map(b => `
+      <div class="ex-code">
+        ${b.label ? `<div class="ex-code-label">${esc(b.label)}</div>` : ""}
+        <pre class="exhibit"><code>${esc(b.code)}</code></pre>
+      </div>`).join("");
+
+    let groups = "";
+    cert.sections.forEach(sec => {
+      const items = list.filter(x => x.section === sec.id);
+      if (!items.length) return;
+      groups += `<h2 class="ex-group">${esc(sec.title)} <a class="doc-link" href="#/notes/${certId}/${sec.id}" title="Read this topic's notes">📚</a></h2>`;
+      items.forEach(x => {
+        const done = !!cs.ex[exKey(x)];
+        groups += `
+        <details class="card ex-card ${done ? "done" : ""}" data-ex="${esc(x.id)}">
+          <summary>
+            <span class="ex-title">${esc(x.title)}</span>
+            ${levelPill(x)}
+            ${x.where ? `<span class="pill">${esc(x.where)}</span>` : ""}
+            <span class="ex-done-badge" ${done ? "" : "hidden"}>✅ done</span>
+          </summary>
+          <div class="ex-body">
+            <div class="ex-task">${x.task}</div>
+            ${codeBlocks(x.given)}
+            ${x.steps && x.steps.length ? `<ol class="ex-steps">${x.steps.map(s => `<li>${esc(s)}</li>`).join("")}</ol>` : ""}
+            <div class="btn-row">
+              <button class="btn secondary ex-reveal">💡 Reveal solution</button>
+              <button class="btn ${done ? "secondary" : ""} ex-toggle-done">${done ? "↩️ Mark as not done" : "✅ Mark as done"}</button>
+            </div>
+            <div class="ex-solution" hidden>
+              ${codeBlocks(x.solution)}
+              ${x.solutionNotes ? `<div class="ex-solution-notes">${x.solutionNotes}</div>` : ""}
+            </div>
+          </div>
+        </details>`;
+      });
+    });
+
+    app.innerHTML = `
+      <p class="muted"><a href="#/cert/${certId}">← ${esc(cert.short)}</a></p>
+      <h1>Hands-on exercises</h1>
+      <p class="subtitle">Build these in <strong>Anypoint Studio</strong> or the <strong>DataWeave Playground</strong>, then compare with the model solution.
+        <span class="pill ${xc.done === xc.total ? "ok" : "info"}" id="ex-progress">${xc.done}/${xc.total} done</span></p>
+      ${groups}`;
+
+    app.querySelectorAll(".ex-card").forEach(card => {
+      const x = list.find(e => e.id === card.dataset.ex);
+      card.querySelector(".ex-reveal").onclick = (ev) => {
+        ev.preventDefault();
+        const sol = card.querySelector(".ex-solution");
+        sol.hidden = !sol.hidden;
+        ev.target.textContent = sol.hidden ? "💡 Reveal solution" : "🙈 Hide solution";
+      };
+      card.querySelector(".ex-toggle-done").onclick = (ev) => {
+        ev.preventDefault();
+        const live = state[certId]; // re-read: a background sync merge may have replaced `state`
+        const k = exKey(x), btn = ev.target;
+        const nowDone = !live.ex[k];
+        if (nowDone) live.ex[k] = Date.now();
+        else {
+          delete live.ex[k];
+          // tombstone via the topic stamp would wipe siblings; a cert-wide 'ex'
+          // stamp would wipe everything — so un-marking one exercise relies on
+          // the newest-timestamp merge (same trade-off as un-marking notes read)
+          live.resets.exq = live.resets.exq || {};
+          live.resets.exq[k] = Date.now();
+        }
+        save();
+        card.classList.toggle("done", nowDone);
+        card.querySelector(".ex-done-badge").hidden = !nowDone;
+        btn.textContent = nowDone ? "↩️ Mark as not done" : "✅ Mark as done";
+        btn.classList.toggle("secondary", nowDone);
+        const c = exerciseCounts(certId);
+        const pill = document.getElementById("ex-progress");
+        pill.textContent = `${c.done}/${c.total} done`;
+        pill.className = `pill ${c.done === c.total ? "ok" : "info"}`;
+      };
+    });
   }
 
   /* ---------------- Practice quiz ---------------- */
