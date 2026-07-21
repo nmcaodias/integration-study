@@ -26,7 +26,8 @@
     "Correct — non-Mule implementations join the governed network behind an API-Manager proxy or Flex Gateway that enforces the policies.",
     "Autodiscovery is a Mule-runtime capability; a Node.js process cannot host the autodiscovery element.",
     "Policies never apply automatically; an endpoint is governed only once it sits behind a managed API instance."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-002",
@@ -45,7 +46,8 @@
     "Correct — channel-specific shaping over a Process API is the Experience layer; reaching into backends or hoarding logic breaks it.",
     "Process APIs are deliberately channel-agnostic; being channel-specific is an Experience trait, not a Process anti-pattern.",
     "It does fit — a channel-specific facade over a Process API is exactly an Experience API."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-003",
@@ -64,7 +66,8 @@
     "Correct — the instance is the governed deployment of a spec version per environment; policies/tiers/contracts/alerts hang off it.",
     "The spec is the design artifact; the instance is what you create in API Manager from it.",
     "A client application consumes an instance via a contract; it isn't the instance itself."
-   ]
+   ],
+   "level": "easy"
   },
   {
    "id": "pa-004",
@@ -83,7 +86,8 @@
     "Correct — consumers find, read, mock, and request access to the API in Exchange, then use its portal/console.",
     "Studio is for builders; a consumer doesn't need the IDE to discover or request access.",
     "Design Center is for API designers/authors, not consumers seeking access to a published API."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-005",
@@ -100,7 +104,8 @@
     1,
     3
    ],
-   "explanation": "The application network compounds: reuse accelerates delivery, consumption measures value, and none of it happens if assets aren't discoverable. Legacy replacement is orthogonal — System APIs typically WRAP legacy rather than replace it."
+   "explanation": "The application network compounds: reuse accelerates delivery, consumption measures value, and none of it happens if assets aren't discoverable. Legacy replacement is orthogonal — System APIs typically WRAP legacy rather than replace it.",
+   "level": "medium"
   },
   {
    "id": "pa-006",
@@ -119,7 +124,8 @@
     "Correct — a C4E sets shared standards, curates reusable assets, and measures consumption to drive reuse.",
     "Exchange size isn't limiting reuse; the missing piece is the operating model that drives publishing/consuming.",
     "RTF is a deployment choice; it doesn't address inconsistent standards or near-zero reuse."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-007",
@@ -136,7 +142,8 @@
     1,
     3
    ],
-   "explanation": "The C4E is measured by what OTHERS do with its enablement: reuse rates, consumption, onboarding speed. A C4E building everything itself has become the bottleneck it was meant to prevent."
+   "explanation": "The C4E is measured by what OTHERS do with its enablement: reuse rates, consumption, onboarding speed. A C4E building everything itself has become the bottleneck it was meant to prevent.",
+   "level": "medium"
   },
   {
    "id": "pa-008",
@@ -155,7 +162,8 @@
     "Correct — Catalyst is MuleSoft's outcomes-driven delivery methodology, with playbooks in the Knowledge Hub.",
     "Monitoring is Anypoint Monitoring/Visualizer; Catalyst is a methodology, not a product.",
     "Linting is a design-time tooling concern, unrelated to the Catalyst methodology."
-   ]
+   ],
+   "level": "easy"
   },
   {
    "id": "pa-009",
@@ -174,7 +182,8 @@
     "Correct — EU control plane keeps metadata in-region; customer-hosted/RTF runtimes keep payloads in the German data centers.",
     "PCE is a self-managed control plane; the need is EU-region metadata, and CloudHub payloads would still leave the DCs.",
     "US-East workers process payloads outside Germany; encryption doesn't satisfy residency for the payload location."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "pa-010",
@@ -193,7 +202,8 @@
     "Deployment configuration is control-plane data used to orchestrate runtimes.",
     "Correct — runtime payloads stay in the runtime plane; the MuleSoft control plane never sees business data.",
     "Monitoring metadata is aggregated in the control plane; it's metadata, not the payloads themselves."
-   ]
+   ],
+   "level": "easy"
   },
   {
    "id": "pa-011",
@@ -212,7 +222,8 @@
     "Correct — user federation is identity management; external OAuth for consumers is client management plus a token policy.",
     "User authentication isn't client management; only the API-consumer side maps there.",
     "Both are supported — Anypoint federates identity providers and integrates external OAuth client providers."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-012",
@@ -231,7 +242,8 @@
     "Correct — MQ and Object Store v2 data live in the runtime region you provision, which matters for residency and DR.",
     "There's no global replication; data stays in its provisioned region.",
     "These are hosted platform services, not local developer state."
-   ]
+   ],
+   "level": "easy"
   },
   {
    "id": "pa-013",
@@ -250,7 +262,8 @@
     "Correct — consumers depend on the published spec (contract) in Exchange, so changing it is what breaks them.",
     "Worker sizing is an operational detail invisible to consumers.",
     "Internal flow names are implementation detail, decoupled from the contract."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-014",
@@ -267,7 +280,8 @@
     1,
     2
    ],
-   "explanation": "Exchange generates the consumption kit: portal/console, mocking service, and (for REST specs) an auto-generated connector. The implementation is still yours to build and deploy."
+   "explanation": "Exchange generates the consumption kit: portal/console, mocking service, and (for REST specs) an auto-generated connector. The implementation is still yours to build and deploy.",
+   "level": "medium"
   },
   {
    "id": "pa-015",
@@ -286,7 +300,8 @@
     "Correct — the breaking type change forces a new MAJOR version; a lone optional field would only be MINOR.",
     "PATCH is for non-contract fixes; changing a field's type is a breaking contract change.",
     "Response schema is part of the contract; a breaking change absolutely requires versioning."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-016",
@@ -305,7 +320,8 @@
     "Correct — preserve each bounded context and translate at the boundary; the API layer is the anti-corruption layer.",
     "Leaking raw backend formats couples consumers to internals — the opposite of the goal.",
     "One shared database re-creates the tight coupling bounded contexts are meant to avoid."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-017",
@@ -322,7 +338,8 @@
     1,
     2
    ],
-   "explanation": "GET (safe), PUT (replace to a known state), and DELETE (already-deleted is the same outcome) are idempotent by HTTP semantics. POST may create duplicates — retrying it needs idempotency keys or server-side dedup."
+   "explanation": "GET (safe), PUT (replace to a known state), and DELETE (already-deleted is the same outcome) are idempotent by HTTP semantics. POST may create duplicates — retrying it needs idempotency keys or server-side dedup.",
+   "level": "medium"
   },
   {
    "id": "pa-018",
@@ -341,7 +358,8 @@
     "Correct — ETag + If-Match implements optimistic concurrency; a stale version is rejected with 412.",
     "Queues serialize work but aren't the HTTP concurrency mechanism the question asks about.",
     "REST prevents it natively via conditional requests (ETag/If-Match)."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-019",
@@ -360,7 +378,8 @@
     "Correct — publish reusable types as Exchange fragments and import them as versioned dependencies.",
     "A database schema is a runtime concern, not a way to share API type definitions.",
     "One monolithic spec couples unrelated APIs and blocks independent evolution."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-020",
@@ -379,7 +398,8 @@
     "Correct — System APIs per backend, a Process API orchestrating the registration, and an Experience API for the site.",
     "Experience APIs shouldn't call backends directly; orchestration belongs in a Process API.",
     "DataGraph federates read queries; it doesn't orchestrate a multi-step write process with side effects."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-021",
@@ -395,7 +415,8 @@
     0,
     1
    ],
-   "explanation": "Process APIs own cross-system orchestration and its consistency semantics. Channel formatting is Experience-layer; direct backend access is System-layer — leaking either into the Process layer erodes the architecture."
+   "explanation": "Process APIs own cross-system orchestration and its consistency semantics. Channel formatting is Experience-layer; direct backend access is System-layer — leaking either into the Process layer erodes the architecture.",
+   "level": "medium"
   },
   {
    "id": "pa-022",
@@ -414,7 +435,8 @@
     "Correct — DataGraph federates the read-only APIs so the client fetches just the fields it needs in one query.",
     "Four client-side calls push orchestration and latency onto the app.",
     "Batch ETL serves stale data and adds a store to maintain — wrong for a live page."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "pa-023",
@@ -433,7 +455,8 @@
     "Correct — multi-system writes with orchestration/compensation belong in a Process API, not DataGraph.",
     "Field selection is a core DataGraph benefit, not a disqualifier.",
     "Being in Exchange is a prerequisite for DataGraph, not a reason to avoid it."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-024",
@@ -452,7 +475,8 @@
     "Correct — a System API exposes a clean canonical model of its domain, insulating consumers from the backend.",
     "Channel-specific shaping belongs in an Experience API, not a System API.",
     "An accidental default mapping is not a deliberate, stable contract."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-025",
@@ -469,7 +493,8 @@
     1,
     3
    ],
-   "explanation": "Autonomy, legitimate semantic differences, and slow central governance all argue for bounded contexts with explicit boundary translation. A tiny single-team org is the rare case where one shared model stays cheap."
+   "explanation": "Autonomy, legitimate semantic differences, and slow central governance all argue for bounded contexts with explicit boundary translation. A tiny single-team org is the rare case where one shared model stays cheap.",
+   "level": "hard"
   },
   {
    "id": "pa-026",
@@ -488,7 +513,8 @@
     "Correct — shared logic in one Process API; each channel's Experience API only reshapes the response.",
     "Bypassing the Process API scatters orchestration into channels.",
     "Reusing one channel's Experience API forces the wrong response shape on the other."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-027",
@@ -507,7 +533,8 @@
     "Correct — a value-free pass-through should be removed; skip the layer rather than pay its cost.",
     "Batching changes the interaction model and doesn't address the needless hop.",
     "Merging everything discards the reuse and separation the layers provide where they do add value."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-028",
@@ -526,7 +553,8 @@
     "Correct — 'Customers System API (Salesforce)' names the capability, the layer, and the backing system.",
     "Implies an Experience/channel API, misrepresenting a System API over Salesforce.",
     "Vague and non-standard; conveys neither layer nor domain."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-029",
@@ -545,7 +573,8 @@
     "Correct — one instance per environment, each with its own api.id, policies, SLA tiers, contracts, and alerts.",
     "Policies are configured on the API instance in API Manager, not in the RAML.",
     "Lower environments also need managed instances to test policy behavior before prod."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-030",
@@ -564,7 +593,8 @@
     "Correct — spike control smooths bursts by briefly queuing/delaying within limits instead of hard-rejecting.",
     "Client ID enforcement is about identity, not shaping throughput.",
     "CORS governs cross-origin browser calls, unrelated to backend rate protection."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-031",
@@ -583,7 +613,8 @@
     "Correct — automated (org/environment-level) policies apply to all instances, present and future, without per-team effort.",
     "Manual per-release application is error-prone and doesn't cover future instances automatically.",
     "A connector is implementation code, not enforced governance across all instances."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "pa-032",
@@ -602,7 +633,8 @@
     "Correct — Mule app -> embedded autodiscovery; unmodifiable .NET -> API-Manager proxy; K8s edge -> Flex Gateway.",
     "Flex Gateway fits the edge case but not the Mule app, which enforces embedded.",
     "The .NET service can't run embedded policies, and the Mule app shouldn't need Flex."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-033",
@@ -621,7 +653,8 @@
     "Correct — secrets in URLs get cached, logged, and stored in history; headers keep them out of the URL.",
     "APIs can read query params fine; the problem is leakage, not capability.",
     "Rate limiting keys off identity/contract, not param placement."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-034",
@@ -640,7 +673,8 @@
     "Correct — traffic beyond the SLA-tier limit is throttled with HTTP 429.",
     "The gateway rejects the surplus before the backend, so it isn't a 500.",
     "403 is authorization denial; exceeding a rate limit returns 429, and only the excess is rejected."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-035",
@@ -659,7 +693,8 @@
     "Correct — discover in Exchange, request access with an app, pick a tier, get the contract approved, then use the credentials.",
     "Consumers don't front the API with their own proxy to gain access.",
     "Access is granted via a contract, not by cloning and self-hosting the implementation."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-036",
@@ -675,7 +710,8 @@
     0,
     1
    ],
-   "explanation": "Proprietary schemes and bespoke transformations aren't covered by the included directory — custom policies (published to Exchange) fill those gaps. Tiered rate limiting and client ID enforcement are standard included policies."
+   "explanation": "Proprietary schemes and bespoke transformations aren't covered by the included directory — custom policies (published to Exchange) fill those gaps. Tiered rate limiting and client ID enforcement are standard included policies.",
+   "level": "medium"
   },
   {
    "id": "pa-037",
@@ -694,7 +730,8 @@
     "Correct — enforce at every layer; each instance authenticates and limits its own callers (zero trust).",
     "Guarding only System APIs leaves Process/Experience layers unprotected.",
     "Internal APIs still need enforcement; 'internal' is not a security boundary."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "pa-038",
@@ -713,7 +750,8 @@
     "Correct — a resource-level policy runs only for the matched methods/paths, not the whole API.",
     "Scoping narrows where the policy runs; it doesn't turn it off.",
     "Resource-level application works for included policies too, not just custom ones."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-039",
@@ -732,7 +770,8 @@
     "Correct — JWT validation checks signatures/claims locally via JWKS, avoiding a per-request auth-server hop.",
     "Introspection on every call adds exactly the latency and load the requirement forbids.",
     "IP allowlisting is network-level and doesn't provide OAuth consumer identity."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "pa-040",
@@ -751,7 +790,8 @@
     "Correct — API Manager analytics attribute calls to client apps through their credentials/contracts.",
     "Logs can show requests but aren't the governed per-consumer usage report.",
     "Download counts measure discovery interest, not runtime API consumption."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-041",
@@ -768,7 +808,8 @@
     1,
     2
    ],
-   "explanation": "Autodiscovery pairing needs: the environment's instance id, platform credentials for that environment, and a valid flowRef. Documentation typos don't affect registration."
+   "explanation": "Autodiscovery pairing needs: the environment's instance id, platform credentials for that environment, and a valid flowRef. Documentation typos don't affect registration.",
+   "level": "hard"
   },
   {
    "id": "pa-042",
@@ -787,7 +828,8 @@
     "Correct — embedded enforcement avoids a separate proxy app and its network hop.",
     "Embedded still needs Anypoint client credentials plus api.id to register.",
     "Rate limiting works in both proxy and embedded modes."
-   ]
+   ],
+   "level": "easy"
   },
   {
    "id": "pa-043",
@@ -804,7 +846,8 @@
     1,
     2
    ],
-   "explanation": "Private access, on-prem connectivity, and the DLB all require a VPC. Multi-worker deployments are standard CloudHub — no VPC involved."
+   "explanation": "Private access, on-prem connectivity, and the DLB all require a VPC. Multi-worker deployments are standard CloudHub — no VPC involved.",
+   "level": "hard"
   },
   {
    "id": "pa-044",
@@ -823,7 +866,8 @@
     "Correct — Runtime Fabric gives control-plane-managed deployments on customer infra; the customer runs the cluster.",
     "PCE is a self-managed control plane and is not identical to CloudHub operationally.",
     "Standalone runtimes work but aren't the platform-managed K8s option the scenario asks for."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-045",
@@ -842,7 +886,8 @@
     "Correct — logic/mapping are MUnit units; policy enforcement on the deployed instance is an integration test.",
     "Policy enforcement can only be verified against the deployed, managed instance — not a pure unit test.",
     "Pure logic and mapping are wasteful to test only at the integration level."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-046",
@@ -861,7 +906,8 @@
     "Correct — CI + mule-maven-plugin + munit-maven-plugin + Exchange, authenticated by a Connected App.",
     "FTP to workers bypasses the platform's deploy and governance tooling.",
     "Hand-copying artifacts breaks build-once/deploy-many and traceability."
-   ]
+   ],
+   "level": "easy"
   },
   {
    "id": "pa-047",
@@ -880,7 +926,8 @@
     "Correct — a smoke/functional test hits the deployed endpoints and asserts real responses before promotion.",
     "JAR size tells you nothing about runtime behavior.",
     "RAML linting is a design-time check, not post-deploy verification."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-048",
@@ -899,7 +946,8 @@
     "Correct — promote the one tested artifact; rebuilds can differ, and env specifics belong in externalized config.",
     "Maven can rebuild freely; the issue is trust, not tooling limits.",
     "JARs can be rebuilt; doing so just yields a potentially different, untested artifact."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-049",
@@ -918,7 +966,8 @@
     "Correct — small requests at high TPS with HA favor multiple workers (scale-out + resilience).",
     "A single tiny worker neither sustains high TPS nor provides availability.",
     "Vertical scaling adds capacity to one instance but no redundancy."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-050",
@@ -937,7 +986,8 @@
     "Correct — low TPS but large payloads call for a bigger worker plus streaming to bound memory.",
     "A load balancer distributes requests; it doesn't solve per-request memory needs.",
     "More AZs add availability, not the memory headroom a large file requires."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-051",
@@ -956,7 +1006,8 @@
     "Correct — persistent queues make VM messages survive restarts and be consumable across both workers.",
     "A DLB handles ingress routing, not queue durability.",
     "Static IPs address egress identity, not message persistence."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "pa-052",
@@ -973,7 +1024,8 @@
     1,
     2
    ],
-   "explanation": "Custom domains/certs, client-cert validation, and mapping rules are DLB features (VPC required). Basic load balancing across workers is already provided by the shared LB."
+   "explanation": "Custom domains/certs, client-cert validation, and mapping rules are DLB features (VPC required). Basic load balancing across workers is already provided by the shared LB.",
+   "level": "medium"
   },
   {
    "id": "pa-053",
@@ -990,7 +1042,8 @@
     1,
     2
    ],
-   "explanation": "AZ distribution, worker monitoring/restart, and rolling redeploys are the platform's HA toolkit. Cross-region anything is DR you must design yourself — never automatic."
+   "explanation": "AZ distribution, worker monitoring/restart, and rolling redeploys are the platform's HA toolkit. Cross-region anything is DR you must design yourself — never automatic.",
+   "level": "medium"
   },
   {
    "id": "pa-054",
@@ -1009,7 +1062,8 @@
     "Transient VM queues aren't persisted, so their contents don't survive a crash.",
     "Correct — Object Store v2 and persistent queues are durable, surviving a worker crash without extra design.",
     "An in-progress request's payload is in memory and is lost if the worker dies."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-055",
@@ -1028,7 +1082,8 @@
     "Correct — all three single elements are SPOFs; each needs redundancy or an explicit accepted risk.",
     "The worker isn't the only SPOF — the tunnel and backend are too.",
     "The tunnel is one SPOF among three, not the only one."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "pa-056",
@@ -1047,7 +1102,8 @@
     "Correct — a DLB (which requires a VPC) maps /orders and /customers to each app under one domain on 443.",
     "The shared load balancer can't serve a custom domain with path routing; and you don't get two of them.",
     "A domain project shares runtime configuration, not external URL routing."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-057",
@@ -1066,7 +1122,8 @@
     "Correct — the HTTP Caching policy is owner-configurable on the instance without touching the implementation.",
     "A bigger worker adds capacity but isn't the configurable caching mechanism required.",
     "Watermarking tracks sync progress; it isn't a response cache."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-058",
@@ -1085,7 +1142,8 @@
     "Correct — a Cache scope around only the currency lookup, keyed by pair with a ~1 h TTL, optimizes exactly that call.",
     "maxConcurrency throttles concurrency; it doesn't cache a result.",
     "A Batch Job is for bulk record processing, not memoizing a single lookup."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-059",
@@ -1101,7 +1159,8 @@
     0,
     1
    ],
-   "explanation": "Losing a watermark causes reprocessing; losing dedup keys causes duplicates — that's STATE with correctness impact, kept deliberately in an Object Store. Lost lookups/tokens merely cost a refetch — true caches."
+   "explanation": "Losing a watermark causes reprocessing; losing dedup keys causes duplicates — that's STATE with correctness impact, kept deliberately in an Object Store. Lost lookups/tokens merely cost a refetch — true caches.",
+   "level": "medium"
   },
   {
    "id": "pa-060",
@@ -1118,7 +1177,8 @@
     1,
     2
    ],
-   "explanation": "Timeouts bound the damage, careful retries handle transients, circuit breakers stop the hammering and enable fast fallback. Unbounded waiting is precisely the cascade mechanism."
+   "explanation": "Timeouts bound the damage, careful retries handle transients, circuit breakers stop the hammering and enable fast fallback. Unbounded waiting is precisely the cascade mechanism.",
+   "level": "hard"
   },
   {
    "id": "pa-061",
@@ -1137,7 +1197,8 @@
     "Correct — fall back to cached last-known-good data (First Successful) and signal staleness where it matters.",
     "Infinite retries hang the caller instead of returning something useful.",
     "Queuing GETs stalls responses rather than serving cached data now."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-062",
@@ -1156,7 +1217,8 @@
     "Correct — horizontal scaling helps throughput/availability; per-request latency needs caching, parallelism, or fewer hops.",
     "More workers don't add latency to a single request either.",
     "Latency can't be eliminated; work still takes time on the critical path."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-063",
@@ -1173,7 +1235,8 @@
     1,
     2
    ],
-   "explanation": "Availability = redundancy + fast detection/response + not inheriting every dependency failure. Documentation quality is valuable but doesn't move uptime."
+   "explanation": "Availability = redundancy + fast detection/response + not inheriting every dependency failure. Documentation quality is valuable but doesn't move uptime.",
+   "level": "medium"
   },
   {
    "id": "pa-064",
@@ -1192,7 +1255,8 @@
     "Correct — consumer traffic -> API analytics; worker memory trend -> Monitoring; live call graph -> Visualizer.",
     "Runtime Manager isn't the per-consumer traffic source, and BAT/Functional Monitoring isn't the call graph.",
     "Raw logs can't readily give per-consumer share, memory trends, or the dependency graph."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-065",
@@ -1209,7 +1273,8 @@
     1,
     3
    ],
-   "explanation": "429s are policy verdicts, not backend errors: identify the consumers (analytics), then either fix tier sizing for legitimate demand or address the abusive caller."
+   "explanation": "429s are policy verdicts, not backend errors: identify the consumers (analytics), then either fix tier sizing for legitimate demand or address the abusive caller.",
+   "level": "medium"
   },
   {
    "id": "pa-066",
@@ -1228,7 +1293,8 @@
     "Correct — layered alerts pinpoint where a failure starts, since a System API issue often explains the Experience symptom.",
     "All layers support alerts, not just Experience.",
     "Process APIs can and do fail; assuming otherwise leaves a blind spot."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-067",
@@ -1247,7 +1313,8 @@
     "Correct — worker health and deployment status are Runtime Manager alerts.",
     "SLA response-time breaches are tracked in API Manager.",
     "4xx ratio thresholds are API-Manager-level API alerts."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-068",
@@ -1266,7 +1333,8 @@
     "Correct — reuse and consumption growth is the network's value story for leadership.",
     "Worker count measures spend/footprint, not delivered value.",
     "JAR size is a build detail irrelevant to network value."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-069",
@@ -1285,7 +1353,8 @@
     "Correct — a business KPI needs business telemetry (custom events/metrics) driving a dashboard/alert on order rate.",
     "Deployment notifications are lifecycle events, not business volume.",
     "Flow logs describe network traffic, not business order counts."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-070",
@@ -1304,7 +1373,8 @@
     "Correct — Functional Monitoring (BAT) actively calls the API on a schedule and asserts on responses, catching silent breakage.",
     "It runs against real deployed environments, not just dev.",
     "It complements MUnit; it doesn't replace unit testing."
-   ]
+   ],
+   "level": "easy"
   },
   {
    "id": "pa-071",
@@ -1323,7 +1393,8 @@
     "Correct — Visualizer's live dependency graph shows the blast radius around a degraded node fastest.",
     "Exchange lists assets but not live runtime call relationships.",
     "RAML describes contracts, not who is actually calling whom at runtime."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-072",
@@ -1342,7 +1413,8 @@
     "Correct — owned alerts tied to SLAs, with incidents feeding threshold/capacity/design reviews, close the loop.",
     "Muting noisy alerts hides problems instead of fixing them.",
     "Monitoring prod alone misses issues that should be caught earlier."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "pa-073",
@@ -1933,6 +2005,232 @@
     "Channels must not reach past the layers into a System API's backend."
    ],
    "explanation": "New channels get a thin Experience API over the existing Process API; the orchestration lives once in the pAPI and is reused."
+  },
+  {
+   "id": "pa-102",
+   "section": "p2",
+   "level": "hard",
+   "q": "A platform team creates a NEW business group for every single API so each can be 'isolated', ending up with 40 business groups. Six months in, sharing reusable assets and running Dev→Prod promotion has become painful. What is the design mistake?",
+   "options": [
+    "Business groups should model organizational/ownership boundaries, not individual APIs; isolation between an app's stages is what environments are for, and over-fragmenting groups blocks reuse and complicates access",
+    "Business groups are the correct unit per API, but the team also forgot to create one dedicated environment per API, which is what actually enables promotion and reusable asset sharing across all forty of the separate groups",
+    "The mistake is using business groups at all — everything should live in the root organization, and isolation should be achieved purely through per-API roles",
+    "Nothing is wrong with the structure; 40 business groups is the expected outcome for 40 APIs, and the promotion pain simply means more automation is required"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — business groups model ownership/organizational boundaries (teams, lines of business); an app's Dev/Test/Prod isolation is the job of environments. A group per API fragments the org and blocks cross-group reuse.",
+    "Environments isolate stages within a group; adding one per API doesn't fix the over-fragmentation and isn't how promotion is meant to work.",
+    "Flattening everything to root loses legitimate team isolation; the fix is right-sized groups plus environments, not zero groups.",
+    "40 groups for 40 APIs is the anti-pattern causing the pain, not an expected outcome."
+   ],
+   "explanation": "Business groups partition the organization by ownership (teams/LOBs) and carry their own environments and role assignments. Per-stage isolation is what environments provide. Creating a group per API fragments governance, blocks asset reuse across groups, and multiplies access-management overhead."
+  },
+  {
+   "id": "pa-103",
+   "section": "p3",
+   "level": "hard",
+   "q": "Refer to the exhibit. Consumers of the Orders API break after this release even though only a 'minor' version bump was published. What went wrong?",
+   "exhibit": "v1.3.0  →  v1.4.0   (published as a MINOR bump)\n- response field `status` renamed  \"OPEN\" → state: \"OPEN\"   (field renamed)\n- required request field `currency` added (no default)",
+   "options": [
+    "Both changes are breaking — a renamed response field and a new required request field — so this had to be a MAJOR version; labelling it minor misled consumers into upgrading without code changes",
+    "The changes are genuinely minor; consumers broke only because they failed to re-import the updated API specification from Exchange after the release and regenerate their client code against the new contract",
+    "Renaming a field is a minor change, but adding any request field at all is always a major change, so only the second change was mislabelled",
+    "Semantic versioning doesn't apply to REST APIs, so the version number is irrelevant and the breakage is unrelated to how it was labelled"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — renaming a response field and adding a required request field both break existing consumers, so semver demands a MAJOR bump; a minor label signals backward compatibility that isn't there.",
+    "Re-importing doesn't help when the contract changed incompatibly; the version was mislabelled.",
+    "Renaming a field IS breaking (consumers read the old name); the rule stated is wrong.",
+    "Semver absolutely applies to API contracts and is how compatibility is communicated."
+   ],
+   "explanation": "Under semantic versioning, backward-incompatible changes (renaming/removing fields, adding required inputs) require a MAJOR bump. Publishing them as a minor version tells consumers it's safe to upgrade in place, which is exactly why they broke."
+  },
+  {
+   "id": "pa-104",
+   "section": "p4",
+   "level": "hard",
+   "q": "Refer to the exhibit. A System API over SAP exposes SAP's native structures directly to all consumers. Multiple Process and Experience APIs now depend on these shapes. Why is this a problem, and what should a System API expose?",
+   "exhibit": "SAP System API  GET /orders/{id}  ->  { MANDT, VBELN, ERDAT, NETWR, WAERK, ... }\n(raw SAP IDoc/table field names passed straight through to every consumer)",
+   "options": [
+    "A System API should present a clean, stable abstraction of the underlying system; leaking SAP's native field names couples every consumer to SAP so any SAP change ripples outward and a future SAP replacement breaks everyone",
+    "This is the correct role of a System API — expose the backend exactly as it is — and the coupling concern belongs only to the Experience layer, which is the sole place where consumer-facing contracts are ever meant to be stabilized against backend change",
+    "The problem is purely naming; renaming the fields to camelCase while keeping the same structure fully removes the coupling to SAP",
+    "System APIs must add orchestration, so the fix is to have this API also call the Inventory and Billing systems and merge their data"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — a System API's job is to unlock a system behind a stable, technology-neutral contract; passing raw SAP fields couples consumers to SAP and defeats the insulation the layer exists to provide.",
+    "Exposing the backend raw is the anti-pattern; the System layer is precisely where you insulate consumers from it.",
+    "camelCase alone still exposes SAP's structure/semantics; a stable abstraction, not cosmetic renaming, is needed.",
+    "Orchestration across systems belongs in a Process API, not a System API — that would couple back ends together."
+   ],
+   "explanation": "The System layer exists to hide a backend behind a stable, canonical-ish contract so consumers don't couple to it. Leaking SAP's native field names propagates every SAP change to all consumers and makes a future SAP replacement a breaking event for the whole network."
+  },
+  {
+   "id": "pa-105",
+   "section": "p5",
+   "level": "hard",
+   "q": "Refer to the exhibit. An API instance has these policies but unauthenticated callers are still consuming the rate-limit budget and occasionally reaching the backend. What is the cause?",
+   "exhibit": "Applied policy order:\n  1. Rate Limiting - SLA   (200 req/min)\n  2. Client ID Enforcement\n  3. JWT Validation",
+   "options": [
+    "Client ID Enforcement / JWT Validation must run BEFORE rate limiting so unauthenticated requests are rejected first; with rate limiting first, invalid calls are counted (and can pass) before identity is ever checked",
+    "Policy order has no effect on an API instance because all applied policies are evaluated simultaneously, so the real problem must be a missing autodiscovery binding between the deployed application and its API instance in this environment",
+    "The order is correct; the issue is that Rate Limiting - SLA should be replaced with basic Rate Limiting, after which unauthenticated calls are blocked automatically",
+    "JWT Validation must always be the very first policy, and moving only it to the top resolves the issue regardless of where client-id enforcement sits"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — authentication/identity policies should precede rate limiting so unauthenticated traffic is rejected before consuming budget or reaching the backend; order matters and is evaluated top-down.",
+    "Applied policies execute in order, not simultaneously; ordering is exactly the lever here.",
+    "Switching SLA→basic rate limiting doesn't add authentication; identity policies still need to run first.",
+    "It's not just JWT — client-id enforcement must also precede rate limiting; fixing one policy's position isn't sufficient."
+   ],
+   "explanation": "Gateway policies execute in their applied order. Authentication and client-id policies must precede rate limiting so unauthenticated or unidentified requests are rejected before they consume the SLA budget or slip through toward the backend."
+  },
+  {
+   "id": "pa-106",
+   "section": "p5",
+   "level": "hard",
+   "q": "A public API will be offered to anonymous evaluators (self-service, throttled hard) and to vetted partners (higher limits, must be approved). The architect wants both onboarding paths on one API. Which governance design fits?",
+   "options": [
+    "Two SLA tiers on the same API — a Free tier with auto-approval and low limits, and a Partner tier requiring manual approval with higher limits — each issuing a contract to the requesting client application",
+    "Two separate API instances in different environments, because a single API instance can only ever expose exactly one SLA tier to all of its consumers at once, so evaluators and partners can never share the same published API",
+    "A single tier with a very high limit plus a custom policy that inspects each caller's company name to decide their rate at runtime",
+    "No tiers at all — approve every client application manually and rely on the analytics dashboard to spot anyone exceeding a fair-use limit after the fact"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — SLA tiers model exactly this: a Free tier (auto-approved, low limit) and a Partner tier (manual approval, higher limit), each producing a per-application contract on the one API.",
+    "One API instance can define multiple SLA tiers; separate environments/instances aren't required.",
+    "Hand-rolling rate decisions from company names in a custom policy is fragile and bypasses the built-in tier/contract model.",
+    "After-the-fact analytics doesn't enforce limits; tiers enforce them and automate the differing approval paths."
+   ],
+   "explanation": "SLA tiers are designed for differentiated access on a single API: define a Free tier (auto-approved, low limits) and a Partner tier (manual approval, higher limits). Each consumer's client application requests a tier and receives a contract that the Rate-Limiting-SLA policy enforces."
+  },
+  {
+   "id": "pa-107",
+   "section": "p6",
+   "level": "hard",
+   "q": "Refer to the exhibit. A pipeline promotes the SAME artifact across environments, but in TEST the API instance shows 'Unregistered' and its policies aren't enforced, while DEV works. What is the most likely cause?",
+   "exhibit": "app packaged once; promoted DEV → TEST → PROD\nautodiscovery apiId = ${api.id}\nDEV  props: api.id=1001 , client_id/secret = <dev connected app>\nTEST props: api.id=1001 , client_id/secret = <dev connected app>   # copied from DEV",
+   "options": [
+    "TEST is pointing at DEV's api.id and DEV's platform credentials, so it never pairs with the TEST API instance; each environment needs its own api.id plus a Connected App scoped to that environment",
+    "Promoting the same artifact across environments is unsupported for autodiscovery, so TEST must instead be given a separately rebuilt artifact that has its own environment-specific api.id compiled directly into the packaged application at build time",
+    "The api.id is correct; 'Unregistered' only means the TEST worker hasn't finished starting, and it will pair automatically within a few hours with no change",
+    "Autodiscovery can pair only one environment per application, so enabling it in DEV permanently prevents TEST from ever registering"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — TEST reuses DEV's api.id and Connected App, so it registers against DEV's instance (or none in TEST); each environment must supply its own api.id and env-scoped platform credentials.",
+    "Build-once/promote-many is exactly right; the fix is per-env config, not a rebuild.",
+    "'Unregistered' reflects a pairing failure, not a slow start; it won't self-heal without correct config.",
+    "Autodiscovery pairs per environment via that environment's api.id/credentials; DEV doesn't lock out TEST."
+   ],
+   "explanation": "Autodiscovery pairs a running app to its API instance using api.id plus platform (Connected App) credentials for THAT environment. Copying DEV's values into TEST makes TEST target the wrong instance, so its own instance stays Unregistered and unenforced. Config differs per environment; the artifact does not."
+  },
+  {
+   "id": "pa-108",
+   "section": "p6",
+   "level": "hard",
+   "q": "A team plans to place a purely public, stateless Experience API — no private connectivity, no custom domain, no IP allowlisting — inside a new Anypoint VPC 'for security'. What is the best architectural feedback?",
+   "options": [
+    "A VPC adds cost and network complexity without benefit here; it's justified by private connectivity, VPN/peering, custom DLB/TLS, or IP control — none of which this API needs, so security should come from policies and TLS instead",
+    "Correct call — every production API must run in a VPC regardless of its connectivity needs, as that is the only way to apply API Manager policies",
+    "A VPC is required specifically because the API is stateless, since stateless apps cannot be isolated at the load-balancer layer otherwise",
+    "The API should instead be moved to Runtime Fabric, because a public Experience API can never be safely hosted on CloudHub without the additional network isolation that only a customer-managed Kubernetes runtime plane is able to provide"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — VPCs exist for private connectivity, VPN/peering, dedicated LB/custom TLS, or IP control; a public API needing none of those gains nothing, so secure it with API Manager policies and TLS.",
+    "Policies are applied via API Manager/autodiscovery regardless of VPC; a VPC isn't required to govern an API.",
+    "Statelessness has nothing to do with needing a VPC.",
+    "A public Experience API is perfectly fine on CloudHub; RTF isn't warranted here."
+   ],
+   "explanation": "An Anypoint VPC is warranted by private connectivity, VPN/peering, a dedicated load balancer with custom TLS, or inbound IP control. An API with none of those requirements gains only cost and complexity from a VPC — its security comes from API Manager policies and TLS."
+  },
+  {
+   "id": "pa-109",
+   "section": "p7",
+   "level": "hard",
+   "q": "Refer to the exhibit. Identify the single points of failure in this revenue-critical CloudHub deployment and the correct remediations.",
+   "exhibit": "[ shared LB ] → [ 1 worker ] → [ in-memory Object Store ] → [ 1 on-prem DB via 1 VPN tunnel ]",
+   "options": [
+    "Single worker, in-memory state, and a single VPN tunnel are all SPOFs: run ≥2 workers across AZs, move state to Object Store v2, and provision redundant VPN tunnels (and a DLB if custom domain/TLS is needed)",
+    "The only single point of failure is the shared load balancer, so replacing it with a dedicated load balancer removes every availability risk in this topology, since the load balancer is the sole component through which all inbound traffic must pass",
+    "There are no SPOFs because CloudHub automatically replicates a single worker across availability zones behind the scenes",
+    "The in-memory Object Store is the only concern; increasing the single worker's vCore size resolves the availability requirement"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — a lone worker, on-heap state, and one VPN tunnel each fail independently; remediate with ≥2 workers across AZs, Object Store v2 for shared state, and redundant tunnels (DLB for custom domain/TLS).",
+    "A DLB alone leaves the single worker, in-memory state, and single tunnel as SPOFs.",
+    "A single worker is a SPOF; CloudHub does not silently run two for you.",
+    "Bigger vCores add capacity, not redundancy; one worker is still a SPOF."
+   ],
+   "explanation": "High availability means no single component whose loss takes the system down. Here the lone worker, the in-memory Object Store, and the single VPN tunnel are all SPOFs — fixed by multiple workers across AZs, shared Object Store v2 state, and redundant connectivity."
+  },
+  {
+   "id": "pa-110",
+   "section": "p7",
+   "level": "hard",
+   "q": "A partner integration requires that callers authenticate with a client CERTIFICATE at the transport layer, terminated under the company's own domain and certificate on CloudHub. Which load-balancer choice and capability meet this?",
+   "options": [
+    "A Dedicated Load Balancer, which can present the company's custom certificate and be configured for two-way (mutual) TLS so clients must present a valid certificate — the shared load balancer can't do custom certs or mTLS",
+    "The shared load balancer is sufficient, since it already supports custom domains and mutual TLS for any CloudHub application at no extra cost, which makes provisioning a dedicated load balancer an unnecessary expense for this particular partner integration",
+    "A Dedicated Load Balancer, but only for the custom domain; client-certificate authentication must instead be handled by a Client ID Enforcement policy",
+    "Neither load balancer can do this on CloudHub; the app must move to Runtime Fabric to terminate mutual TLS"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — a Dedicated Load Balancer presents custom certificates and supports two-way TLS, requiring clients to present a valid certificate; the shared LB supports neither custom certs nor mTLS.",
+    "The shared LB does not offer custom certificates or mutual TLS.",
+    "Client ID Enforcement is an application-credential policy, not transport-level certificate auth; the DLB itself does mTLS.",
+    "CloudHub's DLB terminates mutual TLS; moving to RTF isn't required."
+   ],
+   "explanation": "Transport-level client-certificate auth (mutual TLS) plus a custom domain/certificate on CloudHub requires a Dedicated Load Balancer, which supports custom certs and two-way TLS. The shared load balancer offers neither, and client-id enforcement is a different (application) layer."
+  },
+  {
+   "id": "pa-111",
+   "section": "p8",
+   "level": "hard",
+   "q": "Refer to the exhibit. An HTTP Caching policy is applied to speed up a per-user endpoint, but users start seeing each other's data. What is wrong, and the correct fix?",
+   "exhibit": "GET /me/orders   (returns the caller's own orders; Authorization: Bearer <user>)\nHTTP Caching policy: cacheKey = request path only  (Authorization ignored)",
+   "options": [
+    "The cache key ignores the user identity, so one user's cached response is served to others; either include the user/authorization in the cache key or don't cache per-user, authenticated responses at all",
+    "HTTP caching never works with Authorization headers, so the only fix is to remove authentication from the endpoint entirely",
+    "The policy is correct; the leak is caused by the backend and is unrelated to how the cache key is defined",
+    "Caching per-user data is fine as long as the TTL is lowered to just a few seconds, which prevents cross-user leakage because each entry expires well before a second user could ever be served another user's cached response"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — a cache key of path-only collapses all users onto one entry; include the user identity in the key, or simply don't cache personalized authenticated responses.",
+    "Caching can vary by Authorization/user; you don't have to strip auth — you must key on it.",
+    "The leak is a direct consequence of the path-only cache key, not the backend.",
+    "A short TTL still serves one user's entry to another within the window; it doesn't fix cross-user leakage."
+   ],
+   "explanation": "A cache is only correct if its key captures everything the response varies by. A per-user response keyed on path alone serves the first user's data to everyone. Include the user/authorization in the key, or don't cache personalized authenticated responses — reserve edge caching for shared, non-personalized content."
+  },
+  {
+   "id": "pa-112",
+   "section": "p9",
+   "level": "hard",
+   "q": "After a deploy, the Checkout API still returns HTTP 200 quickly and all infrastructure metrics (CPU, memory, latency, error rate) are green, but the order totals in responses are wrong. Which monitoring capability is designed to catch this, and why won't the metric alerts?",
+   "options": [
+    "API Functional Monitoring (BAT) — scheduled synthetic calls that assert on the response body/schema — catches a wrong-but-200 payload, whereas metric alerts only watch infrastructure signals that a correctness bug doesn't move",
+    "A Runtime Manager CPU and memory alert will catch it, because returning incorrect data always drives measurable extra resource usage that the alert can detect, since any deviation in output correctness is reflected proportionally in the worker's consumption",
+    "An API Manager 5xx-rate alert will catch it, since a wrong total is internally treated as a server error and surfaces in the 5xx metrics",
+    "No tool can detect this before customers report it, so the only option is to add more verbose logging and have an engineer read the logs continuously"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — Functional Monitoring issues synthetic requests and asserts on the actual response, so a fast, healthy-looking 200 with wrong data fails the check even when infra metrics are green.",
+    "A wrong total costs no extra CPU/memory; infra alerts stay green.",
+    "A logic bug that returns 200 doesn't raise the 5xx rate; API Manager metrics won't flag it.",
+    "Functional Monitoring detects exactly this proactively; continuous manual log-reading isn't the design answer."
+   ],
+   "explanation": "Infrastructure/metric alerts answer 'is it up and fast?' — they can't see that a 200 body is wrong. API Functional Monitoring (BAT) answers 'is it correct right now?' via scheduled synthetic calls that assert on the response, so a correctness regression returning a healthy-looking 200 is exactly what it catches."
   }
  ],
  "sections": [
