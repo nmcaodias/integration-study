@@ -26,14 +26,15 @@
     "Correct — records are strictly ordered by offset within each partition, not across the topic.",
     "Ordering is per partition, not per broker; a broker hosts many partitions.",
     "There is a guarantee — within a single partition records are strictly ordered."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-002",
    "section": "k1",
    "q": "All events for a given customer must be processed in order. How is this achieved when producing?",
    "options": [
-    "Set acks=all so every write is fully replicated before ack",
+    "Set acks=all so that every single write is fully replicated across all of the in-sync replicas before it is acknowledged",
     "Use the customer ID as the record key so a customer's events hash to one partition",
     "Use a single-partition topic so all customer events share one log",
     "Enable compression to keep related events batched together"
@@ -45,7 +46,8 @@
     "Correct — keying by customer ID routes all of that customer's events to the same partition, preserving order.",
     "A single partition preserves order but destroys parallelism; keying is the scalable answer.",
     "Compression affects size, not partition routing."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-003",
@@ -64,14 +66,15 @@
     "Partitions are not split per record across consumers; each partition has one owner in the group.",
     "Extra consumers are allowed; they simply get no assignment.",
     "Kafka never auto-adds partitions to match consumer count."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-004",
    "section": "k1",
    "q": "A topic is configured with replication.factor=3 and min.insync.replicas=2, and producers use acks=all. What does this setup guarantee?",
    "options": [
-    "Writes still succeed even if all three replicas are unavailable",
+    "Writes will still succeed and be acknowledged even when all three of the partition's replicas are simultaneously unavailable",
     "Every acknowledged write is on at least 2 replicas, surviving one broker failure",
     "Exactly-once delivery of each record to consumers",
     "Consumers may read from follower replicas for lower latency"
@@ -83,7 +86,8 @@
     "Correct — acks=all + min.insync.replicas=2 means acked data lives on 2+ replicas and tolerates one broker loss.",
     "This is a durability guarantee, not exactly-once consumer delivery.",
     "By default consumers read only from the leader, not followers."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "kk-005",
@@ -102,7 +106,8 @@
     "Correct — with only one in-sync replica, acks=all writes are rejected (NotEnoughReplicas) until the ISR recovers.",
     "Kafka never silently reroutes data to another topic.",
     "Reads can continue from the leader; it is writes that are blocked."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "kk-006",
@@ -121,7 +126,8 @@
     "Correct — compaction keeps the most recent value per key; a null-value tombstone marks a key for removal.",
     "Compaction is about keys, not byte-level compression.",
     "Compaction is independent of what consumers have read."
-   ]
+   ],
+   "level": "easy"
   },
   {
    "id": "kk-007",
@@ -140,7 +146,8 @@
     "Correct — every consumer group independently receives all records; partitions are split only within a group.",
     "All subscribed groups receive data, not just the first.",
     "Groups are independent; their consumer counts need not match."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-008",
@@ -159,7 +166,8 @@
     "Correct — SASL_SSL + SCRAM mechanism + JAAS credentials + a truststore is the standard secured-client config.",
     "There is no 'ssl' compression codec; compression is not security.",
     "Idempotence prevents duplicate writes; it does nothing for authentication or encryption."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-009",
@@ -178,7 +186,8 @@
     "Correct — TopicAuthorizationException means the principal is missing Read ACLs on the topic (and its group).",
     "A wrong codec causes deserialization issues, not an authorization error.",
     "auto.offset.reset affects starting position, not authorization."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "kk-010",
@@ -197,7 +206,8 @@
     "Correct — KRaft replaces ZooKeeper with an internal Raft controller quorum for metadata.",
     "Metadata is not stored in an external RDBMS.",
     "Schema Registry manages schemas, not cluster metadata."
-   ]
+   ],
+   "level": "easy"
   },
   {
    "id": "kk-011",
@@ -216,7 +226,8 @@
     "Correct — adding partitions changes the hash mapping, so a key's new records may land elsewhere, breaking ordering.",
     "Existing data is retained, not deleted.",
     "Producers pick up the new partitions via metadata refresh, no restart required."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "kk-012",
@@ -235,7 +246,8 @@
     "Correct — headers carry side-band metadata (tracing, routing hints) without affecting key, value, or partitioning.",
     "Offsets are assigned by the broker, not stored in headers.",
     "Compression applies to the batch, not to a header field."
-   ]
+   ],
+   "level": "easy"
   },
   {
    "id": "kk-013",
@@ -254,14 +266,15 @@
     "Correct — idempotent producer dedupes retries of the same batch and preserves per-partition order.",
     "Consumer-side duplicates are a commit/EOS concern, not producer idempotence.",
     "It only covers producer retries, not the whole pipeline."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-014",
    "section": "k2",
    "q": "A consume-transform-produce application must achieve exactly-once semantics from input topic to output topic. What is required?",
    "options": [
-    "Setting enable.idempotence=true on the producer, which is sufficient for exactly-once on its own",
+    "Setting enable.idempotence=true on the producer alone, which by itself is entirely sufficient to guarantee exactly-once across the whole consume-transform-produce loop",
     "Kafka transactions: a transactional.id producer writing output and committing offsets atomically (read_committed)",
     "Using acks=all together with retries=0",
     "A manual commitSync() after each processed record"
@@ -273,14 +286,15 @@
     "Correct — EOS across topics needs transactions (transactional.id + offsets in the txn) and read_committed downstream.",
     "acks/retries affect durability, not atomic consume-transform-produce.",
     "Manual commits are at-least-once, not exactly-once."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "kk-015",
    "section": "k2",
    "q": "A consumer with enable.auto.commit=true crashes AFTER auto-commit ran but BEFORE it finished processing the last polled batch. What happens to those records?",
    "options": [
-    "They are redelivered to the group after the consumer restarts",
+    "They are automatically redelivered to the consumer group as soon as the crashed consumer restarts and rejoins the group",
     "They are lost to this group — the committed offset already moved past them",
     "They are automatically moved to a dead-letter queue",
     "The broker detects the gap and reprocesses them"
@@ -292,7 +306,8 @@
     "Correct — auto-commit advanced the offset before processing finished, so those records are skipped (at-most-once risk).",
     "Kafka has no built-in DLQ for this; it just moves the offset.",
     "Brokers don't reprocess based on client processing state."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "kk-016",
@@ -311,7 +326,8 @@
     "Correct — 10-minute batches exceed max.poll.interval.ms; the coordinator evicts the consumer. Raise it or shrink batches.",
     "auto.offset.reset controls start position, not rebalances.",
     "linger.ms is a producer batching setting, unrelated here."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-017",
@@ -330,7 +346,8 @@
     "Correct — the reset policy applies only when there is no valid committed offset to resume from.",
     "Lag doesn't trigger an offset reset.",
     "Rebalances reassign partitions but keep committed offsets."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-018",
@@ -349,7 +366,8 @@
     "Correct — a little linger plus bigger batches amortizes overhead and improves compression, trading slight latency for throughput.",
     "Shrinking buffer.memory reduces batching and can stall the producer.",
     "max.in.flight=1 lowers throughput to preserve ordering."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-019",
@@ -368,7 +386,8 @@
     "Correct — BACKWARD means new-schema consumers can read old data, so consumers upgrade first.",
     "Compatibility modes exist precisely to allow safe evolution.",
     "The point of compatibility is to avoid lock-step upgrades."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-020",
@@ -387,7 +406,8 @@
     "Correct — the wire format prefixes a schema ID that the deserializer resolves (and caches) via Schema Registry.",
     "Topic names don't encode schemas.",
     "Deserialization is exact, not guessed."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-021",
@@ -406,7 +426,8 @@
     "Correct — NotLeaderForPartition is transient during leader changes; the client refreshes metadata and retries automatically.",
     "A serializer fault would fail consistently, not intermittently with eventual success.",
     "An oversize record raises RecordTooLargeException, a different error."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-022",
@@ -425,7 +446,8 @@
     "Correct — advance past the bad offset (or tolerate the deserialization error) and route it to a dead-letter topic.",
     "Deleting the topic destroys all data — far too drastic.",
     "fetch.max.bytes controls batch size, not which records are poison."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "kk-023",
@@ -444,7 +466,8 @@
     "Correct — kafka-consumer-groups.sh --describe shows current offset, log-end offset, and lag per partition.",
     "The console consumer reads data; it doesn't report lag.",
     "kafka-configs manages configuration, not consumer lag."
-   ]
+   ],
+   "level": "easy"
   },
   {
    "id": "kk-024",
@@ -463,7 +486,8 @@
     "Correct — the producer compresses each batch; bigger batches (linger.ms/batch.size) yield better ratios.",
     "Consumers decompress; they don't originate compression.",
     "Compression is independent of Schema Registry."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-025",
@@ -482,7 +506,8 @@
     "Correct — AdminClient creates topics, alters configs, and inspects consumer-group offsets programmatically.",
     "Streams builds processing topologies, not cluster administration.",
     "The Connect REST API manages connectors, not general cluster admin."
-   ]
+   ],
+   "level": "easy"
   },
   {
    "id": "kk-026",
@@ -501,7 +526,8 @@
     "Correct — one task per input partition caps parallelism at 8; the extra 2 instances stay idle standbys.",
     "Extra instances are fine; they just hold no active tasks.",
     "Streams never auto-adds partitions."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-027",
@@ -520,7 +546,8 @@
     "Correct — 'current value per key over time' is a KTable (changelog semantics).",
     "A window bounds time; it doesn't model latest-value-per-key.",
     "A repartition topic is plumbing, not a state abstraction."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-028",
@@ -529,7 +556,7 @@
    "options": [
     "A plain KTable join, which requires both inputs to be co-partitioned on exactly the same join key",
     "A GlobalKTable join — fully replicated to each instance, joinable on any key via a key mapper",
-    "A windowed stream-stream join",
+    "A windowed stream-stream join keyed on the reference id",
     "A simple merge of the two KStreams"
    ],
    "answer": 1,
@@ -539,7 +566,8 @@
     "Correct — a small GlobalKTable is replicated everywhere and joins on any field without repartitioning.",
     "Stream-stream joins are for two event streams in a window, not reference enrichment.",
     "Merge interleaves streams; it doesn't enrich by lookup."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "kk-029",
@@ -548,7 +576,7 @@
    "options": [
     "A relational database that the user separately configures and points each state store at for durability",
     "A compacted changelog topic in Kafka; state is restored by replaying it (standbys speed recovery)",
-    "A periodic snapshot file uploaded to S3",
+    "A periodic state snapshot file uploaded to S3",
     "Nothing — state is simply lost on failure"
    ],
    "answer": 1,
@@ -558,7 +586,8 @@
     "Correct — a compacted changelog topic durably backs the store; recovery replays it (standby replicas shorten it).",
     "There is no S3 snapshotting in core Streams fault tolerance.",
     "State is recoverable, not lost."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-030",
@@ -577,7 +606,8 @@
     "Correct — fixed, non-overlapping, equal-size buckets are tumbling windows.",
     "Session windows are activity-driven, not fixed intervals.",
     "Sliding windows are for join/aggregation over relative time, not fixed buckets."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-031",
@@ -596,7 +626,8 @@
     "Correct — activity separated by a 30-minute idle gap is exactly a session window.",
     "Hopping windows are fixed/overlapping, not inactivity-based.",
     "Sessionization inherently requires windowing."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-032",
@@ -615,7 +646,8 @@
     "Correct — processing.guarantee=exactly_once_v2 turns on end-to-end EOS in Streams.",
     "read_committed is a consumer read setting, not the Streams guarantee toggle.",
     "acks=all is durability, not exactly-once processing."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-033",
@@ -634,7 +666,8 @@
     "Correct — a repartition topic reshuffles by the new key so matching keys co-locate before the join.",
     "Broadcasting isn't how a keyed join co-locates data.",
     "The new key is honored, not ignored."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "kk-034",
@@ -653,7 +686,8 @@
     "Correct — windowing uses record event time by default, overridable with a TimestampExtractor.",
     "Disk-flush time is unrelated to windowing.",
     "Poll time isn't the windowing clock."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-035",
@@ -672,7 +706,8 @@
     "Correct — suppress(untilWindowCloses) buffers and emits only the final per-window result.",
     "linger.ms batches network sends; it doesn't collapse window updates.",
     "A GlobalKTable is for replicated lookups, not final-result suppression."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-036",
@@ -691,7 +726,8 @@
     "Correct — new instances sharing application.id join the group and receive rebalanced tasks (with their state).",
     "Distinct group.ids would break the shared processing group.",
     "Replication factor is durability, not scaling."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-037",
@@ -710,7 +746,8 @@
     "Correct — it's a library-based JVM app you deploy like any other (VMs/Docker/K8s); no separate cluster.",
     "It has nothing to do with ZooKeeper internals.",
     "Streams is open-source, not a cloud-only service."
-   ]
+   ],
+   "level": "easy"
   },
   {
    "id": "kk-038",
@@ -720,7 +757,7 @@
     "Write a fully custom producer and consumer application for each connected system in the integration pipeline",
     "Kafka Connect: a source connector for PostgreSQL and a sink connector for Elasticsearch, config-driven",
     "A Kafka Streams app making JDBC calls directly",
-    "A cron job driving the console producer"
+    "A cron job repeatedly driving the console producer"
    ],
    "answer": 1,
    "explanation": "This is Kafka Connect's exact purpose: existing connectors handle offsets, retries, scaling, and schemas via configuration. Custom clients re-implement all of that; Streams is for processing, not system integration.",
@@ -729,7 +766,8 @@
     "Correct — Connect's source and sink connectors move data in/out of Kafka with configuration, not custom code.",
     "Streams is for processing, not connector-style ingestion/egress.",
     "A cron+console-producer pipeline is brittle and unscalable."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-039",
@@ -739,7 +777,7 @@
     "In local files stored on each individual worker node across the Connect cluster",
     "In internal Kafka topics (config, offset, status) shared by the worker group",
     "In ZooKeeper alongside cluster metadata",
-    "In the Schema Registry"
+    "In the Schema Registry alongside the registered subjects"
    ],
    "answer": 1,
    "explanation": "Distributed mode keeps its state in Kafka itself, which is what makes workers stateless and fault-tolerant — any worker can pick up work. Standalone mode is the one using local files.",
@@ -748,7 +786,8 @@
     "Correct — distributed Connect persists config/offsets/status in internal Kafka topics shared by the group.",
     "Connect doesn't use ZooKeeper for this.",
     "Schema Registry stores schemas, not connector state."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-040",
@@ -767,7 +806,8 @@
     "Correct — the Connect REST API manages the full connector lifecycle.",
     "ZooKeeper CLIs don't manage connectors.",
     "Manual per-worker files are standalone-style, not distributed management."
-   ]
+   ],
+   "level": "easy"
   },
   {
    "id": "kk-041",
@@ -776,7 +816,7 @@
    "options": [
     "A connector and a task are really just two interchangeable names for exactly the same underlying thing",
     "The connector is the job definition; it splits work into tasks (up to tasks.max) run across workers",
-    "Tasks manage and schedule the workers",
+    "Tasks manage and schedule the worker processes in the cluster",
     "One task always maps to exactly one topic"
    ],
    "answer": 1,
@@ -786,14 +826,15 @@
     "Correct — the connector defines the job and divides it into tasks (the parallelism unit) spread over workers.",
     "Workers host tasks, not the other way around.",
     "Task-to-topic mapping isn't fixed at one-to-one."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-042",
    "section": "k4",
    "q": "A JDBC source connector must write Avro records with schemas managed centrally. What configuration achieves this?",
    "options": [
-    "The JDBC source connector always emits Avro records by default without any converter config",
+    "The JDBC source connector always emits Avro-encoded records by default, without needing any converter configuration at all on the connector",
     "Set value.converter=AvroConverter with a schema.registry.url — converters are separate from connectors",
     "Use the StringConverter for values",
     "Enable errors.tolerance=all on the connector"
@@ -805,7 +846,8 @@
     "Correct — the Avro converter + registry URL controls serialization independently of the connector.",
     "StringConverter produces plain strings, not schema-managed Avro.",
     "Error tolerance is about bad records, not serialization format."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-043",
@@ -814,7 +856,7 @@
    "options": [
     "A separate, custom Kafka Streams job inserted into the pipeline just before the sink connector runs",
     "Single Message Transforms (SMTs) chained in the connector config (e.g. MaskField + a router)",
-    "Broker-side message interceptors",
+    "Broker-side message interceptors applied to each topic",
     "Schema Registry compatibility rules"
    ],
    "answer": 1,
@@ -824,7 +866,8 @@
     "Correct — SMTs mask/route records inline within the connector, no extra app needed.",
     "Brokers don't transform record contents.",
     "Compatibility rules govern schema evolution, not masking/routing."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "kk-044",
@@ -843,7 +886,8 @@
     "Correct — tolerate errors and route bad records to a DLQ topic (with context headers) for later inspection.",
     "Reducing tasks doesn't handle malformed records.",
     "Changing the converter doesn't quarantine bad records."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-045",
@@ -853,7 +897,7 @@
     "It needs no connector or infrastructure at all",
     "It reads the DB transaction log: captures every change (incl. DELETEs) with low latency and little table load",
     "It keeps working even while the source database is completely stopped, since it reads from a cached snapshot instead",
-    "It automatically converts all data to Avro"
+    "It automatically converts all captured data to Avro format"
    ],
    "answer": 1,
    "explanation": "Polling misses deletes, adds query load, and is bounded by the poll interval. Reading the transaction log streams every committed row change (with before/after images), which is why CDC is preferred for database replication into Kafka.",
@@ -862,14 +906,15 @@
     "Correct — log-based CDC captures all changes including deletes, with low latency and minimal query load.",
     "It reads the live DB's log; the DB must be running.",
     "Serialization format is a converter choice, not a CDC feature."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-046",
    "section": "k4",
    "q": "One worker in a 3-worker distributed Connect cluster crashes. What happens to the tasks it was running?",
    "options": [
-    "Its tasks are lost until that worker comes back online",
+    "Its tasks are permanently lost until that specific worker process comes back online and rejoins the Connect cluster on its own",
     "The remaining workers rebalance and resume its tasks from offsets stored in Kafka",
     "All connectors restart from the very beginning of history",
     "The cluster stops accepting REST API calls"
@@ -881,7 +926,8 @@
     "Correct — surviving workers take over the failed worker's tasks, resuming from Kafka-stored offsets.",
     "Work resumes from committed offsets, not from scratch.",
     "The remaining workers keep serving the REST API."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-047",
@@ -891,7 +937,7 @@
     "They are the recommended choice for production because of their operational simplicity and very low overhead",
     "They run in one process with offsets in a local file — no fault tolerance or scaling; fine for dev/test",
     "They store their offsets in Kafka automatically",
-    "They are unable to run source connectors"
+    "They are completely unable to run any source connectors"
    ],
    "answer": 1,
    "explanation": "Standalone = one process, local offset storage, no failover — a dev/test convenience. Production runs distributed mode for fault tolerance, scaling, and REST management.",
@@ -900,7 +946,8 @@
     "Correct — single process, local-file offsets, no HA or scale-out — suitable for development and testing.",
     "Local-file offsets are exactly what makes it non-distributed.",
     "Standalone can run source connectors."
-   ]
+   ],
+   "level": "easy"
   },
   {
    "id": "kk-048",
@@ -910,7 +957,7 @@
     "A Testcontainers-based real Kafka broker started up specifically for the duration of every test run",
     "MockProducer — records sent messages for assertions and can simulate failures via errorNext",
     "The kafka-console-producer CLI tool",
-    "The TopologyTestDriver for Streams"
+    "The TopologyTestDriver harness for Streams topologies"
    ],
    "answer": 1,
    "explanation": "MockProducer is the in-memory test double from kafka-clients: assert on history(), drive callbacks with simulated success/failure — no broker, no network, deterministic.",
@@ -919,14 +966,15 @@
     "Correct — MockProducer runs in-process, captures sends, and can inject failures for callback tests.",
     "The console producer is a CLI, not a unit-test harness.",
     "TopologyTestDriver tests Streams topologies, not a plain producer callback."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-049",
    "section": "k5",
    "q": "Which combination tests a Kafka Streams topology synchronously without any running Kafka cluster?",
    "options": [
-    "MockConsumer combined with MockProducer",
+    "MockConsumer combined with MockProducer, wired together to stand in for the whole topology",
     "TopologyTestDriver with TestInputTopic and TestOutputTopic",
     "The kafka-consumer-groups.sh CLI",
     "A three-broker Testcontainers cluster"
@@ -938,7 +986,8 @@
     "Correct — TopologyTestDriver with Test I/O topics drives a topology in-process with no broker.",
     "That CLI inspects groups; it doesn't run topologies.",
     "A real cluster is an integration test, not the synchronous in-process option."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-050",
@@ -957,7 +1006,8 @@
     "Correct — the driver lets you set record timestamps and advance time to deterministically close windows.",
     "Testing in production isn't deterministic verification.",
     "Windows are testable precisely because of the driver's time control."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-051",
@@ -967,7 +1017,7 @@
     "Branching and split logic within the processing topology itself, which can only run against a live broker",
     "Security handshakes, real Schema Registry (de)serialization, transactions, and rebalance behavior",
     "A simple map() transformation on records",
-    "Producer send callback code"
+    "Producer send-callback code paths and their success metrics"
    ],
    "answer": 1,
    "explanation": "Interaction-level concerns — auth/TLS, registry round-trips, transactional semantics, group coordination — only exist against real infrastructure. Pure logic belongs in fast unit tests; keep both layers.",
@@ -976,7 +1026,8 @@
     "Correct — security, real serialization, transactions, and rebalances need a real broker to exercise.",
     "map() is unit-testable with the driver.",
     "Callbacks are covered by MockProducer."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-052",
@@ -995,7 +1046,8 @@
     "Correct — a CI compatibility check (REST endpoint or Maven goal) fails incompatible schemas before release.",
     "Disabling checks removes the very safety net you want.",
     "Dropping schemas abandons the guarantees Schema Registry provides."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-053",
@@ -1014,7 +1066,8 @@
     "Correct — dependency injection of the client interface lets tests substitute MockProducer/MockConsumer.",
     "Static methods hinder mocking and injection.",
     "CLI-only testing can't unit-test business logic."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-054",
@@ -1033,7 +1086,8 @@
     "Correct — lag = log-end offset − current/committed offset for the partition.",
     "Rebalance frequency is a different health signal.",
     "Fetch buffer bytes are unrelated to lag."
-   ]
+   ],
+   "level": "easy"
   },
   {
    "id": "kk-055",
@@ -1052,14 +1106,15 @@
     "Correct — Kafka clients expose metrics as JMX MBeans, commonly scraped into Prometheus.",
     "Control Center is one consumer of metrics, not the only path.",
     "The client library already exposes metrics; no manual coding needed."
-   ]
+   ],
+   "level": "easy"
   },
   {
    "id": "kk-056",
    "section": "k6",
    "q": "Which producer metric indicates messages that ultimately FAILED delivery after exhausting retries, and what should its value be?",
    "options": [
-    "record-retry-rate; high values are perfectly normal",
+    "record-retry-rate; consistently high values on this metric are perfectly normal and never need to be alerted on",
     "record-error-rate; it should be about 0 and alerted on otherwise",
     "batch-size-avg; it should be 0",
     "compression-rate-avg; it should be 1"
@@ -1071,7 +1126,8 @@
     "Correct — record-error-rate counts sends that failed after retries; it should sit near 0 and be alerted.",
     "batch-size-avg is a tuning metric, not a failure indicator.",
     "compression-rate-avg measures ratio, not delivery failure."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-057",
@@ -1080,7 +1136,7 @@
    "options": [
     "The whole cluster is undersized and simply needs more brokers added before any single-partition lag will improve",
     "A hot key skewing traffic to that partition (or one slow consumer) — check key distribution and that assignee",
-    "The Schema Registry is down",
+    "The Schema Registry is unreachable for that partition's records",
     "linger.ms is configured too high"
    ],
    "answer": 1,
@@ -1090,7 +1146,8 @@
     "Correct — a hot key or one slow/stuck consumer explains lag isolated to a single partition.",
     "A registry outage would affect all partitions, not one.",
     "linger.ms is a producer setting unrelated to single-partition lag."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-058",
@@ -1099,7 +1156,7 @@
    "options": [
     "Kafka randomly duplicates data on its own",
     "At-least-once: processed-but-uncommitted records replay after a rebalance — use idempotency or EOS",
-    "The producer's compression codec is silently corrupting the batches it sends downstream",
+    "The producer's configured compression codec is silently corrupting some of the record batches it sends downstream to the brokers",
     "The reported consumer lag has gone negative"
    ],
    "answer": 1,
@@ -1109,7 +1166,8 @@
     "Correct — uncommitted-but-processed records replay after a rebalance; fix with idempotent handling or transactions.",
     "Compression doesn't cause logical duplicates.",
     "Negative lag isn't a real condition here."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-059",
@@ -1118,7 +1176,7 @@
    "options": [
     "Fork and patch the Kafka client library itself to add the telemetry hooks into send and receive paths",
     "Configure ProducerInterceptor / ConsumerInterceptor via interceptor.classes to observe records",
-    "Add a custom plugin on the broker",
+    "Add a custom plugin on the broker for every topic",
     "Turn on DEBUG logging for the clients"
    ],
    "answer": 1,
@@ -1128,7 +1186,8 @@
     "Correct — interceptors registered via interceptor.classes hook send/consume without touching business code.",
     "Broker plugins can't instrument client-side records per app.",
     "DEBUG logging is noisy and not structured telemetry."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-060",
@@ -1137,7 +1196,7 @@
    "options": [
     "In the message key, overwriting the record's original business key with the propagated trace ID",
     "In message HEADERS (e.g. W3C/OpenTelemetry trace context), propagated producer to consumer",
-    "Encoded into the topic name itself",
+    "Encoded directly into the Kafka topic name itself",
     "It cannot cross a Kafka boundary at all"
    ],
    "answer": 1,
@@ -1147,7 +1206,8 @@
     "Correct — trace context travels in headers, carried from producer to consumer across services.",
     "Topic names can't carry per-record trace context.",
     "Trace context propagates fine via headers."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-061",
@@ -1156,7 +1216,7 @@
    "options": [
     "The consumers on the other side of the topic are lagging far behind and back-pressuring the producer",
     "The producer outpaces the cluster: batches fill buffer.memory until send() blocks and times out",
-    "Log compaction deleted the target topic",
+    "Log compaction has deleted the target output topic",
     "The consumer group performed a rebalance"
    ],
    "answer": 1,
@@ -1166,14 +1226,15 @@
     "Correct — rising bufferpool-wait-time means the producer can't hand off fast enough; the buffer fills and send() times out.",
     "Compaction doesn't delete topics or block producers.",
     "Consumer rebalances don't stall the producer buffer."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-062",
    "section": "k6",
    "q": "Which end-to-end health check catches pipeline delay that per-component metrics can miss?",
    "options": [
-    "Broker CPU utilization",
+    "Broker CPU utilization averaged across the whole cluster",
     "End-to-end latency: compare the record's event timestamp with when the last consumer processes it",
     "The topic's partition count",
     "The number of connectors currently deployed across the whole cluster and their aggregate throughput"
@@ -1185,7 +1246,8 @@
     "Correct — event-timestamp-to-processing latency catches pipeline delay that per-component metrics hide.",
     "Partition count is static config, not a health signal.",
     "Connector count says nothing about latency."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-063",
@@ -1202,7 +1264,8 @@
     2,
     3
    ],
-   "explanation": "Partitions can be added (never removed), each partition is an ordered log, and because partitioning is hash(key) % numPartitions, adding partitions remaps keys — breaking per-key ordering across the change."
+   "explanation": "Partitions can be added (never removed), each partition is an ordered log, and because partitioning is hash(key) % numPartitions, adding partitions remaps keys — breaking per-key ordering across the change.",
+   "level": "medium"
   },
   {
    "id": "kk-064",
@@ -1221,7 +1284,8 @@
     "Correct — the partition leader serves reads and writes by default; followers just replicate.",
     "By default both produce and consume go to the leader (follower fetching is an opt-in feature).",
     "The controller manages metadata, not client data traffic."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-065",
@@ -1240,7 +1304,8 @@
     "Correct — the 8 partitions spread across the 3 consumers (uneven is fine); every partition is consumed.",
     "Each partition has a single owner in the group, not all consumers.",
     "There is no requirement that consumers evenly divide partitions."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-066",
@@ -1259,7 +1324,8 @@
     "Correct — k1 keeps v3 (latest); the k2 tombstone removes k2 after the delete-retention window.",
     "Compaction keeps the latest value, not the first.",
     "Tombstones are eventually purged; they are not retained forever."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "kk-067",
@@ -1275,14 +1341,15 @@
     0,
     1
    ],
-   "explanation": "Consuming needs READ on the topic AND READ on the consumer group (offset commits are group operations). Write/Alter are producer/admin permissions."
+   "explanation": "Consuming needs READ on the topic AND READ on the consumer group (offset commits are group operations). Write/Alter are producer/admin permissions.",
+   "level": "hard"
   },
   {
    "id": "kk-068",
    "section": "k2",
    "q": "Given acks=1, what data-loss window exists?",
    "options": [
-    "None — acks=1 is already fully durable against any kind of broker failure",
+    "None whatsoever — acks=1 is already considered fully durable against any kind of broker or disk failure that could ever occur",
     "If the leader acks then fails before followers replicate, that write is lost on failover",
     "Every single produce is at risk of being lost",
     "Only consumers can lose data with acks=1"
@@ -1294,7 +1361,8 @@
     "Correct — a leader crash after acking but before replication loses that record on failover.",
     "Only the unreplicated tail is at risk, not every write.",
     "The loss window is on the produce/replication side, not the consumer."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-069",
@@ -1311,14 +1379,15 @@
     1,
     2
    ],
-   "explanation": "Waiting to fill bigger batches (linger.ms, batch.size) and batch compression all add a little latency to gain a lot of throughput. acks=0 trades DURABILITY, not just latency — a different axis."
+   "explanation": "Waiting to fill bigger batches (linger.ms, batch.size) and batch compression all add a little latency to gain a lot of throughput. acks=0 trades DURABILITY, not just latency — a different axis.",
+   "level": "medium"
   },
   {
    "id": "kk-070",
    "section": "k2",
    "q": "A consumer must never lose a record but can tolerate occasional duplicates. Which commit strategy is correct?",
    "options": [
-    "enable.auto.commit=true with a short auto-commit interval",
+    "enable.auto.commit=true together with a very short auto-commit interval so that offsets are advanced quickly in the background",
     "Process each record FIRST, then commit offsets manually — at-least-once",
     "Commit offsets before processing — at-most-once",
     "Never commit offsets at all"
@@ -1330,7 +1399,8 @@
     "Correct — commit only after processing gives at-least-once: no loss, possible duplicates (acceptable here).",
     "Committing before processing is at-most-once and can lose records.",
     "Never committing replays everything on every restart."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-071",
@@ -1347,7 +1417,8 @@
     1,
     3
    ],
-   "explanation": "Transactional producers need a stable transactional.id, an initTransactions() handshake, and explicit begin/commit (or abort). isolation.level is a CONSUMER setting — it controls whether readers see uncommitted records."
+   "explanation": "Transactional producers need a stable transactional.id, an initTransactions() handshake, and explicit begin/commit (or abort). isolation.level is a CONSUMER setting — it controls whether readers see uncommitted records.",
+   "level": "medium"
   },
   {
    "id": "kk-072",
@@ -1364,7 +1435,8 @@
     1,
     2
    ],
-   "explanation": "Size limits exist at producer and broker level — raising both works but has operational costs; claim check is the architectural fix; compression MAY bring the payload under the limit (it's applied before the size check on batches). Retrying a non-retriable error changes nothing."
+   "explanation": "Size limits exist at producer and broker level — raising both works but has operational costs; claim check is the architectural fix; compression MAY bring the payload under the limit (it's applied before the size check on batches). Retrying a non-retriable error changes nothing.",
+   "level": "hard"
   },
   {
    "id": "kk-073",
@@ -1374,7 +1446,7 @@
     "New consumers read old data; consumers upgrade first",
     "Data written with the NEW schema is readable by consumers still on the OLD schema; producers upgrade first",
     "It says nothing about the order of upgrades",
-    "Compatibility is guaranteed in both directions, forever, once FORWARD is set on the subject"
+    "Compatibility is guaranteed automatically in both directions and forever, across every past and future schema version, the moment FORWARD is set on the subject"
    ],
    "answer": 1,
    "explanation": "FORWARD = old readers handle new data (e.g., new fields are added that old readers ignore). Producers can therefore deploy the new schema first. BACKWARD is the mirror image (consumers first).",
@@ -1383,7 +1455,8 @@
     "Correct — FORWARD means old-schema consumers can read new-schema data, so producers upgrade first.",
     "FORWARD does imply a safe upgrade order (producers first).",
     "FORWARD is one-directional, not both-directional."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-074",
@@ -1402,7 +1475,8 @@
     "Correct — decoding needs the exact writer schema; mixed versions coexist, so the embedded ID is authoritative.",
     "It's about correctness, not convenience.",
     "The registry does have 'latest'; it's just not the right choice for decoding old records."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-075",
@@ -1421,7 +1495,8 @@
     "Correct — lag = log-end (5200) − current (1000) = 4200 records.",
     "Offsets are positions, not a record count of the topic.",
     "A consumer cannot be ahead of the log-end offset."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-076",
@@ -1437,7 +1512,8 @@
     0,
     1
    ],
-   "explanation": "Stateful operations are backed by compacted changelog topics (fault tolerance), and re-keying before an aggregation inserts a repartition topic so each task sees all records for its keys. DLQs are not automatic in Streams."
+   "explanation": "Stateful operations are backed by compacted changelog topics (fault tolerance), and re-keying before an aggregation inserts a repartition topic so each task sees all records for its keys. DLQs are not automatic in Streams.",
+   "level": "medium"
   },
   {
    "id": "kk-077",
@@ -1447,7 +1523,7 @@
     "There is no meaningful difference between them",
     "Table joins enrich each event with the table's current value; stream-stream joins pair events in a window",
     "Stream-table joins require a time window to work",
-    "Stream-stream joins never require the two input streams to be co-partitioned on the join key"
+    "Stream-stream joins never require the two input streams to be co-partitioned on the join key, unlike stream-table joins which always do"
    ],
    "answer": 1,
    "explanation": "A table lookup is point-in-time — no window needed. Two event streams have no 'current value', so their join must bound how far apart in time matching events may occur (windowed). Both require co-partitioning.",
@@ -1456,7 +1532,8 @@
     "Correct — table joins are windowless current-value lookups; stream-stream joins match within a window.",
     "Stream-table joins are windowless.",
     "Stream-stream joins require co-partitioned inputs."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-078",
@@ -1466,7 +1543,7 @@
     "Nothing can really help here; the entire 50 GB of RocksDB state is simply lost for good the moment the instance dies",
     "num.standby.replicas >= 1 — warm state copies let tasks migrate near-instantly instead of replaying 50 GB",
     "A larger producer batch.size on the app",
-    "Enabling exactly_once_v2 processing"
+    "Enabling exactly_once_v2 processing on the application"
    ],
    "answer": 1,
    "explanation": "State is recoverable from changelogs, but replaying 50 GB takes time. Standby replicas continuously mirror state on other instances so failover just promotes the standby.",
@@ -1475,7 +1552,8 @@
     "Correct — standby replicas keep warm copies elsewhere, so failover doesn't replay the whole changelog.",
     "batch.size affects producing, not state recovery.",
     "EOS is about correctness, not recovery speed."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "kk-079",
@@ -1484,7 +1562,7 @@
    "options": [
     "It is dropped as a late record",
     "It updates its correct, already-formed window because it is within the grace period",
-    "It creates a brand-new window of its own",
+    "It creates a brand-new tumbling window of its own and begins counting all subsequent records into that window instead",
     "Streams crashes on the late record"
    ],
    "answer": 1,
@@ -1494,7 +1572,8 @@
     "Correct — a record 5 min late with a 10-min grace still lands in and updates its original window.",
     "It joins the existing window, not a new one.",
     "Late records are handled gracefully, not fatal."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-080",
@@ -1511,7 +1590,8 @@
     1,
     2
    ],
-   "explanation": "Distributed mode adds REST management, Kafka-backed shared state, and rebalancing/fault tolerance. Standalone can still RUN connectors — just without any of those properties."
+   "explanation": "Distributed mode adds REST management, Kafka-backed shared state, and rebalancing/fault tolerance. Standalone can still RUN connectors — just without any of those properties.",
+   "level": "hard"
   },
   {
    "id": "kk-081",
@@ -1521,7 +1601,7 @@
     "Set value.converter=StringConverter so that the sink simply reads all of the records as plain strings",
     "value.converter=AvroConverter with value.converter.schema.registry.url pointing at the registry",
     "Set errors.tolerance=none on the sink",
-    "Always pin tasks.max=1 for sinks"
+    "Always pin tasks.max=1 for sink connectors on every topic"
    ],
    "answer": 1,
    "explanation": "The converter must match how the data was written: AvroConverter + registry URL turns the wire format (magic byte + schema ID) back into structured records with schemas — which the JDBC sink needs to build SQL.",
@@ -1530,7 +1610,8 @@
     "Correct — the Avro converter plus the registry URL is what lets the sink read Schema-Registry Avro.",
     "Error tolerance is unrelated to reading Avro.",
     "tasks.max is a scaling knob, not an Avro requirement."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-082",
@@ -1549,7 +1630,8 @@
     "Correct — distributed source offsets live in the connect-offsets internal topic.",
     "Local files are standalone-mode behavior.",
     "Schema Registry stores schemas, not source offsets."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-083",
@@ -1558,7 +1640,7 @@
    "options": [
     "Add many more partitions to the source topic first, before attempting any other scaling step at all",
     "Raise tasks.max (up to 8, the partition count) so tasks consume in parallel across workers",
-    "Add more brokers to the cluster",
+    "Add more brokers to the Kafka and Connect cluster",
     "Reduce the topic's replication factor"
    ],
    "answer": 1,
@@ -1568,7 +1650,8 @@
     "Correct — with 8 partitions, raising tasks.max up to 8 parallelizes the sink across workers immediately.",
     "More brokers doesn't help a single-task sink keep up.",
     "Lowering replication reduces durability and doesn't add throughput."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-084",
@@ -1585,7 +1668,8 @@
     1,
     2
    ],
-   "explanation": "The driver runs the topology in-process: outputs, state stores, and time-driven behavior (windows, punctuators) are all synchronously inspectable. There IS no broker or network — that's the point."
+   "explanation": "The driver runs the topology in-process: outputs, state stores, and time-driven behavior (windows, punctuators) are all synchronously inspectable. There IS no broker or network — that's the point.",
+   "level": "medium"
   },
   {
    "id": "kk-085",
@@ -1604,7 +1688,8 @@
     "Correct — MockProducer.errorNext injects a specific exception so the failure path runs deterministically.",
     "Yanking the network isn't a repeatable unit test.",
     "acks=0 changes durability, not deterministic failure injection."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-086",
@@ -1613,7 +1698,7 @@
    "options": [
     "Only manually, just before major releases",
     "In CI on every schema change — validating the candidate against the subject's compatibility mode",
-    "Inside the consumer at runtime",
+    "Inside the consumer at runtime as each record arrives",
     "Nowhere — the registry already blocks incompatible schemas at produce time, so CI checks add nothing"
    ],
    "answer": 1,
@@ -1623,7 +1708,8 @@
     "Correct — automated CI compatibility checks on every change catch breaks before they ship.",
     "Runtime consumer checks are too late to prevent deployment.",
     "Relying on produce-time rejection lets bad changes reach production first."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-087",
@@ -1640,7 +1726,8 @@
     1,
     2
    ],
-   "explanation": "Retries, broker latency, and buffer pressure are the producer's early-warning chain (ending in TimeoutExceptions). records-lag-max is a CONSUMER metric — the other side of the pipeline."
+   "explanation": "Retries, broker latency, and buffer pressure are the producer's early-warning chain (ending in TimeoutExceptions). records-lag-max is a CONSUMER metric — the other side of the pipeline.",
+   "level": "medium"
   },
   {
    "id": "kk-088",
@@ -1659,7 +1746,8 @@
     "Correct — 80 ms/record caps 4 consumers near 50 rec/s against 100 rec/s in; speed up or parallelize processing.",
     "The network isn't the limiter here.",
     "Schema Registry isn't the throughput bottleneck."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-089",
@@ -1678,16 +1766,17 @@
     "Correct — interceptors add counting/tracing at send and consume without changing business code.",
     "A partitioner routes records; it doesn't add telemetry.",
     "fetch.max.bytes is a fetch-size tuning, not instrumentation."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "kk-090",
    "section": "k6",
    "q": "End-to-end latency (event created → final consumer processed) is 45 s although every service's own metrics look healthy. Where does the time usually hide, and how is it found?",
    "options": [
-    "In DNS resolution between services",
+    "In DNS resolution between the client and the broker services",
     "As QUEUEING between hops (lag at intermediate topics) — found by comparing event vs processing time per stage",
-    "In TLS handshakes on each connection",
+    "In the TLS handshakes on each new connection",
     "In log-segment rotation on the brokers, which quietly stalls the pipeline whenever segments roll over under load"
    ],
    "answer": 1,
@@ -1697,7 +1786,8 @@
     "Correct — the time hides as queueing/lag at intermediate topics; per-stage timestamp comparison locates it.",
     "TLS handshakes are milliseconds, not tens of seconds.",
     "Log rotation doesn't add pipeline latency."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "kk-091",
@@ -1747,7 +1837,7 @@
    "q": "An application produces click events for user sessions to a 6-partition topic and requires that all events of one session are consumed in the order they were produced. How is this achieved?",
    "options": [
     "Use the session ID as the record key so all of a session's events land in the same partition",
-    "Set acks=all on the producer",
+    "Set acks=all on the producer for every topic it writes to",
     "Use a single consumer instance with a very large fetch size to read every session strictly in order",
     "Enable log compaction on the topic"
    ],
@@ -1931,7 +2021,7 @@
    "q": "Records are produced to a 4-partition topic with a null key. How does the default partitioner distribute them (Kafka 2.4+)?",
    "options": [
     "Sticky batching: a batch fills to one random partition, then switches, evening out over time",
-    "All null-key records go to partition 0",
+    "All null-key records always go to partition 0",
     "The broker rejects records without a key",
     "Strictly one record to each partition in round-robin order, regardless of any batching behaviour"
    ],
@@ -1993,7 +2083,7 @@
    "options": [
     "A KStream is a stream of independent events; a KTable upserts, keeping the latest value per key",
     "A KStream is bounded; a KTable is infinite",
-    "KTables cannot be joined, only aggregated",
+    "KTables cannot ever be joined together, only aggregated",
     "A KStream always persists its data on disk, whereas a KTable is held purely in memory at all times"
    ],
    "answer": 0,
@@ -2156,7 +2246,7 @@
     "Inject a MockProducer, which records sent records for assertions and can be told to complete sends successfully or with an exception",
     "Point the real producer at localhost and assert nothing is thrown",
     "Use reflection to verify the producer's private buffer",
-    "Skip unit tests entirely; only full integration tests can meaningfully cover producer code"
+    "Skip unit tests entirely for the producer code, since only full end-to-end integration tests against a real running broker can ever meaningfully cover the send-and-callback path"
    ],
    "answer": 0,
    "optionNotes": [
@@ -2270,6 +2360,256 @@
     "Those numbers are offsets, not consumer counts."
    ],
    "explanation": "Consumer lag = log-end offset − current offset for a partition; here 61240 − 48120 = 13120 records behind, the key signal to monitor and alert on."
+  },
+  {
+   "id": "kk-119",
+   "section": "k1",
+   "level": "hard",
+   "q": "A topic has replication.factor=3 and unclean.leader.election.enable=true. The leader for a partition fails while its two followers are behind (out of ISR). What happens, and what is the trade-off?",
+   "options": [
+    "An out-of-sync replica can be elected leader to restore availability, but records the old leader had that this replica lacked are lost — availability is chosen over durability",
+    "Production halts for that partition until the original leader returns, guaranteeing zero data loss because only a fully in-sync replica can ever be elected as the new partition leader",
+    "The partition is permanently unavailable and must be manually recreated, since a partition cannot survive the loss of its leader under any configuration",
+    "All three replicas are declared leaders simultaneously and reconcile later, so both full availability and zero data loss are preserved"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — unclean.leader.election.enable=true lets an out-of-sync replica become leader, restoring availability at the cost of losing records it never replicated.",
+    "That describes unclean.leader.election.enable=FALSE (the safe default), which keeps the partition unavailable rather than losing data.",
+    "The partition isn't destroyed; a replica takes over — the question is whether an out-of-sync one is allowed to.",
+    "There is always exactly one leader per partition; multiple simultaneous leaders don't exist."
+   ],
+   "explanation": "unclean.leader.election trades durability for availability. With it enabled, an out-of-sync replica may be elected leader when no ISR is available, so the partition stays writable but any records only the failed leader held are lost. The safe default (false) keeps the partition offline until an in-sync replica is available."
+  },
+  {
+   "id": "kk-120",
+   "section": "k1",
+   "level": "hard",
+   "q": "Refer to the exhibit. To raise throughput, a team increases a keyed topic's partitions from 4 to 8 while producers keep using customer id as the key. What breaks, and what stays intact?",
+   "exhibit": "topic 'events'  key=customerId  partitions 4 → 8 (altered)\nproducers unchanged; consumers rely on per-customer ordering",
+   "options": [
+    "Existing keys now hash to different partitions, so a customer's new records may land on a different partition than their old ones — per-customer ordering is only guaranteed for records written after the change",
+    "Nothing changes for ordering, because Kafka automatically migrates each key's historical records onto the newly added partitions so that every key stays on its original single partition",
+    "All ordering is permanently lost for every key, so the only fix is to delete the topic and recreate it with 8 partitions from the start",
+    "Throughput cannot increase at all, because a consumer group is still limited to the original 4 partitions regardless of the new count"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — partition = hash(key) % partitionCount, so changing the count remaps keys; ordering holds within a partition, so only post-change records for a key are guaranteed ordered relative to each other.",
+    "Kafka does NOT migrate existing records; old data stays where it was written.",
+    "Ordering isn't globally destroyed — per-partition order is intact; the issue is a key can now span two partitions across the change.",
+    "Adding partitions does raise the parallelism ceiling; a group can now use up to 8 consumers."
+   ],
+   "explanation": "A key maps to a partition via hash(key) % partitionCount. Increasing the count changes that mapping, so a key's future records can land on a new partition while its history stays put. Kafka never repartitions existing data, so per-key ordering is only assured for records produced after the change — a classic reason to over-provision partitions up front for keyed topics."
+  },
+  {
+   "id": "kk-121",
+   "section": "k2",
+   "level": "hard",
+   "q": "Refer to the exhibit. A team believes these settings guarantee no data loss, yet after a broker failure some acknowledged records vanish. Why?",
+   "exhibit": "producer: acks=all , enable.idempotence=true\ntopic:    replication.factor=3\nbroker:   min.insync.replicas=1",
+   "options": [
+    "With min.insync.replicas=1, acks=all is satisfied by just the leader, so a record can be acknowledged while on only one broker and lost if that broker fails before a follower replicates it",
+    "acks=all is being silently overridden by enable.idempotence, which downgrades the effective acknowledgement level to 1 and is therefore the actual source of the acknowledged-but-lost records",
+    "replication.factor=3 is too low for durability; only replication.factor=5 with acks=all can prevent acknowledged records from being lost",
+    "The loss is impossible with these settings, so the records were never actually acknowledged and the application misreported success"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — acks=all waits for all IN-SYNC replicas, but min.insync.replicas=1 lets the ISR shrink to just the leader, so an ack can mean 'on one broker only'. Set min.insync.replicas=2 on RF=3.",
+    "Idempotence requires acks=all; it doesn't downgrade it.",
+    "RF=3 is standard and sufficient; the weak link is min.insync.replicas, not the replication factor.",
+    "The loss is entirely possible precisely because of min.insync.replicas=1."
+   ],
+   "explanation": "acks=all means 'all in-sync replicas', and min.insync.replicas sets how small the ISR may shrink while still accepting writes. At min.insync.replicas=1 the ISR can be just the leader, so an acknowledged record may exist on only one broker and be lost if it fails. Durable config on RF=3 is acks=all AND min.insync.replicas=2."
+  },
+  {
+   "id": "kk-122",
+   "section": "k2",
+   "level": "hard",
+   "q": "Refer to the exhibit. Records for the same key occasionally appear out of order downstream. What causes this, and the correct fix?",
+   "exhibit": "producer: enable.idempotence=false\n          retries=5\n          max.in.flight.requests.per.connection=5\n          acks=all",
+   "options": [
+    "With retries and max.in.flight>1 but idempotence off, a retried batch can be written after a later batch that already succeeded, reordering records; enable.idempotence=true (or set max.in.flight=1) fixes it",
+    "acks=all is what reorders records under load; lowering it to acks=1 restores ordering while keeping durability",
+    "Reordering is fundamentally unavoidable in Kafka for any keyed topic, so every consumer must always re-sort the records it reads by an embedded application timestamp before processing them",
+    "The retries setting is too low; raising retries to a much larger value guarantees ordering regardless of in-flight requests"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — without idempotence, a failed batch retried while up to 5 requests are in flight can land after a later batch, reordering the key; idempotence preserves order for max.in.flight ≤ 5 (or set max.in.flight=1).",
+    "acks doesn't control ordering; lowering it weakens durability and doesn't fix reordering.",
+    "Kafka DOES preserve per-partition order; reordering here is a producer-config artifact, not inherent.",
+    "More retries increases the reordering window, not fixes it."
+   ],
+   "explanation": "Multiple in-flight requests plus retries without idempotence allows a retried batch to be appended after a later successful one, reordering a key's records. Enabling idempotence makes the broker order batches by sequence number (safe up to max.in.flight=5); alternatively max.in.flight=1 serializes them at a throughput cost."
+  },
+  {
+   "id": "kk-123",
+   "section": "k2",
+   "level": "hard",
+   "q": "A producer writes with transactions (exactly-once), but a downstream consumer still sees records that belong to aborted transactions. What is misconfigured?",
+   "options": [
+    "The consumer is using the default isolation.level=read_uncommitted; it must be set to read_committed to skip records from aborted or in-flight transactions",
+    "The producer forgot to call initTransactions() during startup, so all of its transactional commits silently behave like ordinary plain sends that the downstream consumer then reads as normal",
+    "The topic must have log compaction enabled for transactional markers to be honored by consumers",
+    "Transactions only work within a single partition, so any multi-partition write always leaks aborted records to consumers"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — read_uncommitted (the consumer default) returns aborted/uncommitted records too; read_committed makes the consumer honor transaction markers and skip them.",
+    "Missing initTransactions would fail the transactional producer outright, not leak aborted records to a reader.",
+    "Compaction is unrelated to transactional visibility.",
+    "Transactions span multiple partitions/topics atomically; that's the whole point."
+   ],
+   "explanation": "Exactly-once has two sides: the transactional producer AND consumers reading with isolation.level=read_committed. The default read_uncommitted returns records regardless of commit/abort, so a reader sees aborted output. Setting read_committed makes the consumer respect transaction markers and only deliver committed records."
+  },
+  {
+   "id": "kk-124",
+   "section": "k2",
+   "level": "hard",
+   "q": "Refer to the exhibit. Subject 'orders-value' is set to FULL compatibility. Which proposed change is allowed?",
+   "exhibit": "current: { id:string, amount:double, note:string (has default \"\") }\nFULL = must be both backward- AND forward-compatible",
+   "options": [
+    "Removing the 'note' field, because it has a default — under FULL, adding or removing a field is only safe when that field has a default value",
+    "Adding a required field 'currency' with no default, since FULL compatibility specifically permits new required fields",
+    "Renaming the 'amount' field to 'total' is allowed, because field renames are treated as fully compatible changes under FULL compatibility as long as the underlying field type is left unchanged",
+    "Changing 'amount' from double to string, since FULL compatibility allows widening a numeric field to text"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — under FULL (backward AND forward), you may add or remove a field only if it has a default, so removing the defaulted 'note' is allowed.",
+    "A new required field with no default breaks backward compatibility, so FULL rejects it.",
+    "A rename is a remove + add of a non-defaulted field — breaking under FULL.",
+    "Changing a field's type is not a compatible change."
+   ],
+   "explanation": "FULL compatibility requires a change to be both backward- and forward-compatible, which limits you to adding or removing fields that carry a default. Removing the defaulted 'note' qualifies; adding a required field, renaming, or changing a type all violate one direction or the other."
+  },
+  {
+   "id": "kk-125",
+   "section": "k3",
+   "level": "hard",
+   "q": "Refer to the exhibit. A KStream-KStream join between 'clicks' and 'impressions' produces no output even though matching keys exist within the window. What is the most likely cause?",
+   "exhibit": "clicks:       12 partitions\nimpressions:  6 partitions\njoin: clicks.join(impressions, ..., JoinWindows.ofTimeDifference(5m))",
+   "options": [
+    "The two streams aren't co-partitioned — a KStream-KStream join requires both topics to have the same number of partitions (and same partitioning) so matching keys share a task",
+    "JoinWindows of 5 minutes is too short for a stream-stream join, which requires a minimum window of at least 1 hour to emit results",
+    "Stream-stream joins are not supported in Kafka Streams at all; only KStream-KTable joins can produce output",
+    "The join fails only because 'clicks' has more partitions than 'impressions', and in a stream-stream join the stream with fewer partitions must always be supplied as the left-hand side"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — join inputs must be co-partitioned (same partition count and key partitioning); with 12 vs 6, matching keys land on different tasks and never meet. Repartition one side to match.",
+    "There is no 1-hour minimum; a 5-minute window is fine when inputs are co-partitioned.",
+    "KStream-KStream joins are fully supported (windowed).",
+    "Left/right side by partition count isn't a rule; the requirement is equal partitioning on both sides."
+   ],
+   "explanation": "Kafka Streams joins require co-partitioned inputs: same number of partitions and the same keying, so records with the same key are handled by the same task. With 12 vs 6 partitions, keys map to different tasks and never join. Repartition one topic (e.g. via through/repartition) to match, and both streams must share a key type."
+  },
+  {
+   "id": "kk-126",
+   "section": "k3",
+   "level": "hard",
+   "q": "Refer to the exhibit. A 1-hour tumbling window uses a 10-minute grace and suppress(untilWindowCloses). A record arrives with an event time 25 minutes after its window ended. How is it handled?",
+   "exhibit": "windowedBy(TimeWindows.ofSizeAndGrace(1h, 10m))\n  .count().suppress(untilWindowCloses(unbounded()))",
+   "options": [
+    "It is dropped as a late record — it arrived after the window plus its 10-minute grace period closed, and the suppressed final result was already emitted",
+    "It reopens the already-closed window, recomputes the aggregate count including the late record, and emits a corrected final result downstream in place of the value that was emitted earlier",
+    "It is redirected into the next 1-hour window and counted there instead, so no data is ever discarded",
+    "It is buffered indefinitely until a matching window is created, because suppress with unbounded buffer never drops records"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — a record later than window-end + grace is dropped; suppress had already emitted the window's final value once it closed.",
+    "Closed windows aren't reopened; that's exactly what the grace period + suppression prevent.",
+    "Late records aren't moved to a later window — windowing is by event time, not arrival.",
+    "The unbounded buffer bounds memory, not lateness; records past the grace are still dropped."
+   ],
+   "explanation": "The grace period defines how long after a window's end late records are still accepted. Beyond window-end + grace, records are dropped, and suppress(untilWindowCloses) emits exactly one final result when that boundary passes. A record 25 minutes late for a window with 10 minutes of grace is simply discarded."
+  },
+  {
+   "id": "kk-127",
+   "section": "k4",
+   "level": "hard",
+   "q": "Refer to the exhibit. A JDBC source connector is set tasks.max=8 to go faster, but Connect only ever runs a few tasks. Why, and what actually raises source throughput here?",
+   "exhibit": "connector: JdbcSourceConnector\ntasks.max: 8\nmode: incrementing, table.whitelist: orders   (one table)",
+   "options": [
+    "tasks.max is an upper bound, not a guarantee — a JDBC source parallelizes by table, so a single whitelisted table yields one task; add more tables (or split the source) to use more tasks",
+    "Kafka Connect always runs exactly one task per connector regardless of the tasks.max value, so any additional source parallelism must instead come from deploying several identical connectors side by side",
+    "The workers are out of threads; raising tasks.max works only after increasing the JVM thread pool on every Connect worker",
+    "tasks.max above the number of Connect workers is ignored, so throughput rises only by adding more worker nodes to the cluster"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — tasks.max caps task count, but the connector decides how many tasks it can split into; a JDBC source keys parallelism to tables, so one table = one task. More tables enable more tasks.",
+    "Connectors can run many tasks (e.g. one per table); it isn't fixed at one.",
+    "It isn't a worker thread-pool limit; it's the connector's own task division by table.",
+    "Adding workers spreads existing tasks but won't create more tasks than the connector defines."
+   ],
+   "explanation": "tasks.max is a ceiling; the connector itself decides how many tasks it can meaningfully create. A JDBC source parallelizes per table, so one whitelisted table produces one task no matter how high tasks.max is. To use more tasks, give it more tables or run multiple source connectors; a sink, by contrast, parallelizes up to the topic's partition count."
+  },
+  {
+   "id": "kk-128",
+   "section": "k4",
+   "level": "hard",
+   "q": "Refer to the exhibit. A sink connector reads a topic whose records were produced with the Avro serializer, but the sink writes garbled data / throws errors. What is misconfigured?",
+   "exhibit": "producer wrote records with KafkaAvroSerializer (Schema Registry)\nsink connector: value.converter=org.apache.kafka.connect.storage.StringConverter",
+   "options": [
+    "The sink's value.converter must match how the data was written — use AvroConverter with the Schema Registry URL, not StringConverter, so the bytes are deserialized correctly",
+    "The producer should never have used Avro in the first place; the correct fix is to re-produce all of the existing data with the plain StringSerializer so that the sink's StringConverter matches it",
+    "Converters are only about the key; the value is always passed through untouched, so the value.converter setting cannot be the cause",
+    "The sink needs errors.tolerance=all, which will transparently convert the Avro bytes into strings as they are read"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — the converter must match the on-the-wire format. Avro-encoded values (schema-id header + Avro bytes) require the AvroConverter + Schema Registry; StringConverter misinterprets the bytes.",
+    "Re-producing everything as strings throws away the schema benefits and isn't the fix — configure the sink's converter to match.",
+    "Converters apply to both key and value; value.converter absolutely governs value deserialization.",
+    "errors.tolerance skips bad records; it doesn't transcode Avro into strings."
+   ],
+   "explanation": "A converter defines the serialization format at the Connect boundary and must match how records were written. Avro records carry a schema-id header plus Avro-encoded bytes, so the sink needs the AvroConverter pointed at the same Schema Registry. StringConverter treats the bytes as text and corrupts them — a converter mismatch, not a data problem."
+  },
+  {
+   "id": "kk-129",
+   "section": "k6",
+   "level": "hard",
+   "q": "Refer to the exhibit. Per-hop metrics look healthy, but a low-traffic consumer sees seconds of extra latency. Which settings explain it?",
+   "exhibit": "consumer: fetch.min.bytes=1048576   (1 MB)\n          fetch.max.wait.ms=5000\ntopic traffic: a few small records per second",
+   "options": [
+    "The broker waits up to fetch.max.wait.ms for fetch.min.bytes to accumulate; at low traffic 1 MB rarely fills quickly, so each fetch stalls near 5 s — lower fetch.min.bytes or fetch.max.wait.ms",
+    "fetch.min.bytes only affects throughput, never latency, so these settings cannot cause the delay; the latency must originate in the network layer",
+    "The consumer is committing its offsets far too frequently, and the correct fix is to raise auto.commit.interval.ms substantially so that the offset commits stop blocking each fetch request",
+    "max.poll.records is too low, forcing many tiny polls; raising it removes the multi-second latency regardless of the fetch settings"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — a fetch returns when fetch.min.bytes is available OR fetch.max.wait.ms elapses; with little traffic the 1 MB threshold isn't met, so fetches wait the full 5 s. Reduce either value for low-latency reads.",
+    "fetch.min.bytes directly trades latency for efficiency; it's the cause here, not the network.",
+    "Commit frequency doesn't gate fetch latency in this way.",
+    "max.poll.records caps records per poll; it doesn't create the 5 s fetch wait."
+   ],
+   "explanation": "A consumer fetch returns as soon as fetch.min.bytes of data is available or fetch.max.wait.ms passes, whichever comes first. With high fetch.min.bytes (1 MB) and low traffic, the threshold is rarely met, so nearly every fetch blocks for the full 5-second wait. For latency-sensitive, low-volume topics, lower fetch.min.bytes (e.g. 1) or fetch.max.wait.ms."
+  },
+  {
+   "id": "kk-130",
+   "section": "k6",
+   "level": "hard",
+   "q": "Refer to the exhibit. Monitoring shows UnderReplicatedPartitions jump above zero after one broker restarts. What does this indicate and what is the risk?",
+   "exhibit": "kafka.server:type=ReplicaManager,name=UnderReplicatedPartitions = 37\ncluster: 3 brokers, several RF=3 / min.insync.replicas=2 topics",
+   "options": [
+    "37 partitions have fewer in-sync replicas than their replication factor; while ISR is shrunk, durability is reduced and any partition that drops below min.insync.replicas will reject produces with acks=all",
+    "It means those 37 partitions have already permanently lost committed data, and producing to them cannot safely resume until each one has been fully restored from an external backup",
+    "Under-replicated partitions are purely informational and never affect producers, since acks=all only checks the leader replica",
+    "It indicates 37 consumers have fallen behind; the metric is a per-consumer lag counter unrelated to replication"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — under-replicated means ISR < replication.factor; durability is temporarily lower and, if a partition's ISR falls below min.insync.replicas, acks=all produces fail until replicas catch up.",
+    "It signals replicas catching up, not permanent data loss; it typically clears as the broker re-syncs.",
+    "acks=all waits for all IN-SYNC replicas, so a shrunk ISR does affect producers — this is not merely informational.",
+    "Under-replicated partitions are a replication metric, not consumer lag."
+   ],
+   "explanation": "UnderReplicatedPartitions > 0 means some partitions have fewer in-sync replicas than their replication factor — normal briefly after a broker restart as replicas re-sync, but a durability warning while it persists. If a partition's ISR drops below min.insync.replicas, acks=all produces are rejected (NotEnoughReplicas), so a sustained non-zero value needs investigation."
   }
  ],
  "sections": [
