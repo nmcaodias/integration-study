@@ -80,7 +80,7 @@
     "Weigh Guaranteed Delivery's durability against its performance cost",
     "Connect non-messaging applications (Channel Adapter), foreign brokers (Messaging Bridge), and describe what makes a Message Bus"
    ],
-   "notes": "\n<h3>Channel decisions</h3>\n<p>Ch. 4 is about the choices you make when laying out channels: one-to-one or one-to-many delivery, how receivers know what a message contains, what happens to messages that can't be processed or delivered, how far to push reliability, and how non-messaging applications and foreign messaging systems join in. Channels are <strong>designed</strong>: their names and purposes are agreed up front and form the application's messaging contract.</p>\n\n<h3>Point-to-Point Channel</h3>\n<p>Exactly <strong>one receiver consumes each message</strong>. Multiple receivers may listen, but the channel ensures only one of them gets any given message — which is what makes Competing Consumers (ch. 10) safe without any coordination between the consumers.</p>\n<ul>\n<li>Use for commands and document transfers where processing each message once is essential (orders, payments).</li>\n<li>A queue in JMS/Anypoint MQ is a point-to-point channel; a Kafka topic consumed by <em>one consumer group</em> behaves point-to-point per group.</li>\n</ul>\n\n<h3>Publish-Subscribe Channel</h3>\n<p>The channel delivers <strong>a copy of each message to every subscriber</strong>. The sender publishes once; each subscriber has, in effect, its own private output channel from which it consumes its copy.</p>\n<ul>\n<li>Use for event notification — the publisher neither knows nor cares how many listeners exist, so new consumers can be added without touching the publisher.</li>\n<li>Subscriptions are normally only active while the subscriber is connected; a Durable Subscriber (ch. 10) keeps the copy queued through disconnects.</li>\n<li>A JMS topic is publish-subscribe; a Kafka topic consumed by <em>several consumer groups</em> is publish-subscribe across the groups.</li>\n</ul>\n\n<h3>Datatype Channel</h3>\n<p>How does a receiver know how to parse what it gets? By contract: <strong>all messages on a given channel carry the same type of data</strong> — a separate channel per data type. The channel name itself tells the receiver what to expect, without inspecting each message.</p>\n<ul>\n<li>Alternatives when separate channels are too expensive: a Format Indicator inside the message, or a Selective Consumer per type on one channel.</li>\n</ul>\n\n<h3>Invalid Message Channel</h3>\n<p>When a <strong>receiver</strong> gets a message that is syntactically fine for the messaging system but <strong>senseless to the application</strong> — wrong type, missing fields, values that fail validation — it should not silently drop it, endlessly retry it, or crash. It moves it to a designated <strong>Invalid Message Channel</strong> where an operator or monitoring tool can inspect the failures.</p>\n<ul>\n<li>The decision is made by <em>application code</em>, based on message <em>content</em>. That is the crucial contrast with the Dead Letter Channel.</li>\n</ul>\n\n<h3>Dead Letter Channel</h3>\n<p>When the <strong>messaging system</strong> determines it <strong>cannot deliver</strong> a message — the destination doesn't exist, the message expired, delivery was retried too often — it moves the message to the <strong>Dead Letter Channel</strong> rather than discarding it.</p>\n<ul>\n<li>Invalid Message Channel = receiver rejects <em>content</em> it cannot process. Dead Letter Channel = messaging system gives up on <em>delivery</em>. Same shape (a parking channel plus monitoring), different decider and different reason.</li>\n<li>Anypoint MQ and most brokers call this the DLQ; wiring an alert on it is standard operational practice.</li>\n</ul>\n\n<h3>Guaranteed Delivery</h3>\n<p>Make the store in store-and-forward <strong>persistent</strong>: the message is written to disk at every hop before the send is acknowledged, so it survives crashes and restarts of the messaging system itself.</p>\n<ul>\n<li>The trade is <strong>performance for durability</strong> — every message costs disk I/O. Not everything deserves it: losing one reading from a sensor that reports every second may be fine, losing an order is not.</li>\n<li>Retention limits still apply in practice (disk space, message TTLs); \"guaranteed\" means surviving failures, not surviving forever.</li>\n</ul>\n\n<h3>Channel Adapter</h3>\n<p>Many applications you must integrate were never written for messaging. A <strong>Channel Adapter</strong> is a component that connects such an application to a channel by hooking into what the application does expose:</p>\n<ul>\n<li><strong>User interface adapter</strong> — drives the app's screens (screen scraping); fragile but sometimes the only option.</li>\n<li><strong>Business logic adapter</strong> — calls the app's published API; the preferred hook when one exists.</li>\n<li><strong>Database adapter</strong> — watches or writes the app's database directly (e.g. triggers, change capture); powerful but bypasses the app's logic.</li>\n</ul>\n<p>Adapters typically emit whatever structure the application yields, so a Message Translator usually follows. Mule connectors (Database, File, SFTP, Salesforce…) are channel adapters in exactly this sense; so are Kafka Connect source/sink connectors.</p>\n\n<h3>Messaging Bridge</h3>\n<p>Enterprises end up with more than one messaging system (a merger, a package that ships with its own broker). A <strong>Messaging Bridge</strong> is a set of paired channel adapters connecting two messaging systems, forwarding messages from channels on one to corresponding channels on the other — so applications on each side keep using their native broker.</p>\n\n<h3>Message Bus</h3>\n<p>The architectural endgame of ch. 4: a <strong>Message Bus</strong> is the combination of (1) a <strong>common communication infrastructure</strong> (the channels), (2) a shared <strong>Canonical Data Model</strong> so participants understand each other, and (3) a <strong>common command structure</strong> so requests look uniform. Applications plug into the bus with adapters and can be added or removed without affecting the others — the bus works like a distributed, application-level backplane.</p>",
+   "notes": "\n<h3>Channel decisions</h3>\n<p>Ch. 4 is about the choices you make when laying out channels: one-to-one or one-to-many delivery, how receivers know what a message contains, what happens to messages that can't be processed or delivered, how far to push reliability, and how non-messaging applications and foreign messaging systems join in. Channels are <strong>designed</strong>: their names and purposes are agreed up front and form the application's messaging contract.</p>\n\n<h3>Point-to-Point Channel</h3>\n<p>Exactly <strong>one receiver consumes each message</strong>. Multiple receivers may listen, but the channel ensures only one of them gets any given message — which is what makes Competing Consumers (ch. 10) safe without any coordination between the consumers.</p>\n<ul>\n<li>Use for commands and document transfers where processing each message once is essential (orders, payments).</li>\n<li>A queue in JMS/Anypoint MQ is a point-to-point channel; a Kafka topic consumed by <em>one consumer group</em> behaves point-to-point per group.</li>\n</ul>\n\n<h3>Publish-Subscribe Channel</h3>\n<p>The channel delivers <strong>a copy of each message to every subscriber</strong>. The sender publishes once; each subscriber has, in effect, its own private output channel from which it consumes its copy.</p>\n<ul>\n<li>Use for event notification — the publisher neither knows nor cares how many listeners exist, so new consumers can be added without touching the publisher.</li>\n<li>Subscriptions are normally only active while the subscriber is connected; a Durable Subscriber (ch. 10) keeps the copy queued through disconnects.</li>\n<li>A JMS topic is publish-subscribe; a Kafka topic consumed by <em>several consumer groups</em> is publish-subscribe across the groups.</li>\n</ul>\n\n<h3>Datatype Channel</h3>\n<p>How does a receiver know how to parse what it gets? By contract: <strong>all messages on a given channel carry the same type of data</strong> — a separate channel per data type. The channel name itself tells the receiver what to expect, without inspecting each message.</p>\n<ul>\n<li>Alternatives when separate channels are too expensive: a Format Indicator inside the message, or a Selective Consumer per type on one channel.</li>\n</ul>\n\n<h3>Invalid Message Channel</h3>\n<p>When a <strong>receiver</strong> gets a message that is syntactically fine for the messaging system but <strong>senseless to the application</strong> — wrong type, missing fields, values that fail validation — it should not silently drop it, endlessly retry it, or crash. It moves it to a designated <strong>Invalid Message Channel</strong> where an operator or monitoring tool can inspect the failures.</p>\n<ul>\n<li>The decision is made by <em>application code</em>, based on message <em>content</em>. That is the crucial contrast with the Dead Letter Channel.</li>\n</ul>\n\n<h3>Dead Letter Channel</h3>\n<p>When the <strong>messaging system</strong> determines it <strong>cannot deliver</strong> a message — the destination doesn't exist, the message expired, delivery was retried too often — it moves the message to the <strong>Dead Letter Channel</strong> rather than discarding it.</p>\n<ul>\n<li>Invalid Message Channel = receiver rejects <em>content</em> it cannot process. Dead Letter Channel = messaging system gives up on <em>delivery</em>. Same shape (a parking channel plus monitoring), different decider and different reason.</li>\n<li>Anypoint MQ and most brokers call this the DLQ; wiring an alert on it is standard operational practice.</li>\n</ul>\n\n<h3>Guaranteed Delivery</h3>\n<p>Make the store in store-and-forward <strong>persistent</strong>: the message is written to disk at every hop before the send is acknowledged, so it survives crashes and restarts of the messaging system itself.</p>\n<ul>\n<li>The trade is <strong>performance for durability</strong> — every message costs disk I/O. Not everything deserves it: losing one reading from a sensor that reports every second may be fine, losing an order is not.</li>\n<li>Retention limits still apply in practice (disk space, message TTLs); \"guaranteed\" means surviving failures, not surviving forever.</li>\n</ul>\n\n<h3>Channel Adapter</h3>\n<p>Many applications you must integrate were never written for messaging. A <strong>Channel Adapter</strong> is a component that connects such an application to a channel by hooking into what the application does expose:</p>\n<ul>\n<li><strong>User interface adapter</strong> — drives the app's screens (screen scraping); fragile but sometimes the only option.</li>\n<li><strong>Business logic adapter</strong> — calls the app's published API; the preferred hook when one exists.</li>\n<li><strong>Database adapter</strong> — watches or writes the app's database directly (e.g. triggers, change capture); powerful but bypasses the app's logic.</li>\n</ul>\n<p>Adapters typically emit whatever structure the application yields, so a Message Translator usually follows. Mule connectors (Database, File, SFTP, Salesforce…) are channel adapters in exactly this sense; so are Kafka Connect source/sink connectors.</p>\n\n<h3>Messaging Bridge</h3>\n<p>Enterprises end up with more than one messaging system (a merger, a package that ships with its own broker). A <strong>Messaging Bridge</strong> is a set of paired channel adapters connecting two messaging systems, forwarding messages from channels on one to corresponding channels on the other — so applications on each side keep using their native broker.</p>\n\n<h3>Message Bus</h3>\n<p>The architectural endgame of ch. 4: a <strong>Message Bus</strong> is the combination of (1) a <strong>common communication infrastructure</strong> (the channels), (2) a shared <strong>Canonical Data Model</strong> so participants understand each other, and (3) a <strong>common command structure</strong> so requests look uniform. Applications plug into the bus with adapters and can be added or removed without affecting the others — the bus works like a distributed, application-level backplane.</p>\n<h3>Point-to-Point vs Publish-Subscribe</h3>\n<p>The core channel choice: deliver each message to <em>exactly one</em> receiver (competing workers), or a <em>copy to every</em> subscriber (event broadcast).</p>\n<svg viewBox=\"0 0 640 150\" style=\"max-width:640px;width:100%\" role=\"img\" aria-label=\"Point-to-point delivers to one receiver, publish-subscribe to all\">\n  <style>.e4-b{fill:none;stroke:currentColor;stroke-width:1.3}.e4-t{font:600 12px sans-serif;fill:currentColor}.e4-s{font:11px sans-serif;fill:currentColor;opacity:.8}.e4-a{stroke:currentColor;stroke-width:1.1;marker-end:url(#e4A)}.e4-d{stroke:currentColor;stroke-width:1;stroke-dasharray:3 3;marker-end:url(#e4A)}</style>\n  <defs><marker id=\"e4A\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L6,3 L0,6 z\" fill=\"currentColor\"/></marker></defs>\n  <text class=\"e4-s\" x=\"160\" y=\"16\" text-anchor=\"middle\">Point-to-Point (one receiver)</text>\n  <rect class=\"e4-b\" x=\"16\" y=\"52\" width=\"70\" height=\"30\" rx=\"5\"/><text class=\"e4-t\" x=\"51\" y=\"71\" text-anchor=\"middle\">sender</text>\n  <line class=\"e4-a\" x1=\"86\" y1=\"67\" x2=\"140\" y2=\"67\"/>\n  <rect class=\"e4-b\" x=\"142\" y=\"52\" width=\"46\" height=\"30\" rx=\"4\"/><text class=\"e4-s\" x=\"165\" y=\"71\" text-anchor=\"middle\">queue</text>\n  <line class=\"e4-a\" x1=\"188\" y1=\"60\" x2=\"236\" y2=\"42\"/>\n  <line class=\"e4-d\" x1=\"188\" y1=\"74\" x2=\"236\" y2=\"92\"/>\n  <rect class=\"e4-b\" x=\"238\" y=\"28\" width=\"70\" height=\"28\" rx=\"5\"/><text class=\"e4-s\" x=\"273\" y=\"46\" text-anchor=\"middle\">worker A ✓</text>\n  <rect class=\"e4-b\" x=\"238\" y=\"78\" width=\"70\" height=\"28\" rx=\"5\"/><text class=\"e4-s\" x=\"273\" y=\"96\" text-anchor=\"middle\">worker B</text>\n  <line x1=\"330\" y1=\"20\" x2=\"330\" y2=\"130\" stroke=\"currentColor\" stroke-width=\"1\" opacity=\".4\"/>\n  <text class=\"e4-s\" x=\"500\" y=\"16\" text-anchor=\"middle\">Publish-Subscribe (copy to all)</text>\n  <rect class=\"e4-b\" x=\"356\" y=\"52\" width=\"70\" height=\"30\" rx=\"5\"/><text class=\"e4-t\" x=\"391\" y=\"71\" text-anchor=\"middle\">publisher</text>\n  <line class=\"e4-a\" x1=\"426\" y1=\"67\" x2=\"472\" y2=\"67\"/>\n  <rect class=\"e4-b\" x=\"474\" y=\"52\" width=\"40\" height=\"30\" rx=\"4\"/><text class=\"e4-s\" x=\"494\" y=\"71\" text-anchor=\"middle\">topic</text>\n  <line class=\"e4-a\" x1=\"514\" y1=\"60\" x2=\"560\" y2=\"34\"/>\n  <line class=\"e4-a\" x1=\"514\" y1=\"67\" x2=\"560\" y2=\"67\"/>\n  <line class=\"e4-a\" x1=\"514\" y1=\"74\" x2=\"560\" y2=\"100\"/>\n  <rect class=\"e4-b\" x=\"562\" y=\"22\" width=\"66\" height=\"24\" rx=\"4\"/><text class=\"e4-s\" x=\"595\" y=\"38\" text-anchor=\"middle\">sub 1 ✓</text>\n  <rect class=\"e4-b\" x=\"562\" y=\"55\" width=\"66\" height=\"24\" rx=\"4\"/><text class=\"e4-s\" x=\"595\" y=\"71\" text-anchor=\"middle\">sub 2 ✓</text>\n  <rect class=\"e4-b\" x=\"562\" y=\"88\" width=\"66\" height=\"24\" rx=\"4\"/><text class=\"e4-s\" x=\"595\" y=\"104\" text-anchor=\"middle\">sub 3 ✓</text>\n</svg>",
    "topicDocs": {
     "Channel decisions": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessagingChannelsIntro.html",
     "Point-to-Point Channel": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/PointToPointChannel.html",
@@ -91,7 +91,8 @@
     "Guaranteed Delivery": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/GuaranteedMessaging.html",
     "Channel Adapter": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/ChannelAdapter.html",
     "Messaging Bridge": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessagingBridge.html",
-    "Message Bus": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessageBus.html"
+    "Message Bus": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessageBus.html",
+    "Point-to-Point vs Publish-Subscribe": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/PublishSubscribeChannel.html"
    }
   },
   {
@@ -128,7 +129,7 @@
     "Compose routers: Composed Message Processor and Scatter-Gather",
     "Pick the right process pattern: pipeline vs. Routing Slip vs. Process Manager, and explain the Message Broker architecture"
    ],
-   "notes": "\n<h3>The routing catalog</h3>\n<p>Routers move messages to the right place without the sender knowing where that is. Ch. 7 climbs from simple routers to composed ones to architectural ones. Two axes to keep straight: <strong>stateless vs. stateful</strong> (most routers look at one message at a time; Aggregator and Resequencer must remember messages), and <strong>fixed vs. dynamic</strong> (is the routing rule wired in, configured, or learned at runtime?).</p>\n\n<h3>Content-Based Router</h3>\n<p>Examines a message and forwards it to <strong>exactly one</strong> of several channels based on its content (order type, region, amount). Centralizes the \"who handles what\" decision so senders stay ignorant of the specialization downstream. Keep the routing logic <em>maintainable and externally configurable</em> — it tends to change with the business.</p>\n<p><em>In this app's world:</em> Mule's Choice router is a content-based router.</p>\n\n<h3>Message Filter</h3>\n<p>A router with <strong>one output channel and a binary decision</strong>: pass the message on, or drop it. Use it to subscribe broadly (e.g. to a pub-sub firehose) and keep only what you care about. A <em>stateful</em> variant drops duplicates (the flip side of Idempotent Receiver).</p>\n<ul>\n<li>Contrast with Content-Based Router: the CBR chooses <em>between destinations</em> and loses nothing; the filter has one destination and <em>discards</em> what doesn't qualify.</li>\n<li>Broadcast + a filter at each recipient (\"reactive filtering\") is the decentralized alternative to one all-knowing CBR (\"predictive routing\") — more autonomy and easier to add recipients, at the cost of traffic and trust in each recipient's filter.</li>\n</ul>\n\n<h3>Dynamic Router</h3>\n<p>A router whose rule base is <strong>built at runtime</strong>: potential recipients announce themselves (and their criteria) on a <strong>control channel</strong>, and the router stores those rules. You get CBR efficiency without maintaining the rules centrally — recipients self-register. The price: harder to reason about, since routing behavior emerges from whoever registered.</p>\n\n<h3>Recipient List</h3>\n<p>Inspects the message, <strong>computes a list of recipients</strong>, and sends a copy to each. It is the dynamic middle ground between a fixed pub-sub broadcast and a single-destination CBR — like the To: line of an e-mail.</p>\n\n<h3>Splitter</h3>\n<p>Breaks one composite message (an order with line items) into a <strong>series of individual messages</strong>, each processable on its own. Mark the pieces with Message Sequence fields (or a correlation id back to the original) if they must be recombined or tracked.</p>\n\n<h3>Aggregator</h3>\n<p>The reverse of the splitter — and the chapter's most demanding pattern, because it is <strong>stateful</strong>: it collects related messages and publishes one combined result. Every aggregator makes three design decisions:</p>\n<ul>\n<li><strong>Correlation</strong> — which incoming messages belong together? (usually a correlation id)</li>\n<li><strong>Completeness condition</strong> — when is a group ready to publish? <em>Wait for all</em>; <em>timeout</em> (publish what arrived); <em>first best</em> (first acceptable answer wins); <em>timeout with override</em>; or an <em>external event</em>.</li>\n<li><strong>Aggregation algorithm</strong> — how are the pieces condensed? (pick the best one, concatenate them, compute a summary…)</li>\n</ul>\n<p>Plan for the awkward cases: stragglers arriving after their group closed, and groups that never complete.</p>\n\n<h3>Resequencer</h3>\n<p>Parallel processing and competing consumers reorder messages. A <strong>Resequencer</strong> buffers out-of-order messages and re-emits them in order using their sequence numbers — stateful like the aggregator, but it <em>doesn't modify or combine</em> messages, only reorders them. Watch the buffer: a missing message can stall everything behind it (bound the buffer, or use timeouts).</p>\n\n<h3>Composed Message Processor</h3>\n<p>A composite: <strong>Splitter → (Content-Based) Router → parallel processors → Aggregator</strong>. Use it when the elements of one message each need different handling — split an order, route each line item to the right inventory system, and aggregate the answers into one reply.</p>\n\n<h3>Scatter-Gather</h3>\n<p>Send one message to <strong>multiple recipients</strong> (via Publish-Subscribe Channel or Recipient List) and <strong>aggregate their replies</strong> into one message. The auction shape: broadcast a quote request to vendors, gather bids, pick the best. Composed Message Processor and Scatter-Gather differ mainly in fan-out: split one message's parts vs. send the same message to many parties.</p>\n<p><em>In this app's world:</em> Mule's Scatter-Gather router is this pattern with a wait-for-all aggregator built in.</p>\n\n<h3>Routing Slip</h3>\n<p>When each message needs its own <em>sequence</em> of processing steps, compute the itinerary up front and <strong>attach it to the message</strong>; each step does its work, marks itself done, and forwards to the next entry on the slip. Like a routing slip stapled to an office document.</p>\n<ul>\n<li>Great for: per-message step selection from a linear library of steps (validations, format conversions).</li>\n<li>Limits: the route is fixed once attached, and it must be <strong>sequential</strong> — no branching on intermediate results, no parallelism, and a broken component can strand messages with their slips.</li>\n</ul>\n\n<h3>Process Manager</h3>\n<p>When the flow needs <strong>branches decided mid-flight, parallel legs, or loops</strong>, a central Process Manager maintains the state of each process instance: it receives each intermediate result, consults its process definition, and dispatches the next step(s). This is hub-and-spoke orchestration — the engine behind BPM tools.</p>\n<ul>\n<li>Trade-offs vs. Routing Slip: maximal flexibility and central visibility, but a central point of state (and potential bottleneck) plus real design work — process definitions, instance correlation, crash recovery.</li>\n<li>The progression to remember: fixed pipeline → Routing Slip (per-message linear route) → Process Manager (dynamic, branching, stateful orchestration).</li>\n</ul>\n\n<h3>Message Broker</h3>\n<p>The architectural pattern of the chapter: a central component that <strong>receives messages from senders and routes them to the correct receivers</strong>, so applications know only the broker, not each other — hub-and-spoke instead of point-to-point spaghetti. A real broker is composed from the chapter's routers plus translators, usually normalizing to a Canonical Data Model at the hub. The risk to manage: the broker becoming a monolithic bottleneck that quietly accumulates business logic.</p>",
+   "notes": "\n<h3>The routing catalog</h3>\n<p>Routers move messages to the right place without the sender knowing where that is. Ch. 7 climbs from simple routers to composed ones to architectural ones. Two axes to keep straight: <strong>stateless vs. stateful</strong> (most routers look at one message at a time; Aggregator and Resequencer must remember messages), and <strong>fixed vs. dynamic</strong> (is the routing rule wired in, configured, or learned at runtime?).</p>\n\n<h3>Content-Based Router</h3>\n<p>Examines a message and forwards it to <strong>exactly one</strong> of several channels based on its content (order type, region, amount). Centralizes the \"who handles what\" decision so senders stay ignorant of the specialization downstream. Keep the routing logic <em>maintainable and externally configurable</em> — it tends to change with the business.</p>\n<p><em>In this app's world:</em> Mule's Choice router is a content-based router.</p>\n\n<h3>Message Filter</h3>\n<p>A router with <strong>one output channel and a binary decision</strong>: pass the message on, or drop it. Use it to subscribe broadly (e.g. to a pub-sub firehose) and keep only what you care about. A <em>stateful</em> variant drops duplicates (the flip side of Idempotent Receiver).</p>\n<ul>\n<li>Contrast with Content-Based Router: the CBR chooses <em>between destinations</em> and loses nothing; the filter has one destination and <em>discards</em> what doesn't qualify.</li>\n<li>Broadcast + a filter at each recipient (\"reactive filtering\") is the decentralized alternative to one all-knowing CBR (\"predictive routing\") — more autonomy and easier to add recipients, at the cost of traffic and trust in each recipient's filter.</li>\n</ul>\n\n<h3>Dynamic Router</h3>\n<p>A router whose rule base is <strong>built at runtime</strong>: potential recipients announce themselves (and their criteria) on a <strong>control channel</strong>, and the router stores those rules. You get CBR efficiency without maintaining the rules centrally — recipients self-register. The price: harder to reason about, since routing behavior emerges from whoever registered.</p>\n\n<h3>Recipient List</h3>\n<p>Inspects the message, <strong>computes a list of recipients</strong>, and sends a copy to each. It is the dynamic middle ground between a fixed pub-sub broadcast and a single-destination CBR — like the To: line of an e-mail.</p>\n\n<h3>Splitter</h3>\n<p>Breaks one composite message (an order with line items) into a <strong>series of individual messages</strong>, each processable on its own. Mark the pieces with Message Sequence fields (or a correlation id back to the original) if they must be recombined or tracked.</p>\n\n<h3>Aggregator</h3>\n<p>The reverse of the splitter — and the chapter's most demanding pattern, because it is <strong>stateful</strong>: it collects related messages and publishes one combined result. Every aggregator makes three design decisions:</p>\n<ul>\n<li><strong>Correlation</strong> — which incoming messages belong together? (usually a correlation id)</li>\n<li><strong>Completeness condition</strong> — when is a group ready to publish? <em>Wait for all</em>; <em>timeout</em> (publish what arrived); <em>first best</em> (first acceptable answer wins); <em>timeout with override</em>; or an <em>external event</em>.</li>\n<li><strong>Aggregation algorithm</strong> — how are the pieces condensed? (pick the best one, concatenate them, compute a summary…)</li>\n</ul>\n<p>Plan for the awkward cases: stragglers arriving after their group closed, and groups that never complete.</p>\n\n<h3>Resequencer</h3>\n<p>Parallel processing and competing consumers reorder messages. A <strong>Resequencer</strong> buffers out-of-order messages and re-emits them in order using their sequence numbers — stateful like the aggregator, but it <em>doesn't modify or combine</em> messages, only reorders them. Watch the buffer: a missing message can stall everything behind it (bound the buffer, or use timeouts).</p>\n\n<h3>Composed Message Processor</h3>\n<p>A composite: <strong>Splitter → (Content-Based) Router → parallel processors → Aggregator</strong>. Use it when the elements of one message each need different handling — split an order, route each line item to the right inventory system, and aggregate the answers into one reply.</p>\n\n<h3>Scatter-Gather</h3>\n<p>Send one message to <strong>multiple recipients</strong> (via Publish-Subscribe Channel or Recipient List) and <strong>aggregate their replies</strong> into one message. The auction shape: broadcast a quote request to vendors, gather bids, pick the best. Composed Message Processor and Scatter-Gather differ mainly in fan-out: split one message's parts vs. send the same message to many parties.</p>\n<p><em>In this app's world:</em> Mule's Scatter-Gather router is this pattern with a wait-for-all aggregator built in.</p>\n\n<h3>Routing Slip</h3>\n<p>When each message needs its own <em>sequence</em> of processing steps, compute the itinerary up front and <strong>attach it to the message</strong>; each step does its work, marks itself done, and forwards to the next entry on the slip. Like a routing slip stapled to an office document.</p>\n<ul>\n<li>Great for: per-message step selection from a linear library of steps (validations, format conversions).</li>\n<li>Limits: the route is fixed once attached, and it must be <strong>sequential</strong> — no branching on intermediate results, no parallelism, and a broken component can strand messages with their slips.</li>\n</ul>\n\n<h3>Process Manager</h3>\n<p>When the flow needs <strong>branches decided mid-flight, parallel legs, or loops</strong>, a central Process Manager maintains the state of each process instance: it receives each intermediate result, consults its process definition, and dispatches the next step(s). This is hub-and-spoke orchestration — the engine behind BPM tools.</p>\n<ul>\n<li>Trade-offs vs. Routing Slip: maximal flexibility and central visibility, but a central point of state (and potential bottleneck) plus real design work — process definitions, instance correlation, crash recovery.</li>\n<li>The progression to remember: fixed pipeline → Routing Slip (per-message linear route) → Process Manager (dynamic, branching, stateful orchestration).</li>\n</ul>\n\n<h3>Message Broker</h3>\n<p>The architectural pattern of the chapter: a central component that <strong>receives messages from senders and routes them to the correct receivers</strong>, so applications know only the broker, not each other — hub-and-spoke instead of point-to-point spaghetti. A real broker is composed from the chapter's routers plus translators, usually normalizing to a Canonical Data Model at the hub. The risk to manage: the broker becoming a monolithic bottleneck that quietly accumulates business logic.</p>\n<h3>Content-Based Router at a glance</h3>\n<p>One inbound channel, inspected by content, forwarded to exactly one destination — the sender never learns who the recipients are.</p>\n<svg viewBox=\"0 0 640 148\" style=\"max-width:640px;width:100%\" role=\"img\" aria-label=\"A content-based router sends each message to one destination by its content\">\n  <style>.e6-b{fill:none;stroke:currentColor;stroke-width:1.3}.e6-t{font:600 12px sans-serif;fill:currentColor}.e6-s{font:11px sans-serif;fill:currentColor;opacity:.8}.e6-a{stroke:currentColor;stroke-width:1.1;marker-end:url(#e6A)}</style>\n  <defs><marker id=\"e6A\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L6,3 L0,6 z\" fill=\"currentColor\"/></marker></defs>\n  <rect class=\"e6-b\" x=\"14\" y=\"58\" width=\"86\" height=\"32\" rx=\"5\"/><text class=\"e6-t\" x=\"57\" y=\"78\" text-anchor=\"middle\">orders</text>\n  <line class=\"e6-a\" x1=\"100\" y1=\"74\" x2=\"150\" y2=\"74\"/>\n  <path class=\"e6-b\" d=\"M154 74 L200 50 L246 74 L200 98 Z\"/>\n  <text class=\"e6-s\" x=\"200\" y=\"70\" text-anchor=\"middle\">router</text>\n  <text class=\"e6-s\" x=\"200\" y=\"84\" text-anchor=\"middle\">by type</text>\n  <line class=\"e6-a\" x1=\"246\" y1=\"64\" x2=\"430\" y2=\"30\"/><text class=\"e6-s\" x=\"330\" y=\"34\" text-anchor=\"middle\">DIGITAL</text>\n  <line class=\"e6-a\" x1=\"246\" y1=\"74\" x2=\"430\" y2=\"74\"/><text class=\"e6-s\" x=\"330\" y=\"68\" text-anchor=\"middle\">PHYSICAL</text>\n  <line class=\"e6-a\" x1=\"246\" y1=\"84\" x2=\"430\" y2=\"118\"/><text class=\"e6-s\" x=\"330\" y=\"112\" text-anchor=\"middle\">SUBSCRIPTION</text>\n  <rect class=\"e6-b\" x=\"432\" y=\"16\" width=\"150\" height=\"28\" rx=\"5\"/><text class=\"e6-s\" x=\"507\" y=\"34\" text-anchor=\"middle\">fulfilment-digital</text>\n  <rect class=\"e6-b\" x=\"432\" y=\"60\" width=\"150\" height=\"28\" rx=\"5\"/><text class=\"e6-s\" x=\"507\" y=\"78\" text-anchor=\"middle\">warehouse</text>\n  <rect class=\"e6-b\" x=\"432\" y=\"104\" width=\"150\" height=\"28\" rx=\"5\"/><text class=\"e6-s\" x=\"507\" y=\"122\" text-anchor=\"middle\">billing</text>\n</svg>",
    "topicDocs": {
     "The routing catalog": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessageRoutingIntro.html",
     "Content-Based Router": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/ContentBasedRouter.html",
@@ -142,7 +143,8 @@
     "Scatter-Gather": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/BroadcastAggregate.html",
     "Routing Slip": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/RoutingTable.html",
     "Process Manager": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/ProcessManager.html",
-    "Message Broker": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessageBroker.html"
+    "Message Broker": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessageBroker.html",
+    "Content-Based Router at a glance": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/ContentBasedRouter.html"
    }
   },
   {
@@ -155,7 +157,7 @@
     "Normalize many inbound formats to one with a router + translators",
     "Explain when a Canonical Data Model beats pairwise translation (2N vs. N×(N−1))"
    ],
-   "notes": "\n<h3>Why transformation patterns</h3>\n<p>Ch. 3's Message Translator said formats can be reconciled; ch. 8 catalogs the specific jobs: complying with infrastructure envelopes, adding missing data, removing excess data, shrinking payloads, taming many formats into one, and — architecturally — deciding what the shared format between applications should be.</p>\n\n<h3>Envelope Wrapper</h3>\n<p>Messaging infrastructures impose their own envelope: required headers, security tokens, encryption, size framing. An <strong>Envelope Wrapper</strong> packs the application message into the infrastructure's envelope on the way in, and a matching <strong>unwrapper</strong> restores the original on the way out — so applications stay ignorant of the plumbing's dress code. Envelopes routinely nest (a message wrapped for the WAN inside a wrapper for the security gateway), unwrapped in reverse order like nested parcels.</p>\n\n<h3>Content Enricher</h3>\n<p>The target needs data the incoming message doesn't have (the message has a customer id; the target wants the full address). A <strong>Content Enricher</strong> obtains the missing data — <em>computing</em> it, pulling it from its <em>environment</em>, or querying an <em>external system</em> — and outputs the augmented message.</p>\n<p><em>In this app's world:</em> a Mule flow that looks up data mid-flow and stores it via <code>target</code> variables, then merges it into the payload, is a content enricher.</p>\n\n<h3>Content Filter</h3>\n<p>The mirror image: the message carries <strong>more than the receiver should see or handle</strong> — verbose tree structures, sensitive fields, whole sections irrelevant downstream. A <strong>Content Filter</strong> removes and simplifies, leaving the essentials. (Don't confuse with the <em>Message</em> Filter of ch. 7, which drops or passes <em>whole messages</em>; the Content Filter reshapes the <em>inside</em> of one message.)</p>\n\n<h3>Claim Check</h3>\n<p>Enricher and filter combined into a storage protocol, for when the full payload shouldn't travel every hop:</p>\n<ol>\n<li>Store the message data in a persistent store, keyed by a claim ticket.</li>\n<li>Pass a slim message carrying just the <strong>claim check</strong> (and whatever routing needs).</li>\n<li>Downstream, a Content Enricher uses the ticket to retrieve the full data when it's actually needed.</li>\n</ol>\n<p>Use it to cut message size across many intermediate steps, or to keep <strong>sensitive data out of intermediate components</strong> — like a luggage check: carry the stub, not the suitcase.</p>\n\n<h3>Normalizer</h3>\n<p>Many senders, each with its own format, one receiver expectation. A <strong>Normalizer</strong> is a composite: a router detects each incoming message's format and dispatches it to the <strong>matching Message Translator</strong>, so whatever arrives leaves in the one common format. The routing usually keys off a Format Indicator (or schema detection), not per-sender channels.</p>\n\n<h3>Canonical Data Model</h3>\n<p>With N applications translating pairwise, you head toward <strong>N×(N−1) translators</strong> (every producer format to every consumer format). A <strong>Canonical Data Model</strong> introduces an application-independent format as the hub: each application translates only <em>to</em> and <em>from</em> the canonical form — <strong>2N translators</strong>, and a new application costs 2 more instead of 2N more.</p>\n<ul>\n<li>The trade: designing (and governing!) a data model everyone accepts is organizationally hard, every hop pays double translation, and the canonical model itself must be versioned.</li>\n<li>The book's advice: canonical models earn their keep as the number of integrated applications grows; for two or three apps, direct translation is simpler.</li>\n<li><em>In this app's world:</em> API-led connectivity's layer contracts play this role in MuleSoft land; in Kafka land, a governed subject in Schema Registry is the canonical form of a topic.</li>\n</ul>",
+   "notes": "\n<h3>Why transformation patterns</h3>\n<p>Ch. 3's Message Translator said formats can be reconciled; ch. 8 catalogs the specific jobs: complying with infrastructure envelopes, adding missing data, removing excess data, shrinking payloads, taming many formats into one, and — architecturally — deciding what the shared format between applications should be.</p>\n\n<h3>Envelope Wrapper</h3>\n<p>Messaging infrastructures impose their own envelope: required headers, security tokens, encryption, size framing. An <strong>Envelope Wrapper</strong> packs the application message into the infrastructure's envelope on the way in, and a matching <strong>unwrapper</strong> restores the original on the way out — so applications stay ignorant of the plumbing's dress code. Envelopes routinely nest (a message wrapped for the WAN inside a wrapper for the security gateway), unwrapped in reverse order like nested parcels.</p>\n\n<h3>Content Enricher</h3>\n<p>The target needs data the incoming message doesn't have (the message has a customer id; the target wants the full address). A <strong>Content Enricher</strong> obtains the missing data — <em>computing</em> it, pulling it from its <em>environment</em>, or querying an <em>external system</em> — and outputs the augmented message.</p>\n<p><em>In this app's world:</em> a Mule flow that looks up data mid-flow and stores it via <code>target</code> variables, then merges it into the payload, is a content enricher.</p>\n\n<h3>Content Filter</h3>\n<p>The mirror image: the message carries <strong>more than the receiver should see or handle</strong> — verbose tree structures, sensitive fields, whole sections irrelevant downstream. A <strong>Content Filter</strong> removes and simplifies, leaving the essentials. (Don't confuse with the <em>Message</em> Filter of ch. 7, which drops or passes <em>whole messages</em>; the Content Filter reshapes the <em>inside</em> of one message.)</p>\n\n<h3>Claim Check</h3>\n<p>Enricher and filter combined into a storage protocol, for when the full payload shouldn't travel every hop:</p>\n<ol>\n<li>Store the message data in a persistent store, keyed by a claim ticket.</li>\n<li>Pass a slim message carrying just the <strong>claim check</strong> (and whatever routing needs).</li>\n<li>Downstream, a Content Enricher uses the ticket to retrieve the full data when it's actually needed.</li>\n</ol>\n<p>Use it to cut message size across many intermediate steps, or to keep <strong>sensitive data out of intermediate components</strong> — like a luggage check: carry the stub, not the suitcase.</p>\n\n<h3>Normalizer</h3>\n<p>Many senders, each with its own format, one receiver expectation. A <strong>Normalizer</strong> is a composite: a router detects each incoming message's format and dispatches it to the <strong>matching Message Translator</strong>, so whatever arrives leaves in the one common format. The routing usually keys off a Format Indicator (or schema detection), not per-sender channels.</p>\n\n<h3>Canonical Data Model</h3>\n<p>With N applications translating pairwise, you head toward <strong>N×(N−1) translators</strong> (every producer format to every consumer format). A <strong>Canonical Data Model</strong> introduces an application-independent format as the hub: each application translates only <em>to</em> and <em>from</em> the canonical form — <strong>2N translators</strong>, and a new application costs 2 more instead of 2N more.</p>\n<ul>\n<li>The trade: designing (and governing!) a data model everyone accepts is organizationally hard, every hop pays double translation, and the canonical model itself must be versioned.</li>\n<li>The book's advice: canonical models earn their keep as the number of integrated applications grows; for two or three apps, direct translation is simpler.</li>\n<li><em>In this app's world:</em> API-led connectivity's layer contracts play this role in MuleSoft land; in Kafka land, a governed subject in Schema Registry is the canonical form of a topic.</li>\n</ul>\n<h3>The Canonical Data Model hub</h3>\n<p>Each application translates only between its own format and one shared canonical model, so adding a system is one new translator — not a change everywhere.</p>\n<svg viewBox=\"0 0 640 150\" style=\"max-width:640px;width:100%\" role=\"img\" aria-label=\"Applications translate to and from a shared canonical model\">\n  <style>.e7-b{fill:none;stroke:currentColor;stroke-width:1.3}.e7-t{font:600 12px sans-serif;fill:currentColor}.e7-s{font:11px sans-serif;fill:currentColor;opacity:.8}.e7-a{stroke:currentColor;stroke-width:1.1;marker-end:url(#e7A)}</style>\n  <defs><marker id=\"e7A\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L6,3 L0,6 z\" fill=\"currentColor\"/></marker></defs>\n  <rect class=\"e7-b\" x=\"14\" y=\"20\" width=\"96\" height=\"26\" rx=\"5\"/><text class=\"e7-s\" x=\"62\" y=\"37\" text-anchor=\"middle\">CSV partner</text>\n  <rect class=\"e7-b\" x=\"14\" y=\"62\" width=\"96\" height=\"26\" rx=\"5\"/><text class=\"e7-s\" x=\"62\" y=\"79\" text-anchor=\"middle\">XML partner</text>\n  <rect class=\"e7-b\" x=\"14\" y=\"104\" width=\"96\" height=\"26\" rx=\"5\"/><text class=\"e7-s\" x=\"62\" y=\"121\" text-anchor=\"middle\">JSON partner</text>\n  <line class=\"e7-a\" x1=\"110\" y1=\"33\" x2=\"250\" y2=\"66\"/>\n  <line class=\"e7-a\" x1=\"110\" y1=\"75\" x2=\"250\" y2=\"75\"/>\n  <line class=\"e7-a\" x1=\"110\" y1=\"117\" x2=\"250\" y2=\"84\"/>\n  <text class=\"e7-s\" x=\"180\" y=\"52\" text-anchor=\"middle\">translators</text>\n  <circle class=\"e7-b\" cx=\"320\" cy=\"75\" r=\"46\"/>\n  <text class=\"e7-t\" x=\"320\" y=\"72\" text-anchor=\"middle\">Canonical</text>\n  <text class=\"e7-s\" x=\"320\" y=\"88\" text-anchor=\"middle\">Customer</text>\n  <line class=\"e7-a\" x1=\"366\" y1=\"75\" x2=\"452\" y2=\"75\"/>\n  <rect class=\"e7-b\" x=\"454\" y=\"40\" width=\"170\" height=\"26\" rx=\"5\"/><text class=\"e7-s\" x=\"539\" y=\"57\" text-anchor=\"middle\">downstream app 1</text>\n  <rect class=\"e7-b\" x=\"454\" y=\"84\" width=\"170\" height=\"26\" rx=\"5\"/><text class=\"e7-s\" x=\"539\" y=\"101\" text-anchor=\"middle\">downstream app 2</text>\n</svg>",
    "topicDocs": {
     "Why transformation patterns": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessageTransformationIntro.html",
     "Envelope Wrapper": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/EnvelopeWrapper.html",
@@ -163,7 +165,8 @@
     "Content Filter": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/ContentFilter.html",
     "Claim Check": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/StoreInLibrary.html",
     "Normalizer": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/Normalizer.html",
-    "Canonical Data Model": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/CanonicalDataModel.html"
+    "Canonical Data Model": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/CanonicalDataModel.html",
+    "The Canonical Data Model hub": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/CanonicalDataModel.html"
    }
   },
   {
@@ -176,7 +179,7 @@
     "Scale with Competing Consumers or control distribution with a Message Dispatcher",
     "Handle selection, disconnects, and duplicates: Selective Consumer, Durable Subscriber, Idempotent Receiver, and expose services with a Service Activator"
    ],
-   "notes": "\n<h3>Endpoint responsibilities</h3>\n<p>Endpoints are where applications actually touch the messaging system, and ch. 10 is mostly about the <strong>receiving side</strong>, where the real decisions live: does the app pull or get pushed? one consumer or many? does it filter? does it survive disconnects? can it cope with duplicates? is messaging work transactional? Two patterns (Gateway, Mapper) structure the <em>code</em>; the rest govern <em>consumption semantics</em>.</p>\n\n<h3>Messaging Gateway</h3>\n<p>Wrap all messaging-specific code behind a narrow, domain-shaped API: the application calls <code>getCreditScore(customer)</code>, and the <strong>gateway</strong> turns that into send/receive mechanics. Gateways come in two flavors — <strong>synchronous</strong> (blocks until the reply arrives; convenient, hides the asynchrony) and <strong>asynchronous</strong> (returns immediately, delivers the result via callback/event). A gateway is also the natural seam for testing: swap in a dummy gateway and the application runs without any messaging system.</p>\n\n<h3>Messaging Mapper</h3>\n<p>Domain objects and messages have different shapes and different reasons to change. A <strong>Messaging Mapper</strong> moves data between them while keeping both sides ignorant of each other — the messaging analog of an O/R mapper, living outside both the domain object and the messaging layer. (Contrast with the Message Translator: the translator converts <em>between two message formats</em> inside the messaging layer; the mapper crosses the object ↔ message boundary.)</p>\n\n<h3>Transactional Client</h3>\n<p>Sends and receives can join a <strong>transaction</strong>: a sent message isn't visible until commit; a received message isn't removed until commit, and a rollback puts it back. The valuable shapes:</p>\n<ul>\n<li><strong>Receive + process atomically</strong> — e.g. consume a message and update a database in one unit, so a crash mid-processing redelivers instead of losing work.</li>\n<li><strong>Batches</strong> — send or receive groups all-or-nothing.</li>\n<li>The caution: a transaction cannot usefully span an entire <em>request-reply conversation</em> — the request would be held invisible inside the transaction until commit, so the reply could never arrive. Transactions wrap individual sends/receives, not conversations.</li>\n</ul>\n\n<h3>Polling Consumer</h3>\n<p>The application asks for messages <strong>when it is ready</strong> — a loop of receive() calls. Polling gives natural throttling (you consume at your own pace) at the cost of latency between polls and busy work when the channel is empty; one thread per polled channel adds up.</p>\n\n<h3>Event-Driven Consumer</h3>\n<p>The messaging system <strong>pushes</strong>: the application registers a callback that is invoked per message as it arrives. Lowest latency, no idle polling — but the consumer must be prepared to be driven at the channel's pace (see Competing Consumers for scaling out, and throttling concerns if it can be overwhelmed).</p>\n\n<h3>Competing Consumers</h3>\n<p>Run <strong>multiple consumers on one Point-to-Point Channel</strong>; each message is consumed by exactly one of them. Throughput scales horizontally and a dead consumer's share flows to the others — the channel itself does the load balancing. The price: <strong>processing order is no longer guaranteed</strong> across consumers, and each consumer must be written as if it were alone (no shared state via message order).</p>\n<p><em>In this app's world:</em> a Kafka consumer group is competing consumers per partition; multiple Mule workers draining one Anypoint MQ queue are the same.</p>\n\n<h3>Message Dispatcher</h3>\n<p>When you want <strong>one consumer</strong> to receive messages but <strong>your own logic</strong> to spread the work: the dispatcher consumes and hands each message to one of several <strong>performers</strong> (worker threads/objects). Use it when distribution needs application knowledge (e.g. all messages of one customer to the same performer) or when the channel can't support competing consumers — it also works on a publish-subscribe channel, where competing consumers would each get every message.</p>\n\n<h3>Selective Consumer</h3>\n<p>A consumer that receives <strong>only messages matching its selection criteria</strong> (a header-based selector), letting several consumer types share one channel. Non-matching messages are <em>left for other consumers</em> — unlike a Message Filter, which consumes and <em>discards</em> non-matches. Beware messages no consumer selects: they sit on the channel forever (park them via a catch-all or purge them).</p>\n\n<h3>Durable Subscriber</h3>\n<p>A plain subscription only receives while connected — miss the window, miss the message. A <strong>Durable Subscriber</strong>'s subscription outlives its connection: the channel saves messages published while it is away and delivers them when it reconnects. Durability starts at <em>first subscription</em> (nothing before that is retroactively available) and lasts until explicitly unsubscribed.</p>\n<p><em>In this app's world:</em> a JMS durable subscription; in Kafka, every consumer group is effectively durable — offsets persist while the group is offline.</p>\n\n<h3>Idempotent Receiver</h3>\n<p>Reliable delivery means <strong>at-least-once</strong>: retries and redeliveries produce duplicates. An <strong>Idempotent Receiver</strong> makes duplicates harmless, either by <strong>de-duplication</strong> — track processed message ids and skip repeats — or by making the <strong>message semantics naturally idempotent</strong> (\"set balance to 100\" survives a replay; \"add 10\" does not).</p>\n<p><em>In this app's world:</em> Mule's idempotent-message-validator with an Object Store is the de-dup variant; Kafka's idempotent producer applies the same idea broker-side.</p>\n\n<h3>Service Activator</h3>\n<p>An application exposes a useful service — how can it be invoked <em>both</em> synchronously by local callers <em>and</em> via messaging? A <strong>Service Activator</strong> receives a request message, unpacks it, invokes the ordinary (synchronous) service, and packages the result as the reply message. The service itself stays messaging-unaware and remains callable directly; the activator is just one more doorway.</p>",
+   "notes": "\n<h3>Endpoint responsibilities</h3>\n<p>Endpoints are where applications actually touch the messaging system, and ch. 10 is mostly about the <strong>receiving side</strong>, where the real decisions live: does the app pull or get pushed? one consumer or many? does it filter? does it survive disconnects? can it cope with duplicates? is messaging work transactional? Two patterns (Gateway, Mapper) structure the <em>code</em>; the rest govern <em>consumption semantics</em>.</p>\n\n<h3>Messaging Gateway</h3>\n<p>Wrap all messaging-specific code behind a narrow, domain-shaped API: the application calls <code>getCreditScore(customer)</code>, and the <strong>gateway</strong> turns that into send/receive mechanics. Gateways come in two flavors — <strong>synchronous</strong> (blocks until the reply arrives; convenient, hides the asynchrony) and <strong>asynchronous</strong> (returns immediately, delivers the result via callback/event). A gateway is also the natural seam for testing: swap in a dummy gateway and the application runs without any messaging system.</p>\n\n<h3>Messaging Mapper</h3>\n<p>Domain objects and messages have different shapes and different reasons to change. A <strong>Messaging Mapper</strong> moves data between them while keeping both sides ignorant of each other — the messaging analog of an O/R mapper, living outside both the domain object and the messaging layer. (Contrast with the Message Translator: the translator converts <em>between two message formats</em> inside the messaging layer; the mapper crosses the object ↔ message boundary.)</p>\n\n<h3>Transactional Client</h3>\n<p>Sends and receives can join a <strong>transaction</strong>: a sent message isn't visible until commit; a received message isn't removed until commit, and a rollback puts it back. The valuable shapes:</p>\n<ul>\n<li><strong>Receive + process atomically</strong> — e.g. consume a message and update a database in one unit, so a crash mid-processing redelivers instead of losing work.</li>\n<li><strong>Batches</strong> — send or receive groups all-or-nothing.</li>\n<li>The caution: a transaction cannot usefully span an entire <em>request-reply conversation</em> — the request would be held invisible inside the transaction until commit, so the reply could never arrive. Transactions wrap individual sends/receives, not conversations.</li>\n</ul>\n\n<h3>Polling Consumer</h3>\n<p>The application asks for messages <strong>when it is ready</strong> — a loop of receive() calls. Polling gives natural throttling (you consume at your own pace) at the cost of latency between polls and busy work when the channel is empty; one thread per polled channel adds up.</p>\n\n<h3>Event-Driven Consumer</h3>\n<p>The messaging system <strong>pushes</strong>: the application registers a callback that is invoked per message as it arrives. Lowest latency, no idle polling — but the consumer must be prepared to be driven at the channel's pace (see Competing Consumers for scaling out, and throttling concerns if it can be overwhelmed).</p>\n\n<h3>Competing Consumers</h3>\n<p>Run <strong>multiple consumers on one Point-to-Point Channel</strong>; each message is consumed by exactly one of them. Throughput scales horizontally and a dead consumer's share flows to the others — the channel itself does the load balancing. The price: <strong>processing order is no longer guaranteed</strong> across consumers, and each consumer must be written as if it were alone (no shared state via message order).</p>\n<p><em>In this app's world:</em> a Kafka consumer group is competing consumers per partition; multiple Mule workers draining one Anypoint MQ queue are the same.</p>\n\n<h3>Message Dispatcher</h3>\n<p>When you want <strong>one consumer</strong> to receive messages but <strong>your own logic</strong> to spread the work: the dispatcher consumes and hands each message to one of several <strong>performers</strong> (worker threads/objects). Use it when distribution needs application knowledge (e.g. all messages of one customer to the same performer) or when the channel can't support competing consumers — it also works on a publish-subscribe channel, where competing consumers would each get every message.</p>\n\n<h3>Selective Consumer</h3>\n<p>A consumer that receives <strong>only messages matching its selection criteria</strong> (a header-based selector), letting several consumer types share one channel. Non-matching messages are <em>left for other consumers</em> — unlike a Message Filter, which consumes and <em>discards</em> non-matches. Beware messages no consumer selects: they sit on the channel forever (park them via a catch-all or purge them).</p>\n\n<h3>Durable Subscriber</h3>\n<p>A plain subscription only receives while connected — miss the window, miss the message. A <strong>Durable Subscriber</strong>'s subscription outlives its connection: the channel saves messages published while it is away and delivers them when it reconnects. Durability starts at <em>first subscription</em> (nothing before that is retroactively available) and lasts until explicitly unsubscribed.</p>\n<p><em>In this app's world:</em> a JMS durable subscription; in Kafka, every consumer group is effectively durable — offsets persist while the group is offline.</p>\n\n<h3>Idempotent Receiver</h3>\n<p>Reliable delivery means <strong>at-least-once</strong>: retries and redeliveries produce duplicates. An <strong>Idempotent Receiver</strong> makes duplicates harmless, either by <strong>de-duplication</strong> — track processed message ids and skip repeats — or by making the <strong>message semantics naturally idempotent</strong> (\"set balance to 100\" survives a replay; \"add 10\" does not).</p>\n<p><em>In this app's world:</em> Mule's idempotent-message-validator with an Object Store is the de-dup variant; Kafka's idempotent producer applies the same idea broker-side.</p>\n\n<h3>Service Activator</h3>\n<p>An application exposes a useful service — how can it be invoked <em>both</em> synchronously by local callers <em>and</em> via messaging? A <strong>Service Activator</strong> receives a request message, unpacks it, invokes the ordinary (synchronous) service, and packages the result as the reply message. The service itself stays messaging-unaware and remains callable directly; the activator is just one more doorway.</p>\n<h3>Competing Consumers</h3>\n<p>Several consumers pull from one channel; each message is handled by exactly one of them, so throughput scales with the number of consumers (at the cost of ordering).</p>\n<svg viewBox=\"0 0 640 140\" style=\"max-width:640px;width:100%\" role=\"img\" aria-label=\"Several competing consumers each take one message from a shared queue\">\n  <style>.e8-b{fill:none;stroke:currentColor;stroke-width:1.3}.e8-t{font:600 12px sans-serif;fill:currentColor}.e8-s{font:11px sans-serif;fill:currentColor;opacity:.8}.e8-a{stroke:currentColor;stroke-width:1.1;marker-end:url(#e8A)}</style>\n  <defs><marker id=\"e8A\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L6,3 L0,6 z\" fill=\"currentColor\"/></marker></defs>\n  <rect class=\"e8-b\" x=\"14\" y=\"54\" width=\"80\" height=\"32\" rx=\"5\"/><text class=\"e8-t\" x=\"54\" y=\"74\" text-anchor=\"middle\">producer</text>\n  <line class=\"e8-a\" x1=\"94\" y1=\"70\" x2=\"140\" y2=\"70\"/>\n  <rect class=\"e8-b\" x=\"142\" y=\"52\" width=\"150\" height=\"36\" rx=\"4\"/>\n  <text class=\"e8-s\" x=\"217\" y=\"74\" text-anchor=\"middle\">queue: m1 m2 m3 m4 ...</text>\n  <line class=\"e8-a\" x1=\"292\" y1=\"60\" x2=\"360\" y2=\"30\"/>\n  <line class=\"e8-a\" x1=\"292\" y1=\"70\" x2=\"360\" y2=\"70\"/>\n  <line class=\"e8-a\" x1=\"292\" y1=\"80\" x2=\"360\" y2=\"110\"/>\n  <rect class=\"e8-b\" x=\"362\" y=\"16\" width=\"120\" height=\"28\" rx=\"5\"/><text class=\"e8-s\" x=\"422\" y=\"34\" text-anchor=\"middle\">consumer 1 → m1</text>\n  <rect class=\"e8-b\" x=\"362\" y=\"56\" width=\"120\" height=\"28\" rx=\"5\"/><text class=\"e8-s\" x=\"422\" y=\"74\" text-anchor=\"middle\">consumer 2 → m2</text>\n  <rect class=\"e8-b\" x=\"362\" y=\"96\" width=\"120\" height=\"28\" rx=\"5\"/><text class=\"e8-s\" x=\"422\" y=\"114\" text-anchor=\"middle\">consumer 3 → m3</text>\n  <text class=\"e8-s\" x=\"560\" y=\"70\" text-anchor=\"middle\">each message<tspan x=\"560\" dy=\"15\">handled once</tspan></text>\n</svg>",
    "topicDocs": {
     "Endpoint responsibilities": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessagingEndpointsIntro.html",
     "Messaging Gateway": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessagingGateway.html",
@@ -400,7 +403,7 @@
    "options": [
     "It requires expensive specialized middleware to run",
     "Data timeliness — consumers work with stale data between batch exports",
-    "It cannot cross operating-system or platform boundaries",
+    "It fundamentally cannot cross operating-system or hardware-platform boundaries between the two systems",
     "Files are unable to represent richly structured data"
    ],
    "answer": 1,
@@ -538,7 +541,7 @@
     "Header (used by the messaging system) and body (payload the system ignores)",
     "Envelope (used by the sender) and letter (used by the receiver)",
     "Key and value, both used only by the receiver",
-    "Header (used by the receiver) and body (used by the system for routing)"
+    "Header (used by the receiver) and body (used by the messaging system itself for routing decisions)"
    ],
    "answer": 0,
    "explanation": "The header carries the metadata the messaging system needs to move the message (destination, ids, expiration); the body is the application payload, which the messaging system treats as opaque bytes.",
@@ -651,7 +654,7 @@
    "level": "hard",
    "q": "Three instances of a slow enrichment filter are deployed to drain a backlog. What consequence should the designer anticipate?",
    "options": [
-    "Messages will be duplicated three times to the downstream step",
+    "Messages will be silently duplicated three times over to the downstream processing step in the pipeline",
     "Messages may leave the enrichment step in a different order than they arrived",
     "The upstream pipe will refuse to serve concurrent consumers",
     "The messages' bodies will be silently merged together"
@@ -806,7 +809,7 @@
    "level": "easy",
    "q": "Why would you give each message type its own channel (Datatype Channel)?",
    "options": [
-    "So the messaging system validates the payload's schema for you",
+    "So the messaging system can validate each payload's schema against the channel's declared datatype for you",
     "So the receiver knows from the channel alone how to interpret every message it gets",
     "To increase the total throughput of the system",
     "Because publish-subscribe channels require one type each"
@@ -924,7 +927,7 @@
    "level": "easy",
    "q": "What is Request-Reply, structurally?",
    "options": [
-    "One bidirectional channel carrying both the request and the reply",
+    "One bidirectional channel carrying both the request and the correlated reply back over the same single link",
     "A pair of one-way messages: a request on one channel and a reply on another",
     "A synchronous RPC call tunneled through the broker",
     "A single message that carries two separate bodies"
@@ -1138,7 +1141,7 @@
    "options": [
     "Promise: no middleware needed; risk: message loss",
     "Promise: endpoints know only the hub, ending point-to-point spaghetti; risk: the hub becomes a bottleneck full of logic",
-    "Promise: it guarantees strict message ordering; risk: one slow consumer can stall the entire pipeline for everyone",
+    "Promise: it guarantees strict global message ordering; risk: one slow consumer can stall the entire pipeline for everyone",
     "Promise: automatic schema evolution; risk: vendor lock-in"
    ],
    "answer": 1,
@@ -1236,7 +1239,7 @@
    "options": [
     "Translator count drops from up to 132 pairwise to 24 (one in, one out per app)",
     "Translation is no longer needed anywhere in the system",
-    "The applications must all adopt the canonical format internally",
+    "Every application must additionally adopt the shared canonical format for all of its own internal processing",
     "Each application needs 11 new translators for safety"
    ],
    "answer": 0,
@@ -1317,7 +1320,7 @@
     "A Content Enricher at each routing step",
     "Claim Check — park the sensitive data, route a slim message with a ticket, re-attach only at the authorized endpoint",
     "A Message Filter in front of each component",
-    "Apply a shared Canonical Data Model across all four of the intermediate routing components in the path"
+    "Apply a single shared Canonical Data Model across all four of the intermediate routing components that sit along the path"
    ],
    "answer": 1,
    "explanation": "Besides shrinking messages, the claim check's second classic use is data protection: intermediate components handle only a reference, and the sensitive payload reappears only where it is entitled to.",
@@ -1451,7 +1454,7 @@
    "level": "medium",
    "q": "What does a Messaging Gateway do for the application, besides tidiness?",
    "options": [
-    "It transparently compresses all outbound message traffic to save network bandwidth across the whole system",
+    "It transparently compresses all outbound message traffic in order to save network bandwidth across the entire system",
     "It exposes a domain-shaped API hiding messaging mechanics, and gives a seam for a stub that makes the app testable",
     "It guarantees exactly-once delivery of messages",
     "It converts between two different message formats"
@@ -1491,7 +1494,7 @@
    "level": "hard",
    "q": "Four competing consumers drain one order queue. Orders for the same customer must be processed in submission order. What is the problem, and the book-aligned fix?",
    "options": [
-    "There is no problem at all, because point-to-point channels always preserve processing order across every consumer",
+    "There is no problem at all, because point-to-point channels always preserve strict processing order across every competing consumer",
     "Order isn't guaranteed across consumers; use one consumer or a Dispatcher routing a customer's orders to one performer",
     "Duplicates will occur; add an Idempotent Receiver",
     "The queue will overflow; add a Claim Check"
@@ -1533,7 +1536,7 @@
    "options": [
     "To hide the requestor's identity from the replier",
     "Replies return to the proxy, which correlates each with its stored request, records metrics, then forwards it on",
-    "Because two different Return Addresses simply cannot coexist within a single message header at the same time",
+    "Because two entirely different Return Addresses simply cannot ever coexist within one single message header at the same time",
     "To force the replier onto a faster channel"
    ],
    "answer": 1,
@@ -1711,7 +1714,7 @@
    "exhibit": "                 +--> [ Consumer 1 ]\n[ orders queue ] +--> [ Consumer 2 ]\n                 +--> [ Consumer 3 ]\n(one point-to-point queue, competing consumers)",
    "options": [
     "Messages may be processed out of their original order, since consumers run in parallel",
-    "Every consumer receives a copy of every message, tripling the downstream work",
+    "Every consumer receives its own separate copy of every message, tripling the total downstream processing work",
     "The queue will reject the second and third consumers as duplicate subscribers",
     "Delivery becomes exactly-once automatically because the load is shared out"
    ],
@@ -1857,6 +1860,306 @@
    "section": "b9",
    "front": "Smart Proxy — the trick?",
    "back": "Intercepts requests, STORES the original Return Address, substitutes its own reply channel, forwards. Replies return to the proxy → correlate, measure, forward to the stored original address."
+  }
+ ],
+ "exercises": [
+  {
+   "id": "eip-ex-01",
+   "section": "b2",
+   "title": "Choose the integration style for four requirements",
+   "level": "medium",
+   "where": "Design — pattern modeling",
+   "task": "<p>For each requirement pick one of the four integration styles — <strong>File Transfer</strong>, <strong>Shared Database</strong>, <strong>Remote Procedure Invocation</strong>, or <strong>Messaging</strong> — and justify it.</p><ol><li>Nightly bulk export of the full product catalog to a partner.</li><li>Loosely coupled, near-real-time propagation of order events to several systems that may be down at times.</li><li>A caller needs an answer synchronously, right now, from one other system.</li><li>Two apps must always see the exact same customer record with no copy.</li></ol>",
+   "given": [
+    {
+     "label": "The four styles",
+     "code": "File Transfer · Shared Database · RPC · Messaging\n(trade-offs: coupling, timeliness, reliability, schema sharing)"
+    }
+   ],
+   "steps": [
+    "Ask: how timely, how coupled, how reliable must it be?",
+    "Bulk + periodic + simple → File Transfer",
+    "Async, decoupled, tolerant of downtime, fan-out → Messaging",
+    "Immediate synchronous answer from one system → RPC",
+    "One authoritative copy shared live → Shared Database (with its coupling cost)"
+   ],
+   "solution": [
+    {
+     "label": "Decisions",
+     "code": "1) File Transfer  — periodic bulk catalog export, simple + universal.\n2) Messaging      — decoupled, near-real-time, survives outages, fan-out.\n3) RPC            — synchronous request/response for one immediate answer.\n4) Shared Database— single authoritative copy, no duplication (tight coupling)."
+    }
+   ],
+   "solutionNotes": "<p>The four styles trade off <strong>coupling, timeliness, reliability, and schema sharing</strong>. Messaging is the most decoupled and reliable for async fan-out; File Transfer is simplest for periodic bulk; RPC gives immediacy at the cost of tight temporal coupling; a Shared Database removes duplication but couples both apps to one schema. Most real landscapes mix styles — the skill is matching each need to its style.</p>"
+  },
+  {
+   "id": "eip-ex-02",
+   "section": "b6",
+   "title": "Route orders by type with a Content-Based Router",
+   "level": "medium",
+   "where": "Design — pattern modeling",
+   "task": "<p>Orders arrive on one channel but must go to different processors by type: <code>DIGITAL</code> → fulfilment-digital, <code>PHYSICAL</code> → warehouse, <code>SUBSCRIPTION</code> → billing. New types will appear over time. Design the routing so the sender stays unaware of the recipients, and note how to keep the router from becoming a maintenance bottleneck.</p>",
+   "given": [
+    {
+     "label": "Input",
+     "code": "channel 'orders' → { type: DIGITAL|PHYSICAL|SUBSCRIPTION, ... }\ndestinations: fulfilment-digital, warehouse, billing (more later)"
+    }
+   ],
+   "steps": [
+    "Insert a Content-Based Router that inspects the order type",
+    "Route each message to the one correct destination channel",
+    "Keep the sender decoupled — it publishes to 'orders' only",
+    "For frequent new types, consider a Dynamic Router so rules aren't hard-coded"
+   ],
+   "solution": [
+    {
+     "label": "Pattern flow",
+     "code": "orders ─► [Content-Based Router]\n              ├─ type=DIGITAL      ─► fulfilment-digital\n              ├─ type=PHYSICAL     ─► warehouse\n              └─ type=SUBSCRIPTION ─► billing\n(new types → add a rule; if that churns, use a Dynamic Router\n where destinations register their own routing rules)"
+    }
+   ],
+   "solutionNotes": "<p>A <strong>Content-Based Router</strong> examines message content and forwards it to the correct channel, keeping the sender ignorant of recipients. Its weakness is that it must know every destination's rule, so it can become a change bottleneck. A <strong>Dynamic Router</strong> fixes that by letting destinations register their own rules with the router, so new types don't require editing the router itself.</p>"
+  },
+  {
+   "id": "eip-ex-03",
+   "section": "b6",
+   "title": "Split a batch order, process items, recombine the result",
+   "level": "hard",
+   "where": "Design — pattern modeling",
+   "task": "<p>A single order message contains many line items. Each item must be processed independently (priced, stock-checked), then a single order-confirmation must be assembled once <strong>all</strong> items are done — even though they finish out of order. Design this and name the pattern the whole thing forms.</p>",
+   "given": [
+    {
+     "label": "Message",
+     "code": "Order{ id, items:[ item1, item2, ... itemN ] }\nneed: one Confirmation{ id, results:[...] } after ALL items processed"
+    }
+   ],
+   "steps": [
+    "Splitter breaks the order into one message per line item",
+    "Each item flows through the item-processing pipe (in parallel)",
+    "Aggregator collects item results, correlating by order id",
+    "Aggregator's completeness condition = all N items seen; then emit one Confirmation"
+   ],
+   "solution": [
+    {
+     "label": "Composed Message Processor",
+     "code": "Order ─► [Splitter] ─► item ─► (price + stock check) ─┐\n                       item ─► (price + stock check) ─┤\n                       item ─► (price + stock check) ─┤\n                                                       ▼\n                          [Aggregator] correlate by order id,\n                          complete when all N items collected ─► Confirmation"
+    }
+   ],
+   "solutionNotes": "<p>A <strong>Splitter</strong> emits one message per element; an <strong>Aggregator</strong> re-collects them using a <em>correlation</em> (order id) and a <em>completeness condition</em> (all N items), then publishes a single combined message. Split + independent processing + aggregate is the <strong>Composed Message Processor</strong>; when the items fan out to <em>different</em> systems it's a <strong>Scatter-Gather</strong>. The Aggregator is the stateful part — it must handle out-of-order arrival and decide when it's \"done\".</p>"
+  },
+  {
+   "id": "eip-ex-04",
+   "section": "b6",
+   "title": "Get the best quote from several vendors (Scatter-Gather)",
+   "level": "hard",
+   "where": "Design — pattern modeling",
+   "task": "<p>A quote request must be sent to several shipping vendors, and the <strong>cheapest</strong> reply returned to the caller. Vendors respond at different speeds and some may not respond at all. Design the fan-out/fan-in, and decide the completeness strategy given slow/absent vendors.</p>",
+   "given": [
+    {
+     "label": "Requirement",
+     "code": "request → N vendors (some slow, some silent)\nreturn: the single best (cheapest) quote within a time budget"
+    }
+   ],
+   "steps": [
+    "Use a Recipient List (known vendors) or Publish-Subscribe to fan the request out",
+    "Each vendor replies on a reply channel; tag replies with a Correlation Identifier",
+    "Aggregator gathers replies for this request id and selects the minimum",
+    "Completeness = all responded OR a timeout elapses (don't wait forever)"
+   ],
+   "solution": [
+    {
+     "label": "Scatter-Gather",
+     "code": "request ─► [Recipient List] ─► vendorA ─┐\n                              vendorB ─┤ replies (correlation id)\n                              vendorC ─┘\n                                        ▼\n           [Aggregator] pick MIN(price); complete on all-in OR timeout\n                        ─► best quote back to caller"
+    }
+   ],
+   "solutionNotes": "<p><strong>Scatter-Gather</strong> broadcasts a request and aggregates the responses. The scatter is a <strong>Recipient List</strong> (you name the vendors) or a <strong>Publish-Subscribe Channel</strong> (open-ended). The gather is an <strong>Aggregator</strong> whose <em>completeness condition</em> must tolerate reality: wait for all replies <em>or</em> a timeout, so one silent vendor can't hang the whole request. A <strong>Correlation Identifier</strong> ties each reply back to its request.</p>"
+  },
+  {
+   "id": "eip-ex-05",
+   "section": "b4",
+   "title": "Make a channel reliable: guaranteed delivery + failure channels",
+   "level": "hard",
+   "where": "Design — pattern modeling",
+   "task": "<p>Payment messages must survive a broker restart, must never silently vanish when a consumer can't process them, and malformed messages must be set aside for inspection rather than blocking the queue. Compose the channel-level reliability patterns and say what each one protects against.</p>",
+   "given": [
+    {
+     "label": "Requirements",
+     "code": "survive broker restart · don't lose unprocessable messages ·\nquarantine malformed messages without blocking the channel"
+    }
+   ],
+   "steps": [
+    "Guaranteed Delivery — persist messages so a broker crash doesn't lose them",
+    "Invalid Message Channel — route messages that fail validation/parsing here",
+    "Dead Letter Channel — route messages the system can't deliver/process here",
+    "Keep the main channel flowing; humans/automation inspect the side channels"
+   ],
+   "solution": [
+    {
+     "label": "Reliability composition",
+     "code": "producer ─► [Guaranteed Delivery: persistent channel] ─► consumer\n   parse/validate fails ────────────────► Invalid Message Channel\n   cannot be delivered/processed ─────────► Dead Letter Channel\nmain channel keeps flowing; side channels are triaged separately"
+    }
+   ],
+   "solutionNotes": "<p>Three distinct safeguards: <strong>Guaranteed Delivery</strong> persists messages so a crash doesn't lose them; an <strong>Invalid Message Channel</strong> receives messages that don't make sense (bad format/content); a <strong>Dead Letter Channel</strong> receives messages the <em>messaging system</em> can't deliver or that repeatedly fail processing. Separating \"malformed\" from \"undeliverable\" keeps the main channel unblocked and makes triage precise.</p>"
+  },
+  {
+   "id": "eip-ex-06",
+   "section": "b4",
+   "title": "Point-to-Point or Publish-Subscribe?",
+   "level": "medium",
+   "where": "Design — pattern modeling",
+   "task": "<p>Choose the channel type for each case and justify it. (1) A job must be handled by exactly one of several interchangeable workers. (2) An 'order placed' event must reach inventory, analytics, and email — and a new consumer might be added later without touching the producer.</p>",
+   "given": [
+    {
+     "label": "The two channel types",
+     "code": "Point-to-Point: one message → exactly one receiver (competing)\nPublish-Subscribe: one message → a copy to every subscriber"
+    }
+   ],
+   "steps": [
+    "Ask: should exactly one consumer handle it, or all interested consumers?",
+    "Exactly one of many workers → Point-to-Point Channel",
+    "Broadcast to all interested + open-ended subscribers → Publish-Subscribe",
+    "Note pub-sub lets you add subscribers without changing the producer"
+   ],
+   "solution": [
+    {
+     "label": "Decisions",
+     "code": "1) Point-to-Point Channel — competing workers, each job done once.\n2) Publish-Subscribe Channel — every subscriber gets a copy;\n   inventory/analytics/email each subscribe; add a 4th later\n   with no producer change."
+    }
+   ],
+   "solutionNotes": "<p>A <strong>Point-to-Point Channel</strong> delivers each message to exactly one receiver — ideal for distributing work across <em>Competing Consumers</em>. A <strong>Publish-Subscribe Channel</strong> delivers a copy to every subscriber — ideal for broadcasting events, and it decouples the producer from an open-ended set of consumers so new subscribers appear without producer changes.</p>"
+  },
+  {
+   "id": "eip-ex-07",
+   "section": "b7",
+   "title": "Mediate three input formats to one internal model",
+   "level": "hard",
+   "where": "Design — pattern modeling",
+   "task": "<p>Three partners send \"new customer\" in three different formats (CSV, a legacy XML, a partner JSON). Internally, everything should be one consistent shape, and adding a fourth partner later shouldn't ripple through the whole system. Design the transformation approach and name the key pattern that prevents the ripple.</p>",
+   "given": [
+    {
+     "label": "Inputs",
+     "code": "partnerA: CSV · partnerB: legacy XML · partnerC: partner JSON\ninternal: one consistent Customer shape for all downstream apps"
+    }
+   ],
+   "steps": [
+    "Define a Canonical Data Model — the one internal Customer shape",
+    "Give each partner a Normalizer / Message Translator to the canonical shape",
+    "Downstream apps only ever see the canonical model",
+    "A 4th partner = one new translator, not changes everywhere"
+   ],
+   "solution": [
+    {
+     "label": "Canonical hub",
+     "code": "CSV     ─► [Translator A] ─┐\nXML     ─► [Translator B] ─┼─► Canonical Customer ─► downstream apps\nJSON    ─► [Translator C] ─┘\n(a Normalizer routes+translates varying formats to the canonical model)"
+    }
+   ],
+   "solutionNotes": "<p>A <strong>Message Translator</strong> converts one format to another; a <strong>Normalizer</strong> handles several input formats, translating each to a common one. The pattern that stops N×M translator explosion is the <strong>Canonical Data Model</strong>: every app translates only between its own format and the canonical one, so adding a partner is one new translator — not a change to every downstream consumer.</p>"
+  },
+  {
+   "id": "eip-ex-08",
+   "section": "b7",
+   "title": "Move a huge attachment through a lightweight pipeline",
+   "level": "medium",
+   "where": "Design — pattern modeling",
+   "task": "<p>Incoming messages carry a 50 MB scanned document, but the routing/processing steps only need a few header fields, and only the final archival step needs the document itself. The message system has a small size limit. Design the flow so the big payload doesn't burden every hop.</p>",
+   "given": [
+    {
+     "label": "Message",
+     "code": "{ headers: {...small...}, document: <50 MB blob> }\nrouting steps need headers only; only archival needs the blob"
+    }
+   ],
+   "steps": [
+    "Store the large document in an external store, keyed by a token",
+    "Replace it in the message with a Claim Check (the token)",
+    "Route the slim message through the pipeline on headers alone",
+    "At archival, redeem the claim check to re-attach the document"
+   ],
+   "solution": [
+    {
+     "label": "Claim Check",
+     "code": "ingest ─► store blob → get token ─► message = { headers, token }\n         (slim message routes through all steps cheaply)\narchival ─► redeem token → fetch blob → archive with headers"
+    }
+   ],
+   "solutionNotes": "<p>The <strong>Claim Check</strong> pattern parks a large payload in a data store and carries only a lightweight <em>token</em> through the pipeline, re-attaching the data only where it's actually needed. It keeps messages small (fitting size limits, cheaper routing) and can also hide sensitive data from intermediate steps that have no business seeing it.</p>"
+  },
+  {
+   "id": "eip-ex-09",
+   "section": "b8",
+   "title": "Scale a consumer without double-processing",
+   "level": "hard",
+   "where": "Design — pattern modeling",
+   "task": "<p>A single consumer can't keep up with a payment queue. You need to scale out horizontally, but the upstream may redeliver a message after a crash, and a payment must never be applied twice. Design the endpoint patterns and explain how they combine.</p>",
+   "given": [
+    {
+     "label": "Constraints",
+     "code": "one queue, growing backlog · at-least-once delivery (redeliveries) ·\napply each payment exactly once despite parallel consumers + retries"
+    }
+   ],
+   "steps": [
+    "Add Competing Consumers on the one channel to scale throughput",
+    "Accept that redelivery + parallelism means the same message can arrive again",
+    "Add an Idempotent Receiver keyed on the payment id",
+    "Skip a payment id already seen; the store must be shared across consumers"
+   ],
+   "solution": [
+    {
+     "label": "Endpoint composition",
+     "code": "payments queue ─► [Competing Consumers]  (N parallel workers)\n                       each worker ─► [Idempotent Receiver]\n                          seen(paymentId)? → skip : apply + record id\n(shared 'seen' store so any worker recognizes a duplicate)"
+    }
+   ],
+   "solutionNotes": "<p><strong>Competing Consumers</strong> put several consumers on one Point-to-Point channel to process messages concurrently — throughput scales, but ordering is lost and redeliveries can duplicate work. An <strong>Idempotent Receiver</strong> makes reprocessing safe by recognizing an already-seen message id (in a store shared by all consumers) and skipping it. Together they give scalable <em>and</em> correct consumption.</p>"
+  },
+  {
+   "id": "eip-ex-10",
+   "section": "b5",
+   "title": "Correlate asynchronous replies to their requests",
+   "level": "medium",
+   "where": "Design — pattern modeling",
+   "task": "<p>A service sends many requests over messaging and gets replies asynchronously, out of order. Each reply must be matched to the exact request that caused it, and the requester wants replies delivered to a channel <em>it</em> chooses (which may differ per request). Design the message-construction patterns.</p>",
+   "given": [
+    {
+     "label": "Requirement",
+     "code": "many in-flight requests, async out-of-order replies\nmatch reply → request; requester dictates where the reply goes"
+    }
+   ],
+   "steps": [
+    "Stamp each request with a unique Correlation Identifier",
+    "The replier copies that id onto its reply",
+    "The requester includes a Return Address naming the reply channel",
+    "On reply, match by correlation id to the waiting request/state"
+   ],
+   "solution": [
+    {
+     "label": "Request-Reply construction",
+     "code": "request { correlationId: r-42, returnAddress: replies-svcA, ... }\n   replier processes, then:\nreply   { correlationId: r-42, ... } ─► channel 'replies-svcA'\n   requester matches r-42 to the pending request"
+    }
+   ],
+   "solutionNotes": "<p>Asynchronous request-reply needs two message-construction patterns. A <strong>Correlation Identifier</strong> is a unique token on the request that the replier echoes on the reply, letting the requester match out-of-order replies to their requests. A <strong>Return Address</strong> in the request tells the replier which channel to send the reply to, so the requester controls delivery and the replier stays decoupled from routing.</p>"
+  },
+  {
+   "id": "eip-ex-11",
+   "section": "b9",
+   "title": "Observe and manage a running message flow",
+   "level": "medium",
+   "where": "Design — pattern modeling",
+   "task": "<p>Operations must (1) inspect messages flowing on a live channel without disturbing them, (2) send control commands (enable/disable, adjust) to components across the system, and (3) retain a copy of every message for later audit/replay. Assign a System Management pattern to each need.</p>",
+   "given": [
+    {
+     "label": "Needs",
+     "code": "1) observe live messages without side effects\n2) control components org-wide\n3) keep an auditable copy of all messages"
+    }
+   ],
+   "steps": [
+    "Insert a Wire Tap to duplicate messages off a channel for inspection",
+    "Use a Control Bus for management/control messages to components",
+    "Add a Message Store to persist copies for audit and replay",
+    "Keep these off the primary flow so business processing is unaffected"
+   ],
+   "solution": [
+    {
+     "label": "Management composition",
+     "code": "1) [Wire Tap] on the channel → copy to an inspection channel (non-intrusive)\n2) [Control Bus] → enable/disable, reconfigure, collect health from components\n3) [Message Store] → persist every message for audit / replay / analytics"
+    }
+   ],
+   "solutionNotes": "<p>The System Management patterns run <em>alongside</em> the business flow. A <strong>Wire Tap</strong> copies messages off a channel for inspection without altering the original. A <strong>Control Bus</strong> is a separate channel for management/control traffic (start/stop, reconfigure, heartbeat) across distributed components. A <strong>Message Store</strong> retains copies for audit, reporting, and replay — none of which should interfere with primary processing.</p>"
   }
  ]
 }
