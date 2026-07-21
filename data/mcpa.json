@@ -2001,7 +2001,8 @@
     "Decomposing business processes into APIs": "https://docs.mulesoft.com/general/api-led-overview",
     "Data models across the layers": "https://docs.mulesoft.com/general/api-led-overview",
     "Enterprise Data Model vs bounded contexts": "https://docs.mulesoft.com/general/api-led-overview",
-    "Anypoint DataGraph": "https://docs.mulesoft.com/datagraph/"
+    "Anypoint DataGraph": "https://docs.mulesoft.com/datagraph/",
+    "Layers and the direction of reuse": "https://docs.mulesoft.com/general/api-led-overview"
    },
    "objectives": [
     "Identify the APIs needed to implement a business process and assign them to layers",
@@ -2009,7 +2010,7 @@
     "Select when an Enterprise Data Model versus bounded-context models applies",
     "Evaluate where Anypoint DataGraph is applicable"
    ],
-   "notes": "\n<h3>Decomposing business processes into APIs</h3>\n<p>Given a scenario (\"customer places an order; inventory is checked in SAP; the order is created in Salesforce; the mobile app shows status\"), the expected decomposition:</p>\n<ul>\n<li><strong>System APIs</strong>: one per system of record touched — Inventory SAPI (SAP), Orders SAPI (Salesforce). CRUD-ish, canonical for their domain, reusable by any process.</li>\n<li><strong>Process API</strong>: Place Order PAPI orchestrating the SAPIs (check inventory → create order → trigger confirmation). Owns the business logic and its consistency strategy; no channel specifics.</li>\n<li><strong>Experience API</strong>: Mobile Orders xAPI shaping status responses for the app (field selection, pagination, mobile-friendly errors).</li>\n</ul>\n<p>Heuristics: reuse pressure pushes logic DOWN (into Process/System); channel pressure pushes formatting UP (into Experience). A layer that only passes calls through unchanged is a candidate to remove — layers are a means, not an end.</p>\n\n<h3>Data models across the layers</h3>\n<table>\n<tr><th>Layer</th><th>Data model guidance</th></tr>\n<tr><td>System API</td><td>Canonical model <em>of that system's bounded context</em> — hides the backend's native format (IDoc, SOQL result…), exposes clean domain types</td></tr>\n<tr><td>Process API</td><td>The business process's own model, composed from the domain models it orchestrates</td></tr>\n<tr><td>Experience API</td><td>The consumer's model — exactly what the channel needs, nothing more</td></tr>\n</table>\n\n<h3>Enterprise Data Model vs bounded contexts</h3>\n<ul>\n<li><strong>Enterprise Data Model (EDM):</strong> one org-wide definition per entity. Pros: no translation between domains. Cons: enormous coordination cost, slow change, lowest-common-denominator types. Realistic mainly for small orgs or a handful of truly universal entities.</li>\n<li><strong>Bounded-context models</strong> (recommended default): each business domain owns its model, published to Exchange; translations happen explicitly in APIs at context boundaries. Change stays local; teams move independently.</li>\n<li>Hybrid is common: bounded contexts + a small shared kernel (e.g. Money, Address types) as Exchange fragments.</li>\n</ul>\n\n<h3>Anypoint DataGraph</h3>\n<ul>\n<li>DataGraph exposes <strong>one GraphQL endpoint over multiple existing REST APIs</strong> in the application network: consumers query exactly the fields they need across related entities in a single request, instead of calling several APIs and stitching results.</li>\n<li><strong>Applicable when:</strong> consumers (typically Experience-layer needs) aggregate slices of several REST APIs, the source APIs are already managed and stable, and the queries are read-oriented.</li>\n<li><strong>Not applicable for:</strong> writes/orchestration with business logic (that's a Process API), event-driven flows, or replacing API-led layers wholesale.</li>\n</ul>\n<p class=\"tip\"><strong>Exam tip:</strong> DataGraph = <em>read aggregation without building a new API</em>. If the scenario involves updates, transactions, or business rules, the answer is a Process API, not DataGraph.</p>"
+   "notes": "\n<h3>Decomposing business processes into APIs</h3>\n<p>Given a scenario (\"customer places an order; inventory is checked in SAP; the order is created in Salesforce; the mobile app shows status\"), the expected decomposition:</p>\n<ul>\n<li><strong>System APIs</strong>: one per system of record touched — Inventory SAPI (SAP), Orders SAPI (Salesforce). CRUD-ish, canonical for their domain, reusable by any process.</li>\n<li><strong>Process API</strong>: Place Order PAPI orchestrating the SAPIs (check inventory → create order → trigger confirmation). Owns the business logic and its consistency strategy; no channel specifics.</li>\n<li><strong>Experience API</strong>: Mobile Orders xAPI shaping status responses for the app (field selection, pagination, mobile-friendly errors).</li>\n</ul>\n<p>Heuristics: reuse pressure pushes logic DOWN (into Process/System); channel pressure pushes formatting UP (into Experience). A layer that only passes calls through unchanged is a candidate to remove — layers are a means, not an end.</p>\n\n<h3>Data models across the layers</h3>\n<table>\n<tr><th>Layer</th><th>Data model guidance</th></tr>\n<tr><td>System API</td><td>Canonical model <em>of that system's bounded context</em> — hides the backend's native format (IDoc, SOQL result…), exposes clean domain types</td></tr>\n<tr><td>Process API</td><td>The business process's own model, composed from the domain models it orchestrates</td></tr>\n<tr><td>Experience API</td><td>The consumer's model — exactly what the channel needs, nothing more</td></tr>\n</table>\n\n<h3>Enterprise Data Model vs bounded contexts</h3>\n<ul>\n<li><strong>Enterprise Data Model (EDM):</strong> one org-wide definition per entity. Pros: no translation between domains. Cons: enormous coordination cost, slow change, lowest-common-denominator types. Realistic mainly for small orgs or a handful of truly universal entities.</li>\n<li><strong>Bounded-context models</strong> (recommended default): each business domain owns its model, published to Exchange; translations happen explicitly in APIs at context boundaries. Change stays local; teams move independently.</li>\n<li>Hybrid is common: bounded contexts + a small shared kernel (e.g. Money, Address types) as Exchange fragments.</li>\n</ul>\n\n<h3>Anypoint DataGraph</h3>\n<ul>\n<li>DataGraph exposes <strong>one GraphQL endpoint over multiple existing REST APIs</strong> in the application network: consumers query exactly the fields they need across related entities in a single request, instead of calling several APIs and stitching results.</li>\n<li><strong>Applicable when:</strong> consumers (typically Experience-layer needs) aggregate slices of several REST APIs, the source APIs are already managed and stable, and the queries are read-oriented.</li>\n<li><strong>Not applicable for:</strong> writes/orchestration with business logic (that's a Process API), event-driven flows, or replacing API-led layers wholesale.</li>\n</ul>\n<p class=\"tip\"><strong>Exam tip:</strong> DataGraph = <em>read aggregation without building a new API</em>. If the scenario involves updates, transactions, or business rules, the answer is a Process API, not DataGraph.</p>\n<h3>Layers and the direction of reuse</h3>\n<p>Dependencies point downward only: Experience APIs call Process APIs, Process APIs call System APIs. Reuse concentrates in the lower layers; Experience APIs stay channel-specific.</p>\n<svg viewBox=\"0 0 640 168\" style=\"max-width:640px;width:100%\" role=\"img\" aria-label=\"Experience over Process over System API layers\">\n  <style>.la-b{fill:none;stroke:currentColor;stroke-width:1.3}.la-t{font:600 12px sans-serif;fill:currentColor}.la-s{font:11px sans-serif;fill:currentColor;opacity:.8}.la-a{stroke:currentColor;stroke-width:1.1;marker-end:url(#laA)}</style>\n  <defs><marker id=\"laA\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L6,3 L0,6 z\" fill=\"currentColor\"/></marker></defs>\n  <rect class=\"la-b\" x=\"120\" y=\"12\" width=\"180\" height=\"34\" rx=\"5\"/>\n  <text class=\"la-t\" x=\"210\" y=\"33\" text-anchor=\"middle\">Web Experience API</text>\n  <rect class=\"la-b\" x=\"340\" y=\"12\" width=\"180\" height=\"34\" rx=\"5\"/>\n  <text class=\"la-t\" x=\"430\" y=\"33\" text-anchor=\"middle\">Partner Experience API</text>\n  <line class=\"la-a\" x1=\"210\" y1=\"46\" x2=\"300\" y2=\"70\"/>\n  <line class=\"la-a\" x1=\"430\" y1=\"46\" x2=\"340\" y2=\"70\"/>\n  <rect class=\"la-b\" x=\"230\" y=\"72\" width=\"180\" height=\"34\" rx=\"5\"/>\n  <text class=\"la-t\" x=\"320\" y=\"93\" text-anchor=\"middle\">Place Order Process API</text>\n  <line class=\"la-a\" x1=\"270\" y1=\"106\" x2=\"150\" y2=\"130\"/>\n  <line class=\"la-a\" x1=\"320\" y1=\"106\" x2=\"320\" y2=\"130\"/>\n  <line class=\"la-a\" x1=\"370\" y1=\"106\" x2=\"490\" y2=\"130\"/>\n  <rect class=\"la-b\" x=\"60\" y=\"132\" width=\"170\" height=\"30\" rx=\"5\"/>\n  <text class=\"la-t\" x=\"145\" y=\"151\" text-anchor=\"middle\">Salesforce System API</text>\n  <rect class=\"la-b\" x=\"240\" y=\"132\" width=\"160\" height=\"30\" rx=\"5\"/>\n  <text class=\"la-t\" x=\"320\" y=\"151\" text-anchor=\"middle\">Inventory System API</text>\n  <rect class=\"la-b\" x=\"410\" y=\"132\" width=\"170\" height=\"30\" rx=\"5\"/>\n  <text class=\"la-t\" x=\"495\" y=\"151\" text-anchor=\"middle\">SAP Orders System API</text>\n  <text class=\"la-s\" x=\"600\" y=\"90\" text-anchor=\"end\">reuse ↑ lives here</text>\n</svg>"
   },
   {
    "id": "p5",
@@ -2021,7 +2022,8 @@
     "Policy enforcement options": "https://docs.mulesoft.com/api-manager/latest/api-proxy-landing-page",
     "Passing client ID and secret": "https://docs.mulesoft.com/gateway/latest/policies-included-client-id-enforcement",
     "SLA tiers, contracts, and access management": "https://docs.mulesoft.com/api-manager/latest/defining-sla-tiers",
-    "Custom policies": "https://docs.mulesoft.com/gateway/latest/policies-custom-overview"
+    "Custom policies": "https://docs.mulesoft.com/gateway/latest/policies-custom-overview",
+    "How governance is applied to an API": "https://docs.mulesoft.com/api-manager/latest/latest-overview-concept"
    },
    "objectives": [
     "Manage API instances across environments",
@@ -2030,7 +2032,7 @@
     "Explain how consumers pass client ID/secret and how access is granted",
     "Identify scenarios requiring custom policies"
    ],
-   "notes": "\n<h3>API instances across environments</h3>\n<ul>\n<li>One spec version → an <strong>API instance per environment</strong> (dev/test/prod) in API Manager, each with its own <code>api.id</code>, policies, SLA tiers, contracts, and alerts. Implementations pair via <strong>autodiscovery</strong> with the environment-specific id.</li>\n<li>Promotion: API Manager can <strong>promote an instance</strong> from a lower environment, carrying policies/tiers/alerts — keeping governance consistent without manual re-setup.</li>\n</ul>\n\n<h3>Selecting policies for NFRs</h3>\n<table>\n<tr><th>NFR</th><th>Policy</th></tr>\n<tr><td>Identify/limit consumers per contract</td><td>Client ID enforcement + SLA-based rate limiting</td></tr>\n<tr><td>Protect backend from bursts</td><td>Spike control (smooths) / rate limiting (caps)</td></tr>\n<tr><td>AuthN/AuthZ of callers</td><td>OAuth 2.0 enforcement, JWT validation, Basic auth</td></tr>\n<tr><td>Network restriction</td><td>IP allowlist/blocklist</td></tr>\n<tr><td>Browser cross-origin</td><td>CORS</td></tr>\n<tr><td>Reduce backend reads</td><td>HTTP caching policy</td></tr>\n<tr><td>Payload hygiene</td><td>Header injection/removal, message size limits (custom/edge)</td></tr>\n</table>\n<p>Policies can be <strong>resource-level</strong> (specific methods/paths) and are <strong>ordered</strong>; <strong>automated policies</strong> apply org/environment-wide to every API instance (e.g. mandatory TLS or auth baseline) — governance at scale.</p>\n\n<h3>Policy enforcement options</h3>\n<table>\n<tr><th>Option</th><th>Where policies run</th><th>Use when</th></tr>\n<tr><td><strong>Embedded gateway (autodiscovery)</strong></td><td>Inside the Mule app itself</td><td>Mule implementations — no extra hop or process</td></tr>\n<tr><td><strong>API proxy</strong></td><td>A separate Mule proxy app generated by API Manager</td><td>Non-Mule backends, or implementations you can't modify</td></tr>\n<tr><td><strong>Flex Gateway</strong></td><td>Lightweight standalone gateway (Envoy-based)</td><td>High-performance edge for any backend, Kubernetes/ingress patterns</td></tr>\n</table>\n\n<h3>Passing client ID and secret</h3>\n<ul>\n<li>Client ID enforcement is configurable to read credentials from <strong>custom headers</strong> (commonly <code>client_id</code>/<code>client_secret</code>), <strong>query parameters</strong> (discouraged — IDs leak into logs/URLs), or <strong>HTTP Basic auth</strong>. The API spec should document the chosen mechanism (a shared RAML trait keeps it consistent).</li>\n<li>Failure modes: missing/invalid credentials → <strong>401</strong>; valid credentials but over the tier's limit → <strong>429</strong>; no contract with the API → 401/403 per policy.</li>\n</ul>\n\n<h3>SLA tiers, contracts, and access management</h3>\n<ol>\n<li>Provider defines <strong>SLA tiers</strong> (limits + auto/manual approval) on the instance.</li>\n<li>Consumer discovers the API in <strong>Exchange</strong>, requests access with a <strong>client application</strong>, selecting a tier.</li>\n<li>Approval creates a <strong>contract</strong>; the client app holds client_id/secret (issued by Anypoint or the external client provider).</li>\n<li>Gateways enforce per-contract limits; analytics attribute traffic per consumer.</li>\n</ol>\n\n<h3>Custom policies</h3>\n<p>When included policies don't cover the requirement — e.g. a proprietary auth scheme, request signing validation, custom audit headers, payload field enforcement — build a <strong>custom policy</strong>, publish it to Exchange, and apply it like any other. Prefer included policies first; custom policies carry maintenance/upgrade cost.</p>\n<p class=\"tip\"><strong>Exam tip:</strong> the 17% section. Drill: policy ↔ NFR matching; the three enforcement options and when each applies; the Exchange access-request → contract → credentials flow; 401 vs 429 semantics; automated policies for org-wide mandates.</p>"
+   "notes": "\n<h3>API instances across environments</h3>\n<ul>\n<li>One spec version → an <strong>API instance per environment</strong> (dev/test/prod) in API Manager, each with its own <code>api.id</code>, policies, SLA tiers, contracts, and alerts. Implementations pair via <strong>autodiscovery</strong> with the environment-specific id.</li>\n<li>Promotion: API Manager can <strong>promote an instance</strong> from a lower environment, carrying policies/tiers/alerts — keeping governance consistent without manual re-setup.</li>\n</ul>\n\n<h3>Selecting policies for NFRs</h3>\n<table>\n<tr><th>NFR</th><th>Policy</th></tr>\n<tr><td>Identify/limit consumers per contract</td><td>Client ID enforcement + SLA-based rate limiting</td></tr>\n<tr><td>Protect backend from bursts</td><td>Spike control (smooths) / rate limiting (caps)</td></tr>\n<tr><td>AuthN/AuthZ of callers</td><td>OAuth 2.0 enforcement, JWT validation, Basic auth</td></tr>\n<tr><td>Network restriction</td><td>IP allowlist/blocklist</td></tr>\n<tr><td>Browser cross-origin</td><td>CORS</td></tr>\n<tr><td>Reduce backend reads</td><td>HTTP caching policy</td></tr>\n<tr><td>Payload hygiene</td><td>Header injection/removal, message size limits (custom/edge)</td></tr>\n</table>\n<p>Policies can be <strong>resource-level</strong> (specific methods/paths) and are <strong>ordered</strong>; <strong>automated policies</strong> apply org/environment-wide to every API instance (e.g. mandatory TLS or auth baseline) — governance at scale.</p>\n\n<h3>Policy enforcement options</h3>\n<table>\n<tr><th>Option</th><th>Where policies run</th><th>Use when</th></tr>\n<tr><td><strong>Embedded gateway (autodiscovery)</strong></td><td>Inside the Mule app itself</td><td>Mule implementations — no extra hop or process</td></tr>\n<tr><td><strong>API proxy</strong></td><td>A separate Mule proxy app generated by API Manager</td><td>Non-Mule backends, or implementations you can't modify</td></tr>\n<tr><td><strong>Flex Gateway</strong></td><td>Lightweight standalone gateway (Envoy-based)</td><td>High-performance edge for any backend, Kubernetes/ingress patterns</td></tr>\n</table>\n\n<h3>Passing client ID and secret</h3>\n<ul>\n<li>Client ID enforcement is configurable to read credentials from <strong>custom headers</strong> (commonly <code>client_id</code>/<code>client_secret</code>), <strong>query parameters</strong> (discouraged — IDs leak into logs/URLs), or <strong>HTTP Basic auth</strong>. The API spec should document the chosen mechanism (a shared RAML trait keeps it consistent).</li>\n<li>Failure modes: missing/invalid credentials → <strong>401</strong>; valid credentials but over the tier's limit → <strong>429</strong>; no contract with the API → 401/403 per policy.</li>\n</ul>\n\n<h3>SLA tiers, contracts, and access management</h3>\n<ol>\n<li>Provider defines <strong>SLA tiers</strong> (limits + auto/manual approval) on the instance.</li>\n<li>Consumer discovers the API in <strong>Exchange</strong>, requests access with a <strong>client application</strong>, selecting a tier.</li>\n<li>Approval creates a <strong>contract</strong>; the client app holds client_id/secret (issued by Anypoint or the external client provider).</li>\n<li>Gateways enforce per-contract limits; analytics attribute traffic per consumer.</li>\n</ol>\n\n<h3>Custom policies</h3>\n<p>When included policies don't cover the requirement — e.g. a proprietary auth scheme, request signing validation, custom audit headers, payload field enforcement — build a <strong>custom policy</strong>, publish it to Exchange, and apply it like any other. Prefer included policies first; custom policies carry maintenance/upgrade cost.</p>\n<p class=\"tip\"><strong>Exam tip:</strong> the 17% section. Drill: policy ↔ NFR matching; the three enforcement options and when each applies; the Exchange access-request → contract → credentials flow; 401 vs 429 semantics; automated policies for org-wide mandates.</p>\n<h3>How governance is applied to an API</h3>\n<p>Policies and SLA tiers live on the API <em>instance</em> in API Manager; a consumer's client application requests a tier and gets a contract; autodiscovery binds that instance to the running implementation.</p>\n<svg viewBox=\"0 0 640 150\" style=\"max-width:640px;width:100%\" role=\"img\" aria-label=\"API instance with policies and SLA tiers, client contract, autodiscovery\">\n  <style>.gv-b{fill:none;stroke:currentColor;stroke-width:1.3}.gv-t{font:600 12px sans-serif;fill:currentColor}.gv-s{font:11px sans-serif;fill:currentColor;opacity:.8}.gv-a{stroke:currentColor;stroke-width:1.1;marker-end:url(#gvA)}.gv-d{stroke:currentColor;stroke-width:1;stroke-dasharray:4 3}</style>\n  <defs><marker id=\"gvA\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L6,3 L0,6 z\" fill=\"currentColor\"/></marker></defs>\n  <rect class=\"gv-b\" x=\"210\" y=\"14\" width=\"220\" height=\"72\" rx=\"6\"/>\n  <text class=\"gv-t\" x=\"320\" y=\"34\" text-anchor=\"middle\">API instance (API Manager)</text>\n  <text class=\"gv-s\" x=\"320\" y=\"54\" text-anchor=\"middle\">policies: Client ID · Rate-Limit-SLA</text>\n  <text class=\"gv-s\" x=\"320\" y=\"72\" text-anchor=\"middle\">SLA tiers: Free / Gold</text>\n  <rect class=\"gv-b\" x=\"14\" y=\"26\" width=\"150\" height=\"48\" rx=\"6\"/>\n  <text class=\"gv-t\" x=\"89\" y=\"46\" text-anchor=\"middle\">Client application</text>\n  <text class=\"gv-s\" x=\"89\" y=\"64\" text-anchor=\"middle\">requests a tier</text>\n  <line class=\"gv-a\" x1=\"164\" y1=\"50\" x2=\"210\" y2=\"50\"/>\n  <text class=\"gv-s\" x=\"187\" y=\"42\" text-anchor=\"middle\">contract</text>\n  <rect class=\"gv-b\" x=\"476\" y=\"26\" width=\"150\" height=\"48\" rx=\"6\"/>\n  <text class=\"gv-t\" x=\"551\" y=\"46\" text-anchor=\"middle\">Mule implementation</text>\n  <text class=\"gv-s\" x=\"551\" y=\"64\" text-anchor=\"middle\">enforces policies</text>\n  <line class=\"gv-d\" x1=\"430\" y1=\"50\" x2=\"476\" y2=\"50\"/>\n  <text class=\"gv-s\" x=\"453\" y=\"42\" text-anchor=\"middle\">autodiscovery</text>\n  <text class=\"gv-s\" x=\"320\" y=\"112\" text-anchor=\"middle\">api.id + platform credentials pair the running app to this instance</text>\n  <text class=\"gv-s\" x=\"320\" y=\"130\" text-anchor=\"middle\">tier request → approval → contract (client_id / secret) → enforced limits</text>\n</svg>"
   },
   {
    "id": "p6",
@@ -2062,7 +2064,8 @@
     "Object Store v2 on CloudHub": "https://docs.mulesoft.com/object-store/",
     "Shared vs dedicated load balancers": "https://docs.mulesoft.com/cloudhub/dedicated-load-balancer-tutorial",
     "CloudHub networking choices": "https://docs.mulesoft.com/cloudhub/cloudhub-networking-guide",
-    "Eliminating single points of failure": "https://docs.mulesoft.com/cloudhub/cloudhub-fabric"
+    "Eliminating single points of failure": "https://docs.mulesoft.com/cloudhub/cloudhub-fabric",
+    "An HA CloudHub topology": "https://docs.mulesoft.com/cloudhub/cloudhub-fabric"
    },
    "objectives": [
     "Select worker sizes and counts for requirements",
@@ -2072,7 +2075,7 @@
     "Compare CloudHub networking options",
     "Design deployments without single points of failure"
    ],
-   "notes": "\n<h3>Workers, sizing, and scaling</h3>\n<ul>\n<li>Workers are dedicated per-app VMs, sized in vCores (0.1 / 0.2 / 1 / 2 / 4 / 8 / 16). <strong>Vertical scaling</strong> = bigger worker (more memory/CPU per instance — helps large payloads, heavy transforms); <strong>horizontal scaling</strong> = more workers (throughput + availability; requires the app to be effectively stateless or use shared state services).</li>\n<li>Multi-worker apps are load-balanced automatically and workers are distributed across <strong>availability zones</strong>; CloudHub restarts unresponsive workers and offers zero-downtime redeploys (new workers up before old ones stop).</li>\n</ul>\n\n<h3>Reliability on CloudHub</h3>\n<table>\n<tr><th>Mechanism</th><th>What it protects</th></tr>\n<tr><td>≥2 workers</td><td>Worker/AZ failure — the surviving worker keeps serving (HA)</td></tr>\n<tr><td>Persistent queues (CH 1.0 feature)</td><td>VM-queued messages survive worker restarts and are shared across the app's workers</td></tr>\n<tr><td>Anypoint MQ</td><td>Durable inter-app messaging with DLQs</td></tr>\n<tr><td>Object Store v2</td><td>State shared across workers, surviving restarts (30-day max TTL, regional)</td></tr>\n<tr><td>Multi-region deployment + DNS</td><td>Region loss (DR) — nothing is automatic cross-region</td></tr>\n</table>\n\n<h3>Object Store v2 on CloudHub</h3>\n<p>Right uses: watermarks, dedup/idempotency keys, cached lookups, tokens, small shared state across workers. Wrong uses: business database, message queue, large blobs (10 MB value cap), anything needing &gt;30-day retention. It is rate-limited and REGIONAL (DR needs a plan).</p>\n\n<h3>Shared vs dedicated load balancers</h3>\n<table>\n<tr><th></th><th>Shared LB (default)</th><th>Dedicated LB</th></tr>\n<tr><td>Domain / TLS</td><td>*.&lt;region&gt;.cloudhub.io with MuleSoft's certificate</td><td>Custom domains, YOUR certificates, TLS termination control</td></tr>\n<tr><td>Mutual TLS from clients</td><td>No</td><td>Yes (client cert validation)</td></tr>\n<tr><td>Mapping rules / URL rewriting</td><td>No</td><td>Yes</td></tr>\n<tr><td>Requires VPC</td><td>No</td><td><strong>Yes</strong> (deployed into your VPC; scalable, multiple instances for HA)</td></tr>\n</table>\n\n<h3>CloudHub networking choices</h3>\n<p>Recap of the decision ladder (details in the Integration Architect notes): public app → default; partner allowlisting → static IPs; private/internal APIs → VPC + internal endpoints (8091/8092); on-prem connectivity → VPC + VPN/DirectConnect; custom domain/mTLS → VPC + DLB. CloudHub 2.0 equivalents: private spaces + ingress.</p>\n\n<h3>Eliminating single points of failure</h3>\n<ul>\n<li><strong>One worker</strong> is a SPOF — always ≥2 for production HA.</li>\n<li><strong>One DLB instance</strong> can be scaled to multiple; the shared LB is inherently redundant.</li>\n<li>State: keep it out of worker memory (OSv2 / MQ / DB), or a worker loss loses it.</li>\n<li>Dependencies count too: a single backend, a single VPN tunnel, or a single region are SPOFs the Mule design must acknowledge (fallbacks, retries, DR plan).</li>\n</ul>\n<p class=\"tip\"><strong>Exam tip:</strong> \"custom TLS certificate\" or \"partner requires mutual TLS\" → DLB (thus VPC). \"Survive a worker failure with no message loss\" → 2+ workers AND persistent queues/MQ (workers alone don't persist in-flight VM messages). Worker sizing questions: memory-heavy → vertical; TPS-heavy → horizontal.</p>"
+   "notes": "\n<h3>Workers, sizing, and scaling</h3>\n<ul>\n<li>Workers are dedicated per-app VMs, sized in vCores (0.1 / 0.2 / 1 / 2 / 4 / 8 / 16). <strong>Vertical scaling</strong> = bigger worker (more memory/CPU per instance — helps large payloads, heavy transforms); <strong>horizontal scaling</strong> = more workers (throughput + availability; requires the app to be effectively stateless or use shared state services).</li>\n<li>Multi-worker apps are load-balanced automatically and workers are distributed across <strong>availability zones</strong>; CloudHub restarts unresponsive workers and offers zero-downtime redeploys (new workers up before old ones stop).</li>\n</ul>\n\n<h3>Reliability on CloudHub</h3>\n<table>\n<tr><th>Mechanism</th><th>What it protects</th></tr>\n<tr><td>≥2 workers</td><td>Worker/AZ failure — the surviving worker keeps serving (HA)</td></tr>\n<tr><td>Persistent queues (CH 1.0 feature)</td><td>VM-queued messages survive worker restarts and are shared across the app's workers</td></tr>\n<tr><td>Anypoint MQ</td><td>Durable inter-app messaging with DLQs</td></tr>\n<tr><td>Object Store v2</td><td>State shared across workers, surviving restarts (30-day max TTL, regional)</td></tr>\n<tr><td>Multi-region deployment + DNS</td><td>Region loss (DR) — nothing is automatic cross-region</td></tr>\n</table>\n\n<h3>Object Store v2 on CloudHub</h3>\n<p>Right uses: watermarks, dedup/idempotency keys, cached lookups, tokens, small shared state across workers. Wrong uses: business database, message queue, large blobs (10 MB value cap), anything needing &gt;30-day retention. It is rate-limited and REGIONAL (DR needs a plan).</p>\n\n<h3>Shared vs dedicated load balancers</h3>\n<table>\n<tr><th></th><th>Shared LB (default)</th><th>Dedicated LB</th></tr>\n<tr><td>Domain / TLS</td><td>*.&lt;region&gt;.cloudhub.io with MuleSoft's certificate</td><td>Custom domains, YOUR certificates, TLS termination control</td></tr>\n<tr><td>Mutual TLS from clients</td><td>No</td><td>Yes (client cert validation)</td></tr>\n<tr><td>Mapping rules / URL rewriting</td><td>No</td><td>Yes</td></tr>\n<tr><td>Requires VPC</td><td>No</td><td><strong>Yes</strong> (deployed into your VPC; scalable, multiple instances for HA)</td></tr>\n</table>\n\n<h3>CloudHub networking choices</h3>\n<p>Recap of the decision ladder (details in the Integration Architect notes): public app → default; partner allowlisting → static IPs; private/internal APIs → VPC + internal endpoints (8091/8092); on-prem connectivity → VPC + VPN/DirectConnect; custom domain/mTLS → VPC + DLB. CloudHub 2.0 equivalents: private spaces + ingress.</p>\n\n<h3>Eliminating single points of failure</h3>\n<ul>\n<li><strong>One worker</strong> is a SPOF — always ≥2 for production HA.</li>\n<li><strong>One DLB instance</strong> can be scaled to multiple; the shared LB is inherently redundant.</li>\n<li>State: keep it out of worker memory (OSv2 / MQ / DB), or a worker loss loses it.</li>\n<li>Dependencies count too: a single backend, a single VPN tunnel, or a single region are SPOFs the Mule design must acknowledge (fallbacks, retries, DR plan).</li>\n</ul>\n<p class=\"tip\"><strong>Exam tip:</strong> \"custom TLS certificate\" or \"partner requires mutual TLS\" → DLB (thus VPC). \"Survive a worker failure with no message loss\" → 2+ workers AND persistent queues/MQ (workers alone don't persist in-flight VM messages). Worker sizing questions: memory-heavy → vertical; TPS-heavy → horizontal.</p>\n<h3>An HA CloudHub topology</h3>\n<p>Remove single points of failure: run two or more workers across availability zones, share state in Object Store v2, and front them with a Dedicated Load Balancer (custom domain/TLS) — inside a VPC when private access is needed.</p>\n<svg viewBox=\"0 0 640 168\" style=\"max-width:640px;width:100%\" role=\"img\" aria-label=\"Two CloudHub workers behind a dedicated load balancer sharing Object Store v2\">\n  <style>.ch-b{fill:none;stroke:currentColor;stroke-width:1.3}.ch-t{font:600 12px sans-serif;fill:currentColor}.ch-s{font:11px sans-serif;fill:currentColor;opacity:.8}.ch-a{stroke:currentColor;stroke-width:1.1;marker-end:url(#chA)}.ch-d{stroke:currentColor;stroke-width:1;stroke-dasharray:5 4}</style>\n  <defs><marker id=\"chA\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L6,3 L0,6 z\" fill=\"currentColor\"/></marker></defs>\n  <rect class=\"ch-d\" x=\"14\" y=\"40\" width=\"612\" height=\"118\" rx=\"8\"/>\n  <text class=\"ch-s\" x=\"24\" y=\"56\">Anypoint VPC (when private access / IP control needed)</text>\n  <rect class=\"ch-b\" x=\"234\" y=\"16\" width=\"172\" height=\"30\" rx=\"5\"/>\n  <text class=\"ch-t\" x=\"320\" y=\"35\" text-anchor=\"middle\">Dedicated Load Balancer</text>\n  <line class=\"ch-a\" x1=\"290\" y1=\"46\" x2=\"170\" y2=\"72\"/>\n  <line class=\"ch-a\" x1=\"350\" y1=\"46\" x2=\"470\" y2=\"72\"/>\n  <rect class=\"ch-b\" x=\"86\" y=\"74\" width=\"170\" height=\"40\" rx=\"5\"/>\n  <text class=\"ch-t\" x=\"171\" y=\"92\" text-anchor=\"middle\">Worker 1</text>\n  <text class=\"ch-s\" x=\"171\" y=\"108\" text-anchor=\"middle\">AZ a</text>\n  <rect class=\"ch-b\" x=\"384\" y=\"74\" width=\"170\" height=\"40\" rx=\"5\"/>\n  <text class=\"ch-t\" x=\"469\" y=\"92\" text-anchor=\"middle\">Worker 2</text>\n  <text class=\"ch-s\" x=\"469\" y=\"108\" text-anchor=\"middle\">AZ b</text>\n  <rect class=\"ch-b\" x=\"234\" y=\"124\" width=\"172\" height=\"30\" rx=\"5\"/>\n  <text class=\"ch-t\" x=\"320\" y=\"143\" text-anchor=\"middle\">Object Store v2 (shared)</text>\n  <line class=\"ch-a\" x1=\"171\" y1=\"114\" x2=\"270\" y2=\"128\"/>\n  <line class=\"ch-a\" x1=\"469\" y1=\"114\" x2=\"370\" y2=\"128\"/>\n</svg>"
   },
   {
    "id": "p8",
@@ -2100,7 +2103,8 @@
     "Sources of monitoring data": "https://docs.mulesoft.com/monitoring/",
     "API invocation metrics and analytics": "https://docs.mulesoft.com/api-manager/latest/latest-overview-concept",
     "Alerts across the layers": "https://docs.mulesoft.com/api-functional-monitoring/",
-    "Alerts for Mule applications": "https://docs.mulesoft.com/runtime-manager/alerts-on-runtime-manager"
+    "Alerts for Mule applications": "https://docs.mulesoft.com/runtime-manager/alerts-on-runtime-manager",
+    "Where each alert lives": "https://docs.mulesoft.com/monitoring/"
    },
    "objectives": [
     "Identify the sources of monitoring data on Anypoint Platform",
@@ -2108,7 +2112,7 @@
     "Specify alerts for APIs at every layer of the network",
     "Define alerts for Mule applications"
    ],
-   "notes": "\n<h3>Sources of monitoring data</h3>\n<table>\n<tr><th>Source</th><th>Data</th></tr>\n<tr><td>API Manager analytics (gateways)</td><td>Per-API-instance invocation data: requests, response codes, latency, policy violations, per-consumer (client id) attribution</td></tr>\n<tr><td>Anypoint Monitoring</td><td>App + API dashboards (throughput, response time, errors, JVM/CPU), custom dashboards, log management (Titanium), threshold alerts</td></tr>\n<tr><td>Runtime Manager</td><td>App/worker status, deployment events, basic metrics, operational alerts</td></tr>\n<tr><td>API Functional Monitoring (BAT)</td><td>Scheduled black-box calls asserting real behavior from public/private locations</td></tr>\n<tr><td>Anypoint Visualizer</td><td>The live application network graph built from actual traffic — dependencies, layers, troubleshooting blast radius</td></tr>\n<tr><td>Application logs</td><td>Business/technical events with correlation IDs (centralized via log management or external systems)</td></tr>\n</table>\n\n<h3>API invocation metrics and analytics</h3>\n<ul>\n<li>Core metrics per instance: <strong>request volume</strong> (trend = adoption; also the reuse KPI for the C4E), <strong>response times</strong> (p95/p99 vs SLA), <strong>error ratios</strong> (4xx = client/contract problems, 5xx = provider problems), <strong>policy violations</strong> (429s = tiers too tight or abuse), and <strong>per-consumer breakdowns</strong> (who drives load; who a breaking change affects).</li>\n<li>Analytics inform lifecycle decisions: which APIs to invest in, which versions can retire (traffic on deprecated instances), and chargeback/showback per consumer.</li>\n</ul>\n\n<h3>Alerts across the layers</h3>\n<p>Alert at EVERY layer of the network, aligned to each API's SLA — an Experience API breach may originate two layers down:</p>\n<ul>\n<li><strong>Per API instance (API Manager):</strong> response time thresholds, error-code ratios, request-count anomalies, policy violations.</li>\n<li><strong>Experience layer:</strong> tightest latency/error alerts (closest to user experience) + functional monitors simulating consumers.</li>\n<li><strong>Process/System layers:</strong> same metric alerts with layer-appropriate thresholds; System API alerts often reveal backend degradation first.</li>\n</ul>\n\n<h3>Alerts for Mule applications</h3>\n<ul>\n<li><strong>Runtime Manager:</strong> application down / not responding, worker not responding, deployment failed, secure-data gateway events, custom application notifications.</li>\n<li><strong>Anypoint Monitoring:</strong> threshold alerts on any collected metric (CPU, memory, error rate, response time) with notification channels.</li>\n<li>Design guidance: alert on symptoms tied to SLAs (latency, error ratio, availability), keep thresholds per environment, and route to owners (API owner vs platform ops) — an unowned alert is noise.</li>\n</ul>\n<p class=\"tip\"><strong>Exam tip:</strong> map the question to the source — \"which consumers call this API and how often?\" → API Manager analytics; \"is the app's JVM memory climbing?\" → Anypoint Monitoring; \"did the deployment fail last night?\" → Runtime Manager; \"is the API returning correct data right now?\" → functional monitoring (BAT); \"what depends on this System API?\" → Visualizer.</p>"
+   "notes": "\n<h3>Sources of monitoring data</h3>\n<table>\n<tr><th>Source</th><th>Data</th></tr>\n<tr><td>API Manager analytics (gateways)</td><td>Per-API-instance invocation data: requests, response codes, latency, policy violations, per-consumer (client id) attribution</td></tr>\n<tr><td>Anypoint Monitoring</td><td>App + API dashboards (throughput, response time, errors, JVM/CPU), custom dashboards, log management (Titanium), threshold alerts</td></tr>\n<tr><td>Runtime Manager</td><td>App/worker status, deployment events, basic metrics, operational alerts</td></tr>\n<tr><td>API Functional Monitoring (BAT)</td><td>Scheduled black-box calls asserting real behavior from public/private locations</td></tr>\n<tr><td>Anypoint Visualizer</td><td>The live application network graph built from actual traffic — dependencies, layers, troubleshooting blast radius</td></tr>\n<tr><td>Application logs</td><td>Business/technical events with correlation IDs (centralized via log management or external systems)</td></tr>\n</table>\n\n<h3>API invocation metrics and analytics</h3>\n<ul>\n<li>Core metrics per instance: <strong>request volume</strong> (trend = adoption; also the reuse KPI for the C4E), <strong>response times</strong> (p95/p99 vs SLA), <strong>error ratios</strong> (4xx = client/contract problems, 5xx = provider problems), <strong>policy violations</strong> (429s = tiers too tight or abuse), and <strong>per-consumer breakdowns</strong> (who drives load; who a breaking change affects).</li>\n<li>Analytics inform lifecycle decisions: which APIs to invest in, which versions can retire (traffic on deprecated instances), and chargeback/showback per consumer.</li>\n</ul>\n\n<h3>Alerts across the layers</h3>\n<p>Alert at EVERY layer of the network, aligned to each API's SLA — an Experience API breach may originate two layers down:</p>\n<ul>\n<li><strong>Per API instance (API Manager):</strong> response time thresholds, error-code ratios, request-count anomalies, policy violations.</li>\n<li><strong>Experience layer:</strong> tightest latency/error alerts (closest to user experience) + functional monitors simulating consumers.</li>\n<li><strong>Process/System layers:</strong> same metric alerts with layer-appropriate thresholds; System API alerts often reveal backend degradation first.</li>\n</ul>\n\n<h3>Alerts for Mule applications</h3>\n<ul>\n<li><strong>Runtime Manager:</strong> application down / not responding, worker not responding, deployment failed, secure-data gateway events, custom application notifications.</li>\n<li><strong>Anypoint Monitoring:</strong> threshold alerts on any collected metric (CPU, memory, error rate, response time) with notification channels.</li>\n<li>Design guidance: alert on symptoms tied to SLAs (latency, error ratio, availability), keep thresholds per environment, and route to owners (API owner vs platform ops) — an unowned alert is noise.</li>\n</ul>\n<p class=\"tip\"><strong>Exam tip:</strong> map the question to the source — \"which consumers call this API and how often?\" → API Manager analytics; \"is the app's JVM memory climbing?\" → Anypoint Monitoring; \"did the deployment fail last night?\" → Runtime Manager; \"is the API returning correct data right now?\" → functional monitoring (BAT); \"what depends on this System API?\" → Visualizer.</p>\n<h3>Where each alert lives</h3>\n<p>Pick the plane that owns the signal: the deployed worker (Runtime Manager), the API instance and its policies (API Manager), aggregated telemetry and logs across apps (Anypoint Monitoring), or synthetic correctness checks (Functional Monitoring).</p>\n<svg viewBox=\"0 0 640 150\" style=\"max-width:640px;width:100%\" role=\"img\" aria-label=\"Which plane owns which monitoring signal\">\n  <style>.aw-b{fill:none;stroke:currentColor;stroke-width:1.3}.aw-t{font:600 12px sans-serif;fill:currentColor}.aw-s{font:11px sans-serif;fill:currentColor;opacity:.8}</style>\n  <rect class=\"aw-b\" x=\"8\" y=\"14\" width=\"150\" height=\"122\" rx=\"6\"/>\n  <text class=\"aw-t\" x=\"83\" y=\"34\" text-anchor=\"middle\">Runtime Manager</text>\n  <text class=\"aw-s\" x=\"83\" y=\"58\" text-anchor=\"middle\">app stopped</text>\n  <text class=\"aw-s\" x=\"83\" y=\"76\" text-anchor=\"middle\">worker crash</text>\n  <text class=\"aw-s\" x=\"83\" y=\"94\" text-anchor=\"middle\">CPU / memory</text>\n  <rect class=\"aw-b\" x=\"166\" y=\"14\" width=\"150\" height=\"122\" rx=\"6\"/>\n  <text class=\"aw-t\" x=\"241\" y=\"34\" text-anchor=\"middle\">API Manager</text>\n  <text class=\"aw-s\" x=\"241\" y=\"58\" text-anchor=\"middle\">5xx rate</text>\n  <text class=\"aw-s\" x=\"241\" y=\"76\" text-anchor=\"middle\">policy violation</text>\n  <text class=\"aw-s\" x=\"241\" y=\"94\" text-anchor=\"middle\">SLA breach</text>\n  <rect class=\"aw-b\" x=\"324\" y=\"14\" width=\"150\" height=\"122\" rx=\"6\"/>\n  <text class=\"aw-t\" x=\"399\" y=\"34\" text-anchor=\"middle\">Anypoint Monitoring</text>\n  <text class=\"aw-s\" x=\"399\" y=\"58\" text-anchor=\"middle\">cross-app logs</text>\n  <text class=\"aw-s\" x=\"399\" y=\"76\" text-anchor=\"middle\">trace by corr. id</text>\n  <text class=\"aw-s\" x=\"399\" y=\"94\" text-anchor=\"middle\">metrics dashboards</text>\n  <rect class=\"aw-b\" x=\"482\" y=\"14\" width=\"150\" height=\"122\" rx=\"6\"/>\n  <text class=\"aw-t\" x=\"557\" y=\"34\" text-anchor=\"middle\">Functional Monitoring</text>\n  <text class=\"aw-s\" x=\"557\" y=\"58\" text-anchor=\"middle\">synthetic calls</text>\n  <text class=\"aw-s\" x=\"557\" y=\"76\" text-anchor=\"middle\">\"correct right now?\"</text>\n  <text class=\"aw-s\" x=\"557\" y=\"94\" text-anchor=\"middle\">200-but-wrong</text>\n</svg>"
   }
  ],
  "cards": [
@@ -2303,6 +2307,307 @@
    "section": "p9",
    "front": "Business-level monitoring (orders/hour) — mechanism?",
    "back": "Custom Business Events or structured log metrics feeding custom dashboards/alerts — technical health ≠ business health."
+  }
+ ],
+ "exercises": [
+  {
+   "id": "pa-ex-01",
+   "section": "p2",
+   "title": "Organize business groups, environments, and roles for three teams",
+   "level": "medium",
+   "where": "Design — Anypoint Platform (Access Management)",
+   "task": "<p>A company has three delivery teams (Payments, Orders, Partners) that must not see each other's applications, plus a shared platform team. Each team needs Design → Sandbox → Production promotion. Design the org structure: <strong>business groups</strong>, <strong>environments</strong>, and <strong>role assignments</strong> — and say what identity vs. client management each requires.</p>",
+   "given": [
+    {
+     "label": "Constraints",
+     "code": "3 delivery teams, isolated from each other\n1 shared platform (C4E) team owning standards + reusable assets\nEach team: Design, Sandbox, Production environments\nCorporate SSO for humans; partner apps get their own credentials"
+    }
+   ],
+   "steps": [
+    "Create a business group per team so assets/apps are isolated by group",
+    "Within each group, create Sandbox + Production environments (Design Center is org-wide)",
+    "Map roles per environment (Developer in Sandbox, restricted Deploy in Production)",
+    "Wire corporate SSO as identity management for platform users",
+    "Use client management (e.g. external OAuth) for the partner applications' credentials"
+   ],
+   "solution": [
+    {
+     "label": "Target structure",
+     "code": "Org root\n ├─ BG: Payments   → env: Sandbox, Production   roles per env\n ├─ BG: Orders     → env: Sandbox, Production\n ├─ BG: Partners   → env: Sandbox, Production\n └─ Platform/C4E: owns shared Exchange assets + governance\nIdentity mgmt: corporate SSO (SAML/OIDC) for humans\nClient mgmt: OAuth provider for API consumer apps (partner credentials)"
+    }
+   ],
+   "solutionNotes": "<p><strong>Business groups</strong> isolate teams' apps and assets; <strong>environments</strong> (Sandbox/Production) isolate deployments and API instances within a group. <strong>Identity management</strong> is how <em>people</em> sign in to the platform (corporate SSO); <strong>client management</strong> is how <em>consumer applications</em> obtain credentials/tokens — two different federations. Remember business data never flows through the MuleSoft-hosted control plane; only metadata does.</p>"
+  },
+  {
+   "id": "pa-ex-02",
+   "section": "p3",
+   "title": "Design a reusable API spec with fragments and publish to Exchange",
+   "level": "medium",
+   "where": "Design — Design Center / Exchange",
+   "task": "<p>Three APIs will share the same <code>Money</code> and <code>Address</code> data types and a standard error response. Design the API specification so those definitions are authored once and reused, then decide how consumers discover and depend on it. What gets published to Exchange, and how is a breaking change signalled?</p>",
+   "given": [
+    {
+     "label": "Shared shapes",
+     "code": "Money   { amount: number, currency: string }\nAddress { line1, line2?, city, country }\nStandardError { code, message, correlationId }\nUsed by: Orders API, Payments API, Shipping API"
+    }
+   ],
+   "steps": [
+    "Author the shared types + error as a reusable RAML/OAS fragment (a data-type/library fragment)",
+    "Publish the fragment to Exchange as its own versioned asset",
+    "Reference it from each API spec via a dependency, not by copy-paste",
+    "Version with semver: additive = minor, breaking (rename/remove) = major",
+    "Publish each API spec to Exchange so consumers discover and request access"
+   ],
+   "solution": [
+    {
+     "label": "Reuse structure",
+     "code": "Exchange asset: common-types (fragment) v1.2.0\n   #%RAML 1.0 Library\n   types: { Money: ..., Address: ..., StandardError: ... }\n\nOrders API spec:\n   uses: common-types   # dependency on the published fragment\n   /orders: ... responses use StandardError\nBreaking change to Money (e.g. rename currency) → common-types v2.0.0"
+    }
+   ],
+   "solutionNotes": "<p>Reuse lives in <strong>fragments published to Exchange</strong>, referenced as dependencies so a fix propagates instead of drifting across copies. <strong>Semantic versioning</strong> communicates compatibility: additive changes are a minor bump (consumers keep working), while renames/removals are a major bump. Exchange is the discovery + dependency surface — the fragment and each API are versioned assets there.</p>"
+  },
+  {
+   "id": "pa-ex-03",
+   "section": "p3",
+   "title": "Idempotency and optimistic concurrency for an HTTP API",
+   "level": "hard",
+   "where": "Design — API specification",
+   "task": "<p>Design the correctness semantics for a Wallet API. Decide, for each case, the right HTTP mechanism: (1) a client retries a <code>PUT /accounts/{id}</code> after a network timeout; (2) a client retries a <code>POST /transfers</code> after a timeout; (3) two clients must not overwrite each other's edit to the same account.</p>",
+   "given": [
+    {
+     "label": "Operations",
+     "code": "PUT  /accounts/{id}     (replace account profile)\nPOST /transfers         (create a money transfer)\nGET/PUT with concurrent editors on /accounts/{id}"
+    }
+   ],
+   "steps": [
+    "Classify each verb: is it idempotent by definition?",
+    "PUT is idempotent → a retry is safe as-is",
+    "POST is not idempotent → require an idempotency key so a retry doesn't double-create",
+    "For concurrent edits, use ETag + If-Match so a stale update is rejected (412)"
+   ],
+   "solution": [
+    {
+     "label": "Decisions",
+     "code": "1) PUT retry: safe — PUT is idempotent by definition, no extra mechanism.\n2) POST retry: require Idempotency-Key header; server dedups on it so a\n   retried transfer is created at most once.\n3) Concurrent edits: server returns an ETag on GET; client sends\n   If-Match: <etag> on PUT → 412 Precondition Failed if it changed."
+    }
+   ],
+   "solutionNotes": "<p>HTTP semantics do the heavy lifting: <strong>PUT</strong> is idempotent so retries are safe; <strong>POST</strong> is not, so a stable <strong>idempotency key</strong> makes a retry create at most once. <strong>Optimistic concurrency</strong> uses <strong>ETag + If-Match</strong> to reject an update built on stale data (412), preventing lost updates without locking.</p>"
+  },
+  {
+   "id": "pa-ex-04",
+   "section": "p4",
+   "title": "Decompose a business process into System, Process, and Experience APIs",
+   "level": "medium",
+   "where": "Design — whiteboard / Anypoint Platform",
+   "task": "<p>\"Place order\" must read the customer from Salesforce, check stock in an inventory DB, create the order in SAP, and be consumed by a web app and a partner B2B channel. Decompose it into <strong>System</strong>, <strong>Process</strong>, and <strong>Experience</strong> APIs and justify where reuse comes from.</p>",
+   "given": [
+    {
+     "label": "Systems + channels",
+     "code": "Back ends: Salesforce (customer), Inventory DB, SAP (order)\nChannels: Web checkout, Partner B2B (bulk)"
+    }
+   ],
+   "steps": [
+    "Wrap each back end in a System API that hides its protocol/format",
+    "Put the 'place order' orchestration (read customer + check stock + create order) in a Process API",
+    "Shape one Experience API per channel over the Process API",
+    "Verify dependencies point downward: Experience → Process → System only"
+   ],
+   "solution": [
+    {
+     "label": "Layering",
+     "code": "Experience:  Web Checkout API      Partner B2B API\n                     \\                 /\nProcess:              Place Order API   (orchestration)\n                   /        |         \\\nSystem:   Salesforce API  Inventory API  SAP Orders API"
+    }
+   ],
+   "solutionNotes": "<p>Reuse concentrates in the <strong>System</strong> and <strong>Process</strong> layers: both channels reuse one Place Order Process API, which reuses the System APIs. Experience APIs are deliberately channel-specific (payload/protocol/auth tailored) and not reused. Putting orchestration in an Experience API — or letting a System API call another System API — are the anti-patterns to avoid.</p>"
+  },
+  {
+   "id": "pa-ex-05",
+   "section": "p4",
+   "title": "Bounded-context data models vs one enterprise model",
+   "level": "hard",
+   "where": "Design — whiteboard",
+   "task": "<p>An architect proposes a single enterprise-wide canonical data model (one <code>Customer</code>, one <code>Product</code>, …) spanning all 14 domains, so every API speaks the same types. Critique this and propose the alternative, including how APIs in different contexts interoperate.</p>",
+   "given": [
+    {
+     "label": "Proposal",
+     "code": "One org-wide canonical model for all 14 domains.\nEvery System/Process/Experience API imports the same giant type library."
+    }
+   ],
+   "steps": [
+    "Note the coupling: one shared model means every change ripples across all domains",
+    "Prefer smaller per-domain (bounded-context) models owned by each domain",
+    "Interoperate by mapping at the boundaries (a Process/Experience API maps between contexts)",
+    "Reserve shared fragments for genuinely universal primitives (Money, Address)"
+   ],
+   "solution": [
+    {
+     "label": "Recommendation",
+     "code": "Per-bounded-context models:\n  Sales.Customer   ≠   Billing.Customer   ≠   Support.Customer\n  each owned + evolved by its domain team\nInteroperation: map between contexts at the API boundary\nShared: only universal primitives as small Exchange fragments\nAvoid: one 14-domain canonical model (release-locks every team)"
+    }
+   ],
+   "solutionNotes": "<p>A single enterprise model becomes a coordination bottleneck — every domain must agree on every change, and unrelated domains are release-locked together. <strong>Bounded contexts</strong> let each domain own a model that fits its language, and APIs <strong>map at the boundary</strong>. Share only truly universal primitives as small fragments, not an all-encompassing schema.</p>"
+  },
+  {
+   "id": "pa-ex-06",
+   "section": "p5",
+   "title": "Design policies, SLA tiers, and the client-contract flow for an API",
+   "level": "hard",
+   "where": "Design — API Manager",
+   "task": "<p>A public Orders API must: authenticate consumer apps, throttle them by paid tier (Free = 10 rps, Gold = 200 rps), and require approval before a partner can call it. Design the API Manager governance: which <strong>policies</strong>, which <strong>SLA tiers</strong>, and the <strong>client application → contract</strong> approval flow.</p>",
+   "given": [
+    {
+     "label": "Requirements",
+     "code": "Authenticate the calling app (client id/secret)\nTiers: Free 10 rps, Gold 200 rps\nPartner access requires explicit approval\nEnforcement on the running Mule app (not a separate proxy)"
+    }
+   ],
+   "steps": [
+    "Apply Client ID Enforcement so only registered apps can call",
+    "Define SLA tiers (Free/Gold) with their rate limits, and apply the Rate-Limiting-SLA policy",
+    "Require tier requests to be approved → the consumer's client application gets a contract",
+    "Bind enforcement to the running app via autodiscovery (api.id + platform creds)"
+   ],
+   "solution": [
+    {
+     "label": "Governance design",
+     "code": "API instance (Orders API, Production)\n  policy: Client ID Enforcement\n  policy: Rate-Limiting-SLA  → tiers: Free(10rps), Gold(200rps)\n  SLA tier requests: manual approval ON\nConsumer flow:\n  register client app → request access to a tier →\n  architect approves → contract issued (client_id/secret) →\n  app calls with credentials; limits enforced per tier\nEnforcement: autodiscovery pairs the Mule app to this instance"
+    }
+   ],
+   "solutionNotes": "<p>Governance is layered policy on the <strong>API instance</strong>: Client ID Enforcement establishes identity, the <strong>Rate-Limiting-SLA</strong> policy ties throttling to <strong>SLA tiers</strong>, and requiring approval turns each consumer into a reviewed <strong>contract</strong> bound to a client application. <strong>Autodiscovery</strong> connects the policies to the running implementation. Trying to hand-code rate limits in the flow loses central governance and analytics.</p>"
+  },
+  {
+   "id": "pa-ex-07",
+   "section": "p5",
+   "title": "Embedded autodiscovery vs an API proxy for policy enforcement",
+   "level": "medium",
+   "where": "Design — API Manager",
+   "task": "<p>Two APIs need policies enforced. (1) A Mule 4 app the team builds and deploys itself. (2) A legacy HTTP backend the team cannot modify or redeploy as a Mule app. Choose the enforcement approach for each and explain the trade-off.</p>",
+   "given": [
+    {
+     "label": "Options",
+     "code": "A) Embedded enforcement via autodiscovery (policies run inside the Mule app)\nB) API Proxy (a generated Mule app sits in front of the backend)"
+    }
+   ],
+   "steps": [
+    "If you own and deploy the Mule app → embed enforcement via autodiscovery (no extra hop)",
+    "If the backend can't be a Mule app → put an API Proxy in front to enforce policies",
+    "Weigh the proxy's extra network hop/latency against not touching the backend",
+    "Either way, policies live on the API instance in API Manager"
+   ],
+   "solution": [
+    {
+     "label": "Decisions",
+     "code": "1) Team-built Mule app → autodiscovery (embedded):\n     api.id + platform creds pair the app to its instance;\n     policies enforced in-process, no extra hop.\n2) Unmodifiable legacy backend → API Proxy:\n     generated Mule proxy enforces policies in front of it;\n     accept one extra hop for governance you couldn't add otherwise."
+    }
+   ],
+   "solutionNotes": "<p>Both enforce the same API-Manager policies, but differ in placement. <strong>Autodiscovery</strong> embeds enforcement inside an app you control — no extra hop, lowest latency. An <strong>API Proxy</strong> is the answer when you can't modify the backend: it fronts it with a generated Mule app, at the cost of an extra network hop. Choose by whether you can deploy the implementation as a Mule app.</p>"
+  },
+  {
+   "id": "pa-ex-08",
+   "section": "p6",
+   "title": "Pick the runtime plane and decide whether a VPC is required",
+   "level": "medium",
+   "where": "Design — Anypoint Platform",
+   "task": "<p>An API implementation must: connect to an on-prem database over a private link, be reachable at <code>api.acme.com</code> with the company's own TLS certificate, and otherwise be low-ops. Choose the runtime plane and the network features, and state how policy enforcement and config differ per environment.</p>",
+   "given": [
+    {
+     "label": "Requirements",
+     "code": "Private connectivity to an on-prem DB (no public exposure)\nCustom domain api.acme.com + company TLS certificate\nLow operational burden preferred\nSame artifact promoted Sandbox → Production"
+    }
+   ],
+   "steps": [
+    "Low-ops + MuleSoft-hosted workers → CloudHub, but private DB access forces a VPC",
+    "Provision an Anypoint VPC with VPN/peering to reach the on-prem DB privately",
+    "Add a Dedicated Load Balancer to serve api.acme.com with the company certificate",
+    "Externalize per-env config + secure properties; pair each env via autodiscovery"
+   ],
+   "solution": [
+    {
+     "label": "Design",
+     "code": "Runtime plane: CloudHub (low-ops, MuleSoft-hosted workers)\n  + Anypoint VPC (VPN/peering) → private on-prem DB access\n  + Dedicated Load Balancer → api.acme.com with company TLS cert\nConfig: {env}.properties + secure.key at deploy; same artifact per env\nEnforcement: autodiscovery (own api.id + creds per environment)"
+    }
+   ],
+   "solutionNotes": "<p>Private access, VPN, or a custom-domain/custom-TLS requirement all point to an <strong>Anypoint VPC</strong> (+ a <strong>Dedicated Load Balancer</strong> for the certificate) on top of CloudHub. The same build is promoted across environments with only config/secrets differing, and <strong>autodiscovery</strong> binds each environment's app to its own API instance. \"Private access / VPN / DLB / custom TLS\" are the VPC trigger words.</p>"
+  },
+  {
+   "id": "pa-ex-09",
+   "section": "p7",
+   "title": "A CloudHub topology that eliminates single points of failure",
+   "level": "hard",
+   "where": "Design — CloudHub",
+   "task": "<p>A revenue-critical API on CloudHub currently runs as one worker behind the shared load balancer, with an in-memory Object Store for idempotency and a custom domain requirement. Redesign it to remove every single point of failure while keeping idempotency correct across instances.</p>",
+   "given": [
+    {
+     "label": "Current (fragile) setup",
+     "code": "1 worker · shared load balancer · in-memory Object Store\n· custom domain needed · loses in-flight state on restart"
+    }
+   ],
+   "steps": [
+    "Run at least 2 workers so a worker/AZ loss doesn't take the API down",
+    "Move idempotency state to Object Store v2 (shared across workers), not in-memory",
+    "Use a Dedicated Load Balancer for the custom domain + controlled TLS",
+    "Place it in a VPC if private connectivity/allowlisting is needed"
+   ],
+   "solution": [
+    {
+     "label": "Resilient topology",
+     "code": "≥2 CloudHub workers (spread across AZs)  ── DLB (custom domain, TLS)\n        │                    │\n   both share Object Store v2 (idempotency keys, cross-worker)\n   in a VPC when private access / IP control is required\nSPOFs removed: single worker, in-memory state, shared-LB constraints"
+    }
+   ],
+   "solutionNotes": "<p>Eliminating SPOFs on CloudHub means <strong>≥2 workers</strong> (survive a worker/AZ loss), <strong>shared state in Object Store v2</strong> instead of in-memory (so idempotency holds across instances and restarts), and a <strong>Dedicated Load Balancer</strong> for custom domain/TLS. A single worker or on-heap state are the classic single points of failure the exam probes.</p>"
+  },
+  {
+   "id": "pa-ex-10",
+   "section": "p8",
+   "title": "Meet an availability and latency goal with caching and scaling",
+   "level": "medium",
+   "where": "Design — Anypoint Platform",
+   "task": "<p>An Experience API must hit p95 < 300 ms and 99.9% availability. Profiling shows: (a) a reference-data lookup that changes hourly is called on every request; (b) responses to a popular public GET are identical for 60 s; (c) one worker occasionally saturates at peak. Prescribe one mechanism per problem — and name one thing that would NOT help.</p>",
+   "given": [
+    {
+     "label": "Levers available",
+     "code": "Cache scope (in-flow) · HTTP Caching policy (API Manager) ·\nObject Store (state) · horizontal scaling (more workers)"
+    }
+   ],
+   "steps": [
+    "Cache the in-flow reference lookup with a Cache scope + TTL",
+    "Cache the public GET responses at the edge with the HTTP Caching policy",
+    "Add workers for availability/throughput at peak (not to speed a single request)",
+    "Note: more workers does NOT reduce single-request latency"
+   ],
+   "solution": [
+    {
+     "label": "Prescriptions",
+     "code": "a) Reference lookup on every request → Cache scope (TTL ~1h) in the flow.\nb) Identical public GET for 60 s → HTTP Caching policy at the API instance.\nc) Worker saturates at peak → horizontal scale (more workers) for\n   throughput + availability.\nNOT helpful: adding workers to make one request faster."
+    }
+   ],
+   "solutionNotes": "<p>Match the tool to the goal: a <strong>Cache scope</strong> removes a repeated in-flow lookup; the <strong>HTTP Caching policy</strong> serves identical responses at the edge; <strong>horizontal scaling</strong> buys throughput and availability, not lower single-request latency. Object Store is for <em>state</em> (\"remember the last processed record\"), not caching. The trap is expecting more workers to speed up an individual request.</p>"
+  },
+  {
+   "id": "pa-ex-11",
+   "section": "p9",
+   "title": "Design an alerting scheme across the application network",
+   "level": "medium",
+   "where": "Design — Anypoint Platform (Monitoring)",
+   "task": "<p>Operations needs to be alerted for: (1) the app has stopped / worker crashed; (2) an API's 5xx rate or a policy violation spikes; (3) end-to-end 'is the checkout API functionally correct right now?'; (4) searching all production logs across apps for one transaction. Map each to the right tool and signal.</p>",
+   "given": [
+    {
+     "label": "Tools",
+     "code": "Runtime Manager alerts · API Manager alerts/analytics ·\nAnypoint Monitoring (metrics + log management) ·\nAPI Functional Monitoring (BAT synthetic tests)"
+    }
+   ],
+   "steps": [
+    "App down / worker crash / CPU-memory → Runtime Manager alert",
+    "5xx rate / policy violation / SLA breach on an API → API Manager alert/analytics",
+    "Functional correctness of a live endpoint → API Functional Monitoring (BAT)",
+    "Cross-app log search by correlation id → Anypoint Monitoring log management"
+   ],
+   "solution": [
+    {
+     "label": "Mapping",
+     "code": "1) App stopped / worker crash      → Runtime Manager alert\n2) 5xx rate / policy violation     → API Manager alert + analytics\n3) 'functionally correct now?'     → API Functional Monitoring (BAT)\n4) Search all prod logs, one txn   → Anypoint Monitoring (log mgmt,\n                                      trace by correlation id)"
+    }
+   ],
+   "solutionNotes": "<p>Each plane owns a different signal: <strong>Runtime Manager</strong> watches the deployed worker (up/down, CPU/memory); <strong>API Manager</strong> watches the API instance (5xx, policy violations, SLA); <strong>Functional Monitoring (BAT)</strong> answers \"is it correct right now?\" with synthetic calls; <strong>Anypoint Monitoring</strong> aggregates metrics and logs for cross-app tracing. Picking the wrong plane is the common mistake.</p>"
   }
  ]
 }
