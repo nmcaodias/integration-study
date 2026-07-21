@@ -2424,7 +2424,8 @@
     "API-led connectivity as an architecture": "https://docs.mulesoft.com/general/api-led-overview",
     "Web APIs and HTTP": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods",
     "Event-driven APIs and message brokers": "https://docs.mulesoft.com/mq/",
-    "Common messaging patterns": "https://docs.mulesoft.com/mule-runtime/latest/reliability-patterns"
+    "Common messaging patterns": "https://docs.mulesoft.com/mule-runtime/latest/reliability-patterns",
+    "Sync or async — a decision map": "https://docs.mulesoft.com/mule-runtime/latest/reliability-patterns"
    },
    "objectives": [
     "Create high-level integration architectures using API-led Connectivity",
@@ -2432,7 +2433,7 @@
     "Create high-level integration architectures using event-driven APIs and message brokers",
     "Design Mule applications and integration solutions using common messaging patterns and technologies"
    ],
-   "notes": "\n<h3>API-led connectivity as an architecture</h3>\n<p>The three-layer model (Experience / Process / System — see the MCD L1 notes for the diagram) is the default MuleSoft answer to \"how do we structure the application network.\" As an <em>architect</em>, know its trade-offs, not just its shape:</p>\n<ul>\n<li><strong>Benefits:</strong> reuse (System APIs serve many projects), decoupling (backends can be swapped behind stable contracts), independent scaling and ownership per layer, governance points at each boundary.</li>\n<li><strong>Costs:</strong> extra network hops add latency; more deployable units to operate and version; not every flow needs all three layers (a simple pass-through may justify collapsing layers — architecture is about <em>justified</em> exceptions).</li>\n<li>Layers are enforced organizationally (naming, Exchange catalogs, C4E guidance), not by the platform itself.</li>\n</ul>\n\n<h3>Web APIs and HTTP</h3>\n<ul>\n<li><strong>Synchronous request-response</strong> over HTTP(S) is the right paradigm when the caller needs the answer NOW (UI interactions, validations, lookups). Latency budgets add up across layers — an Experience→Process→System chain has three sequential hops.</li>\n<li>REST maturity: resources + verbs + status codes; idempotency of PUT/DELETE/GET matters for retry design (safe to retry) vs POST (needs idempotency keys or dedup).</li>\n<li>HTTP-based integration couples <em>availability</em>: if the backend is down, the caller fails (unless you add async buffering). This \"temporal coupling\" is the core argument for messaging in reliability scenarios.</li>\n</ul>\n\n<h3>Event-driven APIs and message brokers</h3>\n<ul>\n<li><strong>Message brokers decouple in time</strong>: producers publish; consumers process when able. Load spikes are buffered; consumers can be down without losing data; producers don't know consumers.</li>\n<li>Broker options in scope: <strong>Anypoint MQ</strong> (MuleSoft-hosted: standard queues, FIFO queues, message <em>exchanges</em> for fan-out, DLQs, ack modes), <strong>JMS</strong> brokers (ActiveMQ, IBM MQ — queues and topics), <strong>VM queues</strong> (intra-app only), and externally Kafka for high-volume event streaming.</li>\n<li><strong>Event-driven APIs</strong> are contracts over async channels, described with <strong>AsyncAPI</strong>: instead of \"GET /orders\", the contract says \"the OrderCreated event is published on channel X with this schema\".</li>\n<li>Queue vs topic/exchange semantics: <em>queue</em> = each message consumed by ONE consumer (point-to-point, competing consumers scale horizontally); <em>topic/exchange</em> = each subscriber gets a COPY (pub-sub, broadcast).</li>\n</ul>\n\n<h3>Common messaging patterns</h3>\n<table>\n<tr><th>Pattern</th><th>What it solves</th><th>MuleSoft realization</th></tr>\n<tr><td>Point-to-point</td><td>Reliable handoff to exactly one processor</td><td>Anypoint MQ / JMS queue, VM queue</td></tr>\n<tr><td>Publish-subscribe</td><td>Broadcast one event to many independent consumers</td><td>JMS topic, Anypoint MQ message exchange</td></tr>\n<tr><td>Competing consumers</td><td>Scale consumption horizontally</td><td>Multiple workers/nodes consuming one queue</td></tr>\n<tr><td>Asynchronous request-reply</td><td>Get an answer without blocking/temporal coupling</td><td>Request queue + reply queue, correlation ID carried in messages (JMS <code>JMSCorrelationID</code> / MQ properties)</td></tr>\n<tr><td>Dead-letter queue</td><td>Park poison messages for inspection</td><td>Anypoint MQ DLQ (delivery-count based), JMS broker DLQs, redelivery policy + custom DLQ flow</td></tr>\n<tr><td>Idempotent receiver</td><td>Tolerate duplicate delivery (at-least-once brokers)</td><td>Idempotent Message Validator backed by Object Store</td></tr>\n<tr><td>Claim check</td><td>Keep large payloads out of the broker</td><td>Store payload (S3/DB), send reference message</td></tr>\n</table>\n<p class=\"tip\"><strong>Exam tip:</strong> the sync-vs-async decision is the most common scenario question. Caller needs the result to proceed → HTTP request-response. \"Must not lose orders even if the ERP is down for hours\" / \"handle Black Friday spikes\" / \"notify N systems\" → broker-based async. And remember every at-least-once delivery system implies <em>duplicates are possible</em> — pair it with idempotency.</p>"
+   "notes": "\n<h3>API-led connectivity as an architecture</h3>\n<p>The three-layer model (Experience / Process / System — see the MCD L1 notes for the diagram) is the default MuleSoft answer to \"how do we structure the application network.\" As an <em>architect</em>, know its trade-offs, not just its shape:</p>\n<ul>\n<li><strong>Benefits:</strong> reuse (System APIs serve many projects), decoupling (backends can be swapped behind stable contracts), independent scaling and ownership per layer, governance points at each boundary.</li>\n<li><strong>Costs:</strong> extra network hops add latency; more deployable units to operate and version; not every flow needs all three layers (a simple pass-through may justify collapsing layers — architecture is about <em>justified</em> exceptions).</li>\n<li>Layers are enforced organizationally (naming, Exchange catalogs, C4E guidance), not by the platform itself.</li>\n</ul>\n\n<h3>Web APIs and HTTP</h3>\n<ul>\n<li><strong>Synchronous request-response</strong> over HTTP(S) is the right paradigm when the caller needs the answer NOW (UI interactions, validations, lookups). Latency budgets add up across layers — an Experience→Process→System chain has three sequential hops.</li>\n<li>REST maturity: resources + verbs + status codes; idempotency of PUT/DELETE/GET matters for retry design (safe to retry) vs POST (needs idempotency keys or dedup).</li>\n<li>HTTP-based integration couples <em>availability</em>: if the backend is down, the caller fails (unless you add async buffering). This \"temporal coupling\" is the core argument for messaging in reliability scenarios.</li>\n</ul>\n\n<h3>Event-driven APIs and message brokers</h3>\n<ul>\n<li><strong>Message brokers decouple in time</strong>: producers publish; consumers process when able. Load spikes are buffered; consumers can be down without losing data; producers don't know consumers.</li>\n<li>Broker options in scope: <strong>Anypoint MQ</strong> (MuleSoft-hosted: standard queues, FIFO queues, message <em>exchanges</em> for fan-out, DLQs, ack modes), <strong>JMS</strong> brokers (ActiveMQ, IBM MQ — queues and topics), <strong>VM queues</strong> (intra-app only), and externally Kafka for high-volume event streaming.</li>\n<li><strong>Event-driven APIs</strong> are contracts over async channels, described with <strong>AsyncAPI</strong>: instead of \"GET /orders\", the contract says \"the OrderCreated event is published on channel X with this schema\".</li>\n<li>Queue vs topic/exchange semantics: <em>queue</em> = each message consumed by ONE consumer (point-to-point, competing consumers scale horizontally); <em>topic/exchange</em> = each subscriber gets a COPY (pub-sub, broadcast).</li>\n</ul>\n\n<h3>Common messaging patterns</h3>\n<table>\n<tr><th>Pattern</th><th>What it solves</th><th>MuleSoft realization</th></tr>\n<tr><td>Point-to-point</td><td>Reliable handoff to exactly one processor</td><td>Anypoint MQ / JMS queue, VM queue</td></tr>\n<tr><td>Publish-subscribe</td><td>Broadcast one event to many independent consumers</td><td>JMS topic, Anypoint MQ message exchange</td></tr>\n<tr><td>Competing consumers</td><td>Scale consumption horizontally</td><td>Multiple workers/nodes consuming one queue</td></tr>\n<tr><td>Asynchronous request-reply</td><td>Get an answer without blocking/temporal coupling</td><td>Request queue + reply queue, correlation ID carried in messages (JMS <code>JMSCorrelationID</code> / MQ properties)</td></tr>\n<tr><td>Dead-letter queue</td><td>Park poison messages for inspection</td><td>Anypoint MQ DLQ (delivery-count based), JMS broker DLQs, redelivery policy + custom DLQ flow</td></tr>\n<tr><td>Idempotent receiver</td><td>Tolerate duplicate delivery (at-least-once brokers)</td><td>Idempotent Message Validator backed by Object Store</td></tr>\n<tr><td>Claim check</td><td>Keep large payloads out of the broker</td><td>Store payload (S3/DB), send reference message</td></tr>\n</table>\n<p class=\"tip\"><strong>Exam tip:</strong> the sync-vs-async decision is the most common scenario question. Caller needs the result to proceed → HTTP request-response. \"Must not lose orders even if the ERP is down for hours\" / \"handle Black Friday spikes\" / \"notify N systems\" → broker-based async. And remember every at-least-once delivery system implies <em>duplicates are possible</em> — pair it with idempotency.</p>\n<h3>Sync or async — a decision map</h3>\n<p>Two questions settle most integration-paradigm choices: does the caller need the answer in the same call, and must the work survive a downstream outage or fan out to many consumers?</p>\n<svg viewBox=\"0 0 640 170\" style=\"max-width:640px;width:100%\" role=\"img\" aria-label=\"Synchronous vs asynchronous decision map\">\n  <style>.ip-b{fill:none;stroke:currentColor;stroke-width:1.3}.ip-t{font:600 12px sans-serif;fill:currentColor}.ip-s{font:11px sans-serif;fill:currentColor;opacity:.8}.ip-a{stroke:currentColor;stroke-width:1.1;marker-end:url(#ipA)}</style>\n  <defs><marker id=\"ipA\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L6,3 L0,6 z\" fill=\"currentColor\"/></marker></defs>\n  <rect class=\"ip-b\" x=\"232\" y=\"10\" width=\"176\" height=\"34\" rx=\"5\"/>\n  <text class=\"ip-t\" x=\"320\" y=\"31\" text-anchor=\"middle\">Caller needs answer now?</text>\n  <line class=\"ip-a\" x1=\"232\" y1=\"27\" x2=\"150\" y2=\"62\"/>\n  <text class=\"ip-s\" x=\"168\" y=\"52\">yes</text>\n  <line class=\"ip-a\" x1=\"408\" y1=\"27\" x2=\"490\" y2=\"62\"/>\n  <text class=\"ip-s\" x=\"452\" y=\"52\">no</text>\n  <rect class=\"ip-b\" x=\"44\" y=\"64\" width=\"212\" height=\"40\" rx=\"5\"/>\n  <text class=\"ip-t\" x=\"150\" y=\"80\" text-anchor=\"middle\">Sync HTTP request/reply</text>\n  <text class=\"ip-s\" x=\"150\" y=\"96\" text-anchor=\"middle\">caller blocks, gets result</text>\n  <rect class=\"ip-b\" x=\"384\" y=\"64\" width=\"212\" height=\"40\" rx=\"5\"/>\n  <text class=\"ip-t\" x=\"490\" y=\"84\" text-anchor=\"middle\">Must survive outage / fan out?</text>\n  <line class=\"ip-a\" x1=\"440\" y1=\"104\" x2=\"360\" y2=\"132\"/>\n  <text class=\"ip-s\" x=\"384\" y=\"124\">yes</text>\n  <rect class=\"ip-b\" x=\"200\" y=\"132\" width=\"320\" height=\"30\" rx=\"5\"/>\n  <text class=\"ip-t\" x=\"360\" y=\"151\" text-anchor=\"middle\">Async broker / durable queue — pub/sub, store-and-forward</text>\n  <text class=\"ip-s\" x=\"600\" y=\"124\" text-anchor=\"end\">at-least-once ⇒ idempotency</text>\n</svg>"
   },
   {
    "id": "a3",
@@ -2484,7 +2485,8 @@
     "CloudHub networking": "https://docs.mulesoft.com/cloudhub/cloudhub-networking-guide",
     "Runtime domains — when they help": "https://docs.mulesoft.com/mule-runtime/latest/shared-resources",
     "Mule 4 class loader isolation": "https://docs.mulesoft.com/mule-runtime/latest/about-classloading-isolation",
-    "The reactive event processing model": "https://docs.mulesoft.com/mule-runtime/latest/execution-engine"
+    "The reactive event processing model": "https://docs.mulesoft.com/mule-runtime/latest/execution-engine",
+    "Where do the apps run?": "https://docs.mulesoft.com/cloudhub/cloudhub-networking-guide"
    },
    "objectives": [
     "Analyze the mode of operation of a Mule runtime cluster vs other deployment options",
@@ -2493,7 +2495,7 @@
     "Design applications making effective use of Mule 4 class loader isolation",
     "Describe the Mule 4 reactive event processing model"
    ],
-   "notes": "\n<h3>Mule runtime clusters</h3>\n<figure><img src=\"images/cluster.png\" alt=\"A Mule cluster: nodes connected through a distributed shared memory grid\"><figcaption>Cluster nodes share state through a distributed shared memory grid <em>(source: docs.mulesoft.com)</em></figcaption></figure>\n<ul>\n<li>A <strong>cluster</strong> (customer-hosted only) is a set of Mule runtimes acting as one unit via a <strong>distributed shared memory grid</strong> (Hazelcast). Shared: persistent + transient <strong>VM queues</strong>, <strong>Object Stores</strong>, and the runtime <strong>LockFactory</strong>. Model is <strong>active-active</strong> — all nodes process events.</li>\n<li>The <strong>primary node</strong> exclusively runs Schedulers and sources marked <code>primaryNodeOnly</code> (JMS topic listeners, Salesforce streaming, file polling…) so polling/subscription isn't duplicated. If the primary fails, another node is elected.</li>\n<li>Failure handling: in-flight work on a dead node is recoverable because queued messages live in the grid; other nodes pick them up.</li>\n<li><strong>Quorum</strong> protects against split-brain when a cluster spans zones: only the partition with the majority keeps working (applies to Object Store operations).</li>\n<li><strong>Cluster vs server group:</strong> a server group is just a deployment target (same app on N independent servers) — <em>no shared state, no primary node</em>. Idempotency, shared VM queues, and single-consumer sources only work correctly on a cluster (or with external shared infrastructure).</li>\n<li>Requirements: ≥2 nodes, reliable LAN, TCP 5701–5703 between nodes (+UDP multicast if enabled).</li>\n</ul>\n\n<h3>CloudHub networking</h3>\n<figure><img src=\"images/ch-networking-guide.png\" alt=\"CloudHub networking: shared load balancer in front of workers, optional VPC, external and internal worker DNS records\"><figcaption>CloudHub: load balancer → workers, optional Anypoint VPC, and the three DNS record families <em>(source: docs.mulesoft.com)</em></figcaption></figure>\n<ul>\n<li><strong>Workers</strong> are dedicated VMs (per app) in a MuleSoft-managed AWS account; multi-worker apps are load-balanced and spread across availability zones automatically.</li>\n<li><strong>Shared load balancer (SLB):</strong> <code>myapp.&lt;region&gt;.cloudhub.io</code> on 80/443 forwards to worker port <strong>8081/8082</strong> (listeners must bind <code>${http.port}</code>/<code>${https.port}</code>). Idle timeout ~300 s; no custom domains/certs.</li>\n<li><strong>Anypoint VPC:</strong> a private network for your workers, connectable to your data center via <strong>VPN or AWS DirectConnect/peering</strong>. Inside a VPC, workers expose <strong>internal-only ports 8091/8092</strong> (<code>${http.private.port}</code>) reachable via <code>mule-worker-internal-myapp...</code> DNS — the standard way to make APIs private.</li>\n<li><strong>Dedicated load balancer (DLB):</strong> deployed into your VPC; gives custom domains + your TLS certs (incl. two-way TLS), mapping rules, and routes to workers' internal ports. Public SLB access can then be blocked via VPC firewall rules.</li>\n<li><strong>Static IPs</strong> can be enabled per app for allowlisting by partners (public IPs only, not inside VPC).</li>\n<li>CloudHub 2.0 equivalents: <strong>private spaces</strong> (≈VPC + ingress), replicas instead of workers.</li>\n</ul>\n\n<h3>Runtime domains — when they help</h3>\n<p>Domains (customer-hosted standalone/cluster only) share global configs — most usefully a shared <strong>HTTP listener</strong> (one port for many apps on the same runtime), shared TLS contexts, DB configs. Choose them ONLY when apps co-located on one runtime genuinely benefit (port sharing, config dedup); costs: domain redeploys affect all apps, tighter coupling, not portable to CloudHub/RTF (each app there is isolated).</p>\n\n<h3>Mule 4 class loader isolation</h3>\n<ul>\n<li>Mule 4 isolates classloaders in a hierarchy: <strong>runtime</strong> classes, each <strong>plugin/connector's</strong> classes, and the <strong>application's</strong> classes are separated — apps only see the runtime's exported API and their own dependencies, so a connector's internal libraries can't clash with the app's versions (the Mule 3 \"jar hell\" fix).</li>\n<li>Consequences to design for: a JAR the <em>app</em> declares is invisible to <em>connectors</em> — JDBC drivers / JMS client JARs must be declared as <strong>sharedLibraries</strong> in the mule-maven-plugin so they're loaded where the connector can see them.</li>\n<li>Custom code (Java) that must be reused across apps → package as a library or a <strong>Mule plugin</strong> (classifier <code>mule-plugin</code>) which gets its own isolated classloader; <code>mule-artifact.json</code> can export packages/resources deliberately.</li>\n</ul>\n\n<h3>The reactive event processing model</h3>\n<ul>\n<li>Mule 4's execution engine is <strong>non-blocking / reactive</strong>: flows don't own threads; events are scheduled onto a small number of shared thread pools (consolidated into the single self-tuning <strong>UBER</strong> pool in current runtimes).</li>\n<li>Each operation declares a <strong>processing type</strong>: <code>CPU_LITE</code> (quick, non-blocking — most processors), <code>CPU_INTENSIVE</code> (heavy compute, e.g. large transforms), <code>BLOCKING_IO</code> (waits on I/O, e.g. JDBC). The runtime schedules each on appropriate threads — a few hundred threads can serve thousands of concurrent events because waiting doesn't hold a thread (non-blocking HTTP, async connectors).</li>\n<li><strong>Back-pressure:</strong> when concurrency limits are hit, sources are told to slow down (HTTP returns 503). Shape concurrency with <code>maxConcurrency</code> on flows rather than custom thread pools; per-flow pool tuning is a Mule 3 habit that no longer applies.</li>\n<li>Implication for design: never block inside CPU_LITE custom code (Thread.sleep, sync HTTP calls in Java) — it starves the shared pools and stalls seemingly unrelated flows.</li>\n</ul>\n<p class=\"tip\"><strong>Exam tip:</strong> cluster vs server group (shared state + primary node vs neither) is a guaranteed topic. For CloudHub scenarios map requirement→feature: private API → VPC + internal DNS (8091/8092); custom domain/mutual TLS → DLB; partner IP allowlisting → static IPs; on-prem connectivity → VPN into the VPC. For class loading, the answer to \"connector can't find the driver class\" is always sharedLibraries.</p>"
+   "notes": "\n<h3>Mule runtime clusters</h3>\n<figure><img src=\"images/cluster.png\" alt=\"A Mule cluster: nodes connected through a distributed shared memory grid\"><figcaption>Cluster nodes share state through a distributed shared memory grid <em>(source: docs.mulesoft.com)</em></figcaption></figure>\n<ul>\n<li>A <strong>cluster</strong> (customer-hosted only) is a set of Mule runtimes acting as one unit via a <strong>distributed shared memory grid</strong> (Hazelcast). Shared: persistent + transient <strong>VM queues</strong>, <strong>Object Stores</strong>, and the runtime <strong>LockFactory</strong>. Model is <strong>active-active</strong> — all nodes process events.</li>\n<li>The <strong>primary node</strong> exclusively runs Schedulers and sources marked <code>primaryNodeOnly</code> (JMS topic listeners, Salesforce streaming, file polling…) so polling/subscription isn't duplicated. If the primary fails, another node is elected.</li>\n<li>Failure handling: in-flight work on a dead node is recoverable because queued messages live in the grid; other nodes pick them up.</li>\n<li><strong>Quorum</strong> protects against split-brain when a cluster spans zones: only the partition with the majority keeps working (applies to Object Store operations).</li>\n<li><strong>Cluster vs server group:</strong> a server group is just a deployment target (same app on N independent servers) — <em>no shared state, no primary node</em>. Idempotency, shared VM queues, and single-consumer sources only work correctly on a cluster (or with external shared infrastructure).</li>\n<li>Requirements: ≥2 nodes, reliable LAN, TCP 5701–5703 between nodes (+UDP multicast if enabled).</li>\n</ul>\n\n<h3>CloudHub networking</h3>\n<figure><img src=\"images/ch-networking-guide.png\" alt=\"CloudHub networking: shared load balancer in front of workers, optional VPC, external and internal worker DNS records\"><figcaption>CloudHub: load balancer → workers, optional Anypoint VPC, and the three DNS record families <em>(source: docs.mulesoft.com)</em></figcaption></figure>\n<ul>\n<li><strong>Workers</strong> are dedicated VMs (per app) in a MuleSoft-managed AWS account; multi-worker apps are load-balanced and spread across availability zones automatically.</li>\n<li><strong>Shared load balancer (SLB):</strong> <code>myapp.&lt;region&gt;.cloudhub.io</code> on 80/443 forwards to worker port <strong>8081/8082</strong> (listeners must bind <code>${http.port}</code>/<code>${https.port}</code>). Idle timeout ~300 s; no custom domains/certs.</li>\n<li><strong>Anypoint VPC:</strong> a private network for your workers, connectable to your data center via <strong>VPN or AWS DirectConnect/peering</strong>. Inside a VPC, workers expose <strong>internal-only ports 8091/8092</strong> (<code>${http.private.port}</code>) reachable via <code>mule-worker-internal-myapp...</code> DNS — the standard way to make APIs private.</li>\n<li><strong>Dedicated load balancer (DLB):</strong> deployed into your VPC; gives custom domains + your TLS certs (incl. two-way TLS), mapping rules, and routes to workers' internal ports. Public SLB access can then be blocked via VPC firewall rules.</li>\n<li><strong>Static IPs</strong> can be enabled per app for allowlisting by partners (public IPs only, not inside VPC).</li>\n<li>CloudHub 2.0 equivalents: <strong>private spaces</strong> (≈VPC + ingress), replicas instead of workers.</li>\n</ul>\n\n<h3>Runtime domains — when they help</h3>\n<p>Domains (customer-hosted standalone/cluster only) share global configs — most usefully a shared <strong>HTTP listener</strong> (one port for many apps on the same runtime), shared TLS contexts, DB configs. Choose them ONLY when apps co-located on one runtime genuinely benefit (port sharing, config dedup); costs: domain redeploys affect all apps, tighter coupling, not portable to CloudHub/RTF (each app there is isolated).</p>\n\n<h3>Mule 4 class loader isolation</h3>\n<ul>\n<li>Mule 4 isolates classloaders in a hierarchy: <strong>runtime</strong> classes, each <strong>plugin/connector's</strong> classes, and the <strong>application's</strong> classes are separated — apps only see the runtime's exported API and their own dependencies, so a connector's internal libraries can't clash with the app's versions (the Mule 3 \"jar hell\" fix).</li>\n<li>Consequences to design for: a JAR the <em>app</em> declares is invisible to <em>connectors</em> — JDBC drivers / JMS client JARs must be declared as <strong>sharedLibraries</strong> in the mule-maven-plugin so they're loaded where the connector can see them.</li>\n<li>Custom code (Java) that must be reused across apps → package as a library or a <strong>Mule plugin</strong> (classifier <code>mule-plugin</code>) which gets its own isolated classloader; <code>mule-artifact.json</code> can export packages/resources deliberately.</li>\n</ul>\n\n<h3>The reactive event processing model</h3>\n<ul>\n<li>Mule 4's execution engine is <strong>non-blocking / reactive</strong>: flows don't own threads; events are scheduled onto a small number of shared thread pools (consolidated into the single self-tuning <strong>UBER</strong> pool in current runtimes).</li>\n<li>Each operation declares a <strong>processing type</strong>: <code>CPU_LITE</code> (quick, non-blocking — most processors), <code>CPU_INTENSIVE</code> (heavy compute, e.g. large transforms), <code>BLOCKING_IO</code> (waits on I/O, e.g. JDBC). The runtime schedules each on appropriate threads — a few hundred threads can serve thousands of concurrent events because waiting doesn't hold a thread (non-blocking HTTP, async connectors).</li>\n<li><strong>Back-pressure:</strong> when concurrency limits are hit, sources are told to slow down (HTTP returns 503). Shape concurrency with <code>maxConcurrency</code> on flows rather than custom thread pools; per-flow pool tuning is a Mule 3 habit that no longer applies.</li>\n<li>Implication for design: never block inside CPU_LITE custom code (Thread.sleep, sync HTTP calls in Java) — it starves the shared pools and stalls seemingly unrelated flows.</li>\n</ul>\n<p class=\"tip\"><strong>Exam tip:</strong> cluster vs server group (shared state + primary node vs neither) is a guaranteed topic. For CloudHub scenarios map requirement→feature: private API → VPC + internal DNS (8091/8092); custom domain/mutual TLS → DLB; partner IP allowlisting → static IPs; on-prem connectivity → VPN into the VPC. For class loading, the answer to \"connector can't find the driver class\" is always sharedLibraries.</p>\n<h3>Where do the apps run?</h3>\n<p>The control plane (design, deploy, monitor) is always MuleSoft-managed. What differs is the <em>runtime plane</em> — who owns the compute the apps execute on. That ownership question decides CloudHub vs Runtime Fabric vs hybrid.</p>\n<svg viewBox=\"0 0 640 176\" style=\"max-width:640px;width:100%\" role=\"img\" aria-label=\"Runtime plane options by who owns the compute\">\n  <style>.rp-b{fill:none;stroke:currentColor;stroke-width:1.3}.rp-t{font:600 12px sans-serif;fill:currentColor}.rp-s{font:11px sans-serif;fill:currentColor;opacity:.8}.rp-d{stroke:currentColor;stroke-width:1;stroke-dasharray:4 3}</style>\n  <rect class=\"rp-b\" x=\"8\" y=\"8\" width=\"624\" height=\"30\" rx=\"5\"/>\n  <text class=\"rp-t\" x=\"320\" y=\"27\" text-anchor=\"middle\">Anypoint control plane — MuleSoft-managed (design · deploy · monitor)</text>\n  <line class=\"rp-d\" x1=\"8\" y1=\"50\" x2=\"632\" y2=\"50\"/>\n  <text class=\"rp-s\" x=\"320\" y=\"64\" text-anchor=\"middle\">runtime plane — who owns the compute?</text>\n  <rect class=\"rp-b\" x=\"8\" y=\"74\" width=\"200\" height=\"94\" rx=\"6\"/>\n  <text class=\"rp-t\" x=\"108\" y=\"94\" text-anchor=\"middle\">CloudHub 2.0</text>\n  <text class=\"rp-s\" x=\"108\" y=\"116\" text-anchor=\"middle\">MuleSoft-hosted</text>\n  <text class=\"rp-s\" x=\"108\" y=\"134\" text-anchor=\"middle\">workers + private space</text>\n  <text class=\"rp-s\" x=\"108\" y=\"156\" text-anchor=\"middle\">least ops, fastest</text>\n  <rect class=\"rp-b\" x=\"220\" y=\"74\" width=\"200\" height=\"94\" rx=\"6\"/>\n  <text class=\"rp-t\" x=\"320\" y=\"94\" text-anchor=\"middle\">Runtime Fabric</text>\n  <text class=\"rp-s\" x=\"320\" y=\"116\" text-anchor=\"middle\">customer&apos;s own k8s</text>\n  <text class=\"rp-s\" x=\"320\" y=\"134\" text-anchor=\"middle\">data stays in-network</text>\n  <text class=\"rp-s\" x=\"320\" y=\"156\" text-anchor=\"middle\">residency / private link</text>\n  <rect class=\"rp-b\" x=\"432\" y=\"74\" width=\"200\" height=\"94\" rx=\"6\"/>\n  <text class=\"rp-t\" x=\"532\" y=\"94\" text-anchor=\"middle\">Hybrid</text>\n  <text class=\"rp-s\" x=\"532\" y=\"116\" text-anchor=\"middle\">Mule on customer VMs</text>\n  <text class=\"rp-s\" x=\"532\" y=\"134\" text-anchor=\"middle\">most control</text>\n  <text class=\"rp-s\" x=\"532\" y=\"156\" text-anchor=\"middle\">most ops to run</text>\n</svg>"
   },
   {
    "id": "a6",
@@ -2517,7 +2519,8 @@
     "Transactions — and their alternatives": "https://docs.mulesoft.com/mule-runtime/latest/transaction-management",
     "Until Successful, reconnection, redelivery": "https://docs.mulesoft.com/mule-runtime/latest/until-successful-scope",
     "High availability vs disaster recovery": "https://docs.mulesoft.com/mule-runtime/latest/mule-high-availability-ha-clusters",
-    "Reliability patterns with queues": "https://docs.mulesoft.com/mule-runtime/latest/reliability-patterns"
+    "Reliability patterns with queues": "https://docs.mulesoft.com/mule-runtime/latest/reliability-patterns",
+    "The reliability ladder": "https://docs.mulesoft.com/mule-runtime/latest/reliability-patterns"
    },
    "objectives": [
     "Select alternatives to traditional transactions where appropriate",
@@ -2525,7 +2528,7 @@
     "Differentiate disaster recovery from high availability in all deployment options",
     "Design solutions using local and XA transactions where connectors support them"
    ],
-   "notes": "\n<h3>Transactions — and their alternatives</h3>\n<p>Local (single-resource) and XA transactions work as covered in MCD L2 (VM, JMS, DB participate; HTTP/File/SFTP don't; XA = two-phase commit across resources, heavier). The architect skill is knowing when NOT to use them:</p>\n<table>\n<tr><th>Alternative</th><th>Idea</th><th>Use when</th></tr>\n<tr><td><strong>Idempotency + retries</strong></td><td>Make the operation safe to repeat; then at-least-once delivery + redelivery replaces atomicity</td><td>Target is an API/system without transaction support (HTTP, SaaS)</td></tr>\n<tr><td><strong>Reliable messaging (store-and-forward)</strong></td><td>Persist the message first (queue), process asynchronously, ack only on success</td><td>Zero message loss across unreliable steps; decoupling wanted anyway</td></tr>\n<tr><td><strong>Compensation (saga)</strong></td><td>Each step has an undo action executed if a later step fails</td><td>Long-running multi-system processes where locking is impossible (book flight + hotel; cancel flight if hotel fails)</td></tr>\n<tr><td><strong>Eventual consistency</strong></td><td>Accept temporary divergence; converge via events/reconciliation</td><td>Cross-system data sync where strict consistency isn't a business requirement</td></tr>\n</table>\n<p>XA across systems is a last resort: it requires all parties to support it, holds locks, performs poorly, and still can't include HTTP APIs — most modern integration reliability is queues + idempotency + compensation.</p>\n\n<h3>Until Successful, reconnection, redelivery</h3>\n<ul>\n<li><strong>Reconnection strategy</strong> (connector config): re-establish a broken <em>connection</em> (count/frequency or forever). First line of defense against network blips; applies to sources and operations.</li>\n<li><strong>Until Successful</strong> (scope): retry the <em>operations inside it</em> up to maxRetries with a fixed interval; exhaustion raises RETRY_EXHAUSTED. Synchronous, in-flow, best for short transient failures. Beware: the event is held in memory during retries — not a persistence mechanism.</li>\n<li><strong>Redelivery policy</strong> (on a source): counts failed processing attempts of the <em>same message</em>; beyond maxRedeliveryCount raises REDELIVERY_EXHAUSTED → route to a DLQ. Protects consumers from poison messages; pairs with broker-side delivery counts (Anypoint MQ maxDeliveries → DLQ).</li>\n</ul>\n\n<h3>High availability vs disaster recovery</h3>\n<table>\n<tr><th></th><th>High availability (HA)</th><th>Disaster recovery (DR)</th></tr>\n<tr><td>Protects against</td><td>Component failure (a worker, node, AZ)</td><td>Loss of a whole site/region</td></tr>\n<tr><td>Mechanism</td><td>Redundancy + automatic failover <em>within</em> the deployment</td><td>Ability to restore service <em>elsewhere</em>: standby environment, backups, runbooks</td></tr>\n<tr><td>Measured by</td><td>Uptime (99.9…%)</td><td><strong>RTO</strong> (time to recover) and <strong>RPO</strong> (data loss tolerance)</td></tr>\n<tr><td>CloudHub</td><td>≥2 workers (auto-distributed across AZs), platform restarts failed workers</td><td>Deploy/redeploy apps to another <em>region</em>; DNS switch; replicate external state (OSv2 and MQ are per-region!)</td></tr>\n<tr><td>RTF / customer-hosted</td><td>Multiple replicas/nodes, clusters, load balancers</td><td>Second data center or region: active-passive (warm standby) or active-active; replicate brokers/DBs; restore from IaC + artifact repos</td></tr>\n</table>\n<p>Key architect points: HA does not give you DR (two workers in one region die with the region); DR drills and documented RTO/RPO matter more than tooling; stateful services (queues, object stores, databases) dominate DR design — stateless Mule apps are easy to redeploy, their state is not.</p>\n\n<h3>Reliability patterns with queues</h3>\n<figure><img src=\"images/reliability-pattern.png\" alt=\"Reliable acquisition: accept and persist to a queue, then process asynchronously in a transactional consumer flow\"><figcaption>Reliable acquisition: persist first, ack the caller, process asynchronously under a transaction <em>(source: docs.mulesoft.com)</em></figcaption></figure>\n<p>The reliable-acquisition pattern (persist → ack → process, consuming transactionally so failures roll messages back) is the standard zero-loss design. On CloudHub use Anypoint MQ (or CH1 persistent VM queues within one app); customer-hosted can use persistent VM queues, JMS brokers, or MQ.</p>\n<p class=\"tip\"><strong>Exam tip:</strong> Reconnection = connection-level; Until Successful = operation-level, in-memory; redelivery policy = message-level at the source. \"Bank requires atomic write to its own two Oracle schemas\" → XA (or same-connection local tx). \"Must not lose orders if the ERP is down all weekend\" → queue-based store-and-forward, not Until Successful (the app could restart and lose the in-flight event).</p>"
+   "notes": "\n<h3>Transactions — and their alternatives</h3>\n<p>Local (single-resource) and XA transactions work as covered in MCD L2 (VM, JMS, DB participate; HTTP/File/SFTP don't; XA = two-phase commit across resources, heavier). The architect skill is knowing when NOT to use them:</p>\n<table>\n<tr><th>Alternative</th><th>Idea</th><th>Use when</th></tr>\n<tr><td><strong>Idempotency + retries</strong></td><td>Make the operation safe to repeat; then at-least-once delivery + redelivery replaces atomicity</td><td>Target is an API/system without transaction support (HTTP, SaaS)</td></tr>\n<tr><td><strong>Reliable messaging (store-and-forward)</strong></td><td>Persist the message first (queue), process asynchronously, ack only on success</td><td>Zero message loss across unreliable steps; decoupling wanted anyway</td></tr>\n<tr><td><strong>Compensation (saga)</strong></td><td>Each step has an undo action executed if a later step fails</td><td>Long-running multi-system processes where locking is impossible (book flight + hotel; cancel flight if hotel fails)</td></tr>\n<tr><td><strong>Eventual consistency</strong></td><td>Accept temporary divergence; converge via events/reconciliation</td><td>Cross-system data sync where strict consistency isn't a business requirement</td></tr>\n</table>\n<p>XA across systems is a last resort: it requires all parties to support it, holds locks, performs poorly, and still can't include HTTP APIs — most modern integration reliability is queues + idempotency + compensation.</p>\n\n<h3>Until Successful, reconnection, redelivery</h3>\n<ul>\n<li><strong>Reconnection strategy</strong> (connector config): re-establish a broken <em>connection</em> (count/frequency or forever). First line of defense against network blips; applies to sources and operations.</li>\n<li><strong>Until Successful</strong> (scope): retry the <em>operations inside it</em> up to maxRetries with a fixed interval; exhaustion raises RETRY_EXHAUSTED. Synchronous, in-flow, best for short transient failures. Beware: the event is held in memory during retries — not a persistence mechanism.</li>\n<li><strong>Redelivery policy</strong> (on a source): counts failed processing attempts of the <em>same message</em>; beyond maxRedeliveryCount raises REDELIVERY_EXHAUSTED → route to a DLQ. Protects consumers from poison messages; pairs with broker-side delivery counts (Anypoint MQ maxDeliveries → DLQ).</li>\n</ul>\n\n<h3>High availability vs disaster recovery</h3>\n<table>\n<tr><th></th><th>High availability (HA)</th><th>Disaster recovery (DR)</th></tr>\n<tr><td>Protects against</td><td>Component failure (a worker, node, AZ)</td><td>Loss of a whole site/region</td></tr>\n<tr><td>Mechanism</td><td>Redundancy + automatic failover <em>within</em> the deployment</td><td>Ability to restore service <em>elsewhere</em>: standby environment, backups, runbooks</td></tr>\n<tr><td>Measured by</td><td>Uptime (99.9…%)</td><td><strong>RTO</strong> (time to recover) and <strong>RPO</strong> (data loss tolerance)</td></tr>\n<tr><td>CloudHub</td><td>≥2 workers (auto-distributed across AZs), platform restarts failed workers</td><td>Deploy/redeploy apps to another <em>region</em>; DNS switch; replicate external state (OSv2 and MQ are per-region!)</td></tr>\n<tr><td>RTF / customer-hosted</td><td>Multiple replicas/nodes, clusters, load balancers</td><td>Second data center or region: active-passive (warm standby) or active-active; replicate brokers/DBs; restore from IaC + artifact repos</td></tr>\n</table>\n<p>Key architect points: HA does not give you DR (two workers in one region die with the region); DR drills and documented RTO/RPO matter more than tooling; stateful services (queues, object stores, databases) dominate DR design — stateless Mule apps are easy to redeploy, their state is not.</p>\n\n<h3>Reliability patterns with queues</h3>\n<figure><img src=\"images/reliability-pattern.png\" alt=\"Reliable acquisition: accept and persist to a queue, then process asynchronously in a transactional consumer flow\"><figcaption>Reliable acquisition: persist first, ack the caller, process asynchronously under a transaction <em>(source: docs.mulesoft.com)</em></figcaption></figure>\n<p>The reliable-acquisition pattern (persist → ack → process, consuming transactionally so failures roll messages back) is the standard zero-loss design. On CloudHub use Anypoint MQ (or CH1 persistent VM queues within one app); customer-hosted can use persistent VM queues, JMS brokers, or MQ.</p>\n<p class=\"tip\"><strong>Exam tip:</strong> Reconnection = connection-level; Until Successful = operation-level, in-memory; redelivery policy = message-level at the source. \"Bank requires atomic write to its own two Oracle schemas\" → XA (or same-connection local tx). \"Must not lose orders if the ERP is down all weekend\" → queue-based store-and-forward, not Until Successful (the app could restart and lose the in-flight event).</p>\n<h3>The reliability ladder</h3>\n<p>Match the mechanism to the failure duration. Transient blips climb the left rungs; long outages or \"must not lose it even if the app restarts\" force you to the durable, persisted rungs on the right.</p>\n<svg viewBox=\"0 0 640 128\" style=\"max-width:640px;width:100%\" role=\"img\" aria-label=\"Reliability mechanisms from transient to durable\">\n  <style>.rl-b{fill:none;stroke:currentColor;stroke-width:1.3}.rl-t{font:600 12px sans-serif;fill:currentColor}.rl-s{font:11px sans-serif;fill:currentColor;opacity:.8}.rl-a{stroke:currentColor;stroke-width:1.1;marker-end:url(#rlA)}</style>\n  <defs><marker id=\"rlA\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L6,3 L0,6 z\" fill=\"currentColor\"/></marker></defs>\n  <text class=\"rl-s\" x=\"12\" y=\"20\">transient failure</text>\n  <text class=\"rl-s\" x=\"628\" y=\"20\" text-anchor=\"end\">long outage / restart-safe</text>\n  <line class=\"rl-a\" x1=\"12\" y1=\"30\" x2=\"628\" y2=\"30\"/>\n  <rect class=\"rl-b\" x=\"8\" y=\"44\" width=\"150\" height=\"56\" rx=\"5\"/>\n  <text class=\"rl-t\" x=\"83\" y=\"64\" text-anchor=\"middle\">Reconnection</text>\n  <text class=\"rl-s\" x=\"83\" y=\"84\" text-anchor=\"middle\">connector retries</text>\n  <rect class=\"rl-b\" x=\"166\" y=\"44\" width=\"150\" height=\"56\" rx=\"5\"/>\n  <text class=\"rl-t\" x=\"241\" y=\"64\" text-anchor=\"middle\">Until Successful</text>\n  <text class=\"rl-s\" x=\"241\" y=\"84\" text-anchor=\"middle\">in-memory retry</text>\n  <rect class=\"rl-b\" x=\"324\" y=\"44\" width=\"150\" height=\"56\" rx=\"5\"/>\n  <text class=\"rl-t\" x=\"399\" y=\"64\" text-anchor=\"middle\">Transaction</text>\n  <text class=\"rl-s\" x=\"399\" y=\"84\" text-anchor=\"middle\">atomic commit/rollback</text>\n  <rect class=\"rl-b\" x=\"482\" y=\"44\" width=\"150\" height=\"56\" rx=\"5\"/>\n  <text class=\"rl-t\" x=\"557\" y=\"64\" text-anchor=\"middle\">Persistent queue</text>\n  <text class=\"rl-s\" x=\"557\" y=\"84\" text-anchor=\"middle\">store-and-forward + DLQ</text>\n</svg>"
   },
   {
    "id": "a8",
@@ -2569,7 +2572,8 @@
     "CI/CD pipelines with MuleSoft Maven plugins": "https://docs.mulesoft.com/mule-runtime/latest/mmp-concept",
     "Automating interactions with the platform": "https://docs.mulesoft.com/anypoint-cli/latest/",
     "Logging configurations across deployment options": "https://docs.mulesoft.com/mule-runtime/latest/logging-in-mule",
-    "Anypoint Monitoring across deployment options": "https://docs.mulesoft.com/monitoring/"
+    "Anypoint Monitoring across deployment options": "https://docs.mulesoft.com/monitoring/",
+    "Build once, promote many": "https://docs.mulesoft.com/mule-runtime/latest/mmp-concept"
    },
    "objectives": [
     "Design CI/CD pipelines for Mule applications using MuleSoft-provided Maven plugins",
@@ -2577,7 +2581,7 @@
     "Design logging configurations of Mule applications in all deployment options",
     "Identify Anypoint Monitoring features in all deployment options"
    ],
-   "notes": "\n<h3>CI/CD pipelines with MuleSoft Maven plugins</h3>\n<p>The canonical pipeline (tool-agnostic — Jenkins/GitHub Actions/Azure DevOps all drive the same Maven core):</p>\n<ol>\n<li><strong>Commit</strong> → trigger build.</li>\n<li><strong>Build & unit test:</strong> <code>mvn clean package</code> — compiles, runs <strong>MUnit</strong> via munit-maven-plugin, enforces coverage gates (fail the build), produces the deployable JAR once.</li>\n<li><strong>Publish:</strong> version the artifact (semver) and <code>mvn deploy</code> it to a repository (<strong>Exchange</strong> as Maven repo, groupId = org ID, or Nexus/Artifactory).</li>\n<li><strong>Deploy per environment:</strong> <code>mvn deploy -DmuleDeploy</code> with the <strong>mule-maven-plugin</strong>'s target config (cloudHubDeployment / cloudhub2Deployment / rtfDeployment / armDeployment / standaloneDeployment), injecting environment properties and secure keys from the pipeline's secret store. Same artifact promoted dev→test→prod — never rebuilt.</li>\n<li><strong>Post-deploy:</strong> smoke/integration tests, then promote.</li>\n</ol>\n<ul>\n<li>Authenticate as a <strong>Connected App</strong> (client_credentials) in <code>settings.xml</code>/plugin config — no personal accounts in automation.</li>\n<li>API lifecycle in the pipeline: publish the spec to Exchange, create/configure the API instance and policies via automation, pair the app by autodiscovery (api.id per environment).</li>\n</ul>\n\n<h3>Automating interactions with the platform</h3>\n<table>\n<tr><th>Tool</th><th>Use for</th></tr>\n<tr><td><strong>Anypoint Platform APIs</strong> (REST)</td><td>Everything the UI does: ARM (Runtime Manager), API Manager, Exchange, Access Management — the foundation all other tools call</td></tr>\n<tr><td><strong>Anypoint CLI</strong></td><td>Scriptable command-line access (deployments, API instances, policies, VPCs) for pipelines and ops scripts</td></tr>\n<tr><td><strong>Maven plugins</strong></td><td>mule-maven-plugin (package/deploy), munit-maven-plugin (test/coverage), exchange publication</td></tr>\n<tr><td>Provider ecosystems</td><td>Terraform-style IaC and CI plugins built on the platform APIs (recognize the concept)</td></tr>\n</table>\n\n<h3>Logging configurations across deployment options</h3>\n<ul>\n<li>Every app ships <code>log4j2.xml</code>: appenders + per-category levels; <strong>async loggers</strong> for throughput (accepting small crash-loss risk) vs sync for audit-grade logs. Correlation IDs in patterns; JSON layouts for machine parsing (details in MCD L2 d4).</li>\n<li><strong>CloudHub:</strong> platform captures console output (retention/size limits, searchable in Runtime Manager). For enterprise log aggregation, either use Anypoint Monitoring log management (Titanium) or <em>disable CloudHub logging</em> (org permission required) and ship logs with a custom appender (Splunk/ELK/HTTP).</li>\n<li><strong>Runtime Fabric:</strong> app logs go to the container stdout and are forwarded by the cluster's log forwarding setup (e.g. to ELK/Splunk); Anypoint Monitoring agents can publish metrics/logs to the control plane.</li>\n<li><strong>Customer-hosted:</strong> you own everything: file appenders + rotation, forwarders/agents into your central logging, and disk housekeeping.</li>\n</ul>\n\n<h3>Anypoint Monitoring across deployment options</h3>\n<ul>\n<li><strong>Built-in dashboards</strong> (all targets, agent-based on hybrid/RTF): app metrics — inbound/outbound throughput, response times, errors, JVM/CPU/memory; API analytics from gateways.</li>\n<li><strong>Custom dashboards & alerts:</strong> compose metrics, set threshold alerts (error ratio, response time, CPU) with notification channels.</li>\n<li><strong>Log management</strong> (Titanium subscription): centralized search over app logs with longer retention.</li>\n<li><strong>Functional monitoring (BAT):</strong> scheduled black-box API checks from public/private locations validating real behavior in production.</li>\n<li>Complementary: <strong>Runtime Manager alerts</strong> (app down, worker unresponsive, deployment failed), <strong>API Manager alerts</strong> (policy violations, response codes), <strong>Visualizer</strong> (live dependency graph of the application network).</li>\n</ul>\n<p class=\"tip\"><strong>Exam tip:</strong> pipeline questions almost always test: build ONCE and promote the same artifact; MUnit+coverage gates in the build stage; Connected App credentials; environment differences via properties, not rebuilds. Operations questions: know which tool answers \"app down?\" (RM alert), \"API abused?\" (API Manager alert/analytics), \"search all prod logs\" (Anypoint Monitoring log management), \"is the API functionally OK right now?\" (BAT).</p>"
+   "notes": "\n<h3>CI/CD pipelines with MuleSoft Maven plugins</h3>\n<p>The canonical pipeline (tool-agnostic — Jenkins/GitHub Actions/Azure DevOps all drive the same Maven core):</p>\n<ol>\n<li><strong>Commit</strong> → trigger build.</li>\n<li><strong>Build & unit test:</strong> <code>mvn clean package</code> — compiles, runs <strong>MUnit</strong> via munit-maven-plugin, enforces coverage gates (fail the build), produces the deployable JAR once.</li>\n<li><strong>Publish:</strong> version the artifact (semver) and <code>mvn deploy</code> it to a repository (<strong>Exchange</strong> as Maven repo, groupId = org ID, or Nexus/Artifactory).</li>\n<li><strong>Deploy per environment:</strong> <code>mvn deploy -DmuleDeploy</code> with the <strong>mule-maven-plugin</strong>'s target config (cloudHubDeployment / cloudhub2Deployment / rtfDeployment / armDeployment / standaloneDeployment), injecting environment properties and secure keys from the pipeline's secret store. Same artifact promoted dev→test→prod — never rebuilt.</li>\n<li><strong>Post-deploy:</strong> smoke/integration tests, then promote.</li>\n</ol>\n<ul>\n<li>Authenticate as a <strong>Connected App</strong> (client_credentials) in <code>settings.xml</code>/plugin config — no personal accounts in automation.</li>\n<li>API lifecycle in the pipeline: publish the spec to Exchange, create/configure the API instance and policies via automation, pair the app by autodiscovery (api.id per environment).</li>\n</ul>\n\n<h3>Automating interactions with the platform</h3>\n<table>\n<tr><th>Tool</th><th>Use for</th></tr>\n<tr><td><strong>Anypoint Platform APIs</strong> (REST)</td><td>Everything the UI does: ARM (Runtime Manager), API Manager, Exchange, Access Management — the foundation all other tools call</td></tr>\n<tr><td><strong>Anypoint CLI</strong></td><td>Scriptable command-line access (deployments, API instances, policies, VPCs) for pipelines and ops scripts</td></tr>\n<tr><td><strong>Maven plugins</strong></td><td>mule-maven-plugin (package/deploy), munit-maven-plugin (test/coverage), exchange publication</td></tr>\n<tr><td>Provider ecosystems</td><td>Terraform-style IaC and CI plugins built on the platform APIs (recognize the concept)</td></tr>\n</table>\n\n<h3>Logging configurations across deployment options</h3>\n<ul>\n<li>Every app ships <code>log4j2.xml</code>: appenders + per-category levels; <strong>async loggers</strong> for throughput (accepting small crash-loss risk) vs sync for audit-grade logs. Correlation IDs in patterns; JSON layouts for machine parsing (details in MCD L2 d4).</li>\n<li><strong>CloudHub:</strong> platform captures console output (retention/size limits, searchable in Runtime Manager). For enterprise log aggregation, either use Anypoint Monitoring log management (Titanium) or <em>disable CloudHub logging</em> (org permission required) and ship logs with a custom appender (Splunk/ELK/HTTP).</li>\n<li><strong>Runtime Fabric:</strong> app logs go to the container stdout and are forwarded by the cluster's log forwarding setup (e.g. to ELK/Splunk); Anypoint Monitoring agents can publish metrics/logs to the control plane.</li>\n<li><strong>Customer-hosted:</strong> you own everything: file appenders + rotation, forwarders/agents into your central logging, and disk housekeeping.</li>\n</ul>\n\n<h3>Anypoint Monitoring across deployment options</h3>\n<ul>\n<li><strong>Built-in dashboards</strong> (all targets, agent-based on hybrid/RTF): app metrics — inbound/outbound throughput, response times, errors, JVM/CPU/memory; API analytics from gateways.</li>\n<li><strong>Custom dashboards & alerts:</strong> compose metrics, set threshold alerts (error ratio, response time, CPU) with notification channels.</li>\n<li><strong>Log management</strong> (Titanium subscription): centralized search over app logs with longer retention.</li>\n<li><strong>Functional monitoring (BAT):</strong> scheduled black-box API checks from public/private locations validating real behavior in production.</li>\n<li>Complementary: <strong>Runtime Manager alerts</strong> (app down, worker unresponsive, deployment failed), <strong>API Manager alerts</strong> (policy violations, response codes), <strong>Visualizer</strong> (live dependency graph of the application network).</li>\n</ul>\n<p class=\"tip\"><strong>Exam tip:</strong> pipeline questions almost always test: build ONCE and promote the same artifact; MUnit+coverage gates in the build stage; Connected App credentials; environment differences via properties, not rebuilds. Operations questions: know which tool answers \"app down?\" (RM alert), \"API abused?\" (API Manager alert/analytics), \"search all prod logs\" (Anypoint Monitoring log management), \"is the API functionally OK right now?\" (BAT).</p>\n<h3>Build once, promote many</h3>\n<p>One artifact is built and tested a single time, then the <em>same</em> jar is promoted through environments — only configuration and secrets differ per stage. Rebuilding per environment breaks \"tested equals deployed\".</p>\n<svg viewBox=\"0 0 640 132\" style=\"max-width:640px;width:100%\" role=\"img\" aria-label=\"Build once then promote the same artifact\">\n  <style>.bp-b{fill:none;stroke:currentColor;stroke-width:1.3}.bp-t{font:600 12px sans-serif;fill:currentColor}.bp-s{font:11px sans-serif;fill:currentColor;opacity:.8}.bp-a{stroke:currentColor;stroke-width:1.1;marker-end:url(#bpA)}</style>\n  <defs><marker id=\"bpA\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L6,3 L0,6 z\" fill=\"currentColor\"/></marker></defs>\n  <rect class=\"bp-b\" x=\"8\" y=\"46\" width=\"150\" height=\"46\" rx=\"5\"/>\n  <text class=\"bp-t\" x=\"83\" y=\"66\" text-anchor=\"middle\">package + MUnit</text>\n  <text class=\"bp-s\" x=\"83\" y=\"83\" text-anchor=\"middle\">one jar → Exchange</text>\n  <line class=\"bp-a\" x1=\"158\" y1=\"69\" x2=\"196\" y2=\"69\"/>\n  <rect class=\"bp-b\" x=\"198\" y=\"46\" width=\"126\" height=\"46\" rx=\"5\"/>\n  <text class=\"bp-t\" x=\"261\" y=\"66\" text-anchor=\"middle\">DEV</text>\n  <text class=\"bp-s\" x=\"261\" y=\"83\" text-anchor=\"middle\">dev props</text>\n  <line class=\"bp-a\" x1=\"324\" y1=\"69\" x2=\"360\" y2=\"69\"/>\n  <rect class=\"bp-b\" x=\"362\" y=\"46\" width=\"126\" height=\"46\" rx=\"5\"/>\n  <text class=\"bp-t\" x=\"425\" y=\"66\" text-anchor=\"middle\">TEST</text>\n  <text class=\"bp-s\" x=\"425\" y=\"83\" text-anchor=\"middle\">test props</text>\n  <line class=\"bp-a\" x1=\"488\" y1=\"69\" x2=\"524\" y2=\"69\"/>\n  <rect class=\"bp-b\" x=\"526\" y=\"46\" width=\"106\" height=\"46\" rx=\"5\"/>\n  <text class=\"bp-t\" x=\"579\" y=\"66\" text-anchor=\"middle\">PROD</text>\n  <text class=\"bp-s\" x=\"579\" y=\"83\" text-anchor=\"middle\">prod + secure::</text>\n  <text class=\"bp-s\" x=\"320\" y=\"24\" text-anchor=\"middle\">same artifact — only config, secrets, and api.id change per env</text>\n  <text class=\"bp-s\" x=\"320\" y=\"116\" text-anchor=\"middle\">-Dmule.env selects props · secure.key at deploy · autodiscovery pairs each env</text>\n</svg>"
   }
  ],
  "cards": [
@@ -2784,6 +2788,339 @@
    "section": "a6",
    "front": "What is BAT / API Functional Monitoring?",
    "back": "Scheduled black-box tests calling deployed APIs from public/private locations, asserting on real responses — continuous functional verification."
+  }
+ ],
+ "exercises": [
+  {
+   "id": "ia-ex-01",
+   "section": "a2",
+   "title": "Decompose a monolithic order flow into API-led layers",
+   "level": "medium",
+   "where": "Design — Anypoint Platform / whiteboard",
+   "task": "<p>A single Mule app pulls customer data from Salesforce, inventory from an AS/400 database, and pushes orders to SAP — all wired directly together. New channels (a mobile app, a partner portal) now need the same order capability, and the team keeps re-integrating the same back ends.</p><p>Redesign it as <strong>API-led connectivity</strong>. Decide which APIs belong in the <em>System</em>, <em>Process</em>, and <em>Experience</em> layers, and justify where reuse actually comes from.</p>",
+   "given": [
+    {
+     "label": "Current couplings",
+     "code": "Salesforce  ─┐\nAS/400 DB   ─┼─► [one Mule app] ─► SAP\n(partner)   ─┘\n\nChannels needing 'place order': web, mobile, partner portal"
+    }
+   ],
+   "steps": [
+    "List the back-end systems — each becomes a System API that hides its protocol/format",
+    "Identify the reusable business capability ('place order') that orchestrates several System APIs → Process API",
+    "Map each channel to an Experience API shaped for that channel's payload/auth",
+    "Check the dependency direction: Experience → Process → System, never sideways or upward"
+   ],
+   "solution": [
+    {
+     "label": "Target layering",
+     "code": "Experience:  Web Orders API   Mobile Orders API   Partner Orders API\n                     \\             |              /\nProcess:              ─────  Place Order API  ─────   (orchestration,\n                     /             |              \\    aggregation)\nSystem:      Salesforce API    Inventory API    SAP Orders API\n                (System APIs wrap each back end)"
+    }
+   ],
+   "solutionNotes": "<p>Reuse lives in the <strong>System</strong> and <strong>Process</strong> layers: the three channels share one Place Order Process API, which in turn reuses the System APIs. Experience APIs are deliberately <em>not</em> reused — they exist to tailor payload, protocol and security per channel. The trap is putting orchestration in an Experience API (blocks reuse) or letting a System API call another System API (couples back ends). Dependencies always point downward.</p>"
+  },
+  {
+   "id": "ia-ex-02",
+   "section": "a2",
+   "title": "Synchronous request/reply vs event-driven — pick per requirement",
+   "level": "hard",
+   "where": "Design — whiteboard",
+   "task": "<p>Three requirements land for the same platform. For <strong>each</strong>, choose synchronous HTTP request/reply or asynchronous broker-based messaging, and name the delivery/idempotency implication.</p><ol><li>A checkout page needs the order total back <em>now</em> to render the confirmation.</li><li>An accepted order must fan out to fulfilment, billing, and analytics — each owned by a different team.</li><li>Black-Friday spikes of 20× must not drop orders even if SAP is slow.</li></ol>",
+   "given": [
+    {
+     "label": "Options in play",
+     "code": "A) HTTP request/reply (caller blocks, gets the result)\nB) Publish to Anypoint MQ / broker (fire-and-forget, N consumers)\nC) Queue-based store-and-forward in front of the slow system"
+    }
+   ],
+   "steps": [
+    "Ask 'does the caller need the answer in the same call?' → yes ⇒ sync",
+    "Ask 'do multiple independent consumers need the same event?' → yes ⇒ pub/sub async",
+    "Ask 'must it survive a downstream outage/spike?' → yes ⇒ durable queue in front, decouple ingest from processing",
+    "For any at-least-once path, add an idempotency key so duplicates are safe"
+   ],
+   "solution": [
+    {
+     "label": "Decisions",
+     "code": "1) Sync HTTP request/reply — caller needs the total in-band.\n2) Async pub/sub (broker) — one publish, three independent subscribers;\n   at-least-once ⇒ each consumer must be idempotent.\n3) Async queue store-and-forward — accept + persist + 202, drain to SAP\n   at its own pace; buffer absorbs the spike, retries the outage."
+    }
+   ],
+   "solutionNotes": "<p>The decision hinges on <em>who needs the answer and when</em>, and <em>what must survive failure</em>. Async buys decoupling, fan-out and load-levelling — but every at-least-once system implies possible duplicates, so idempotency is not optional. The classic trap is making (3) synchronous: a slow SAP then stalls the checkout thread pool and drops orders under load.</p>"
+  },
+  {
+   "id": "ia-ex-03",
+   "section": "a3",
+   "title": "Design an idempotent receiver for a retrying partner",
+   "level": "hard",
+   "where": "Anypoint Studio (design)",
+   "task": "<p>A partner POSTs orders and <strong>retries on any timeout</strong>, so the same order id can arrive 2–3 times. Downstream, each order must hit SAP <strong>exactly once</strong>. Design the receive path so retries are safe, using platform building blocks rather than custom SQL.</p>",
+   "given": [
+    {
+     "label": "Incoming request",
+     "code": "POST /orders  { \"orderId\": \"A-1007\", \"lines\": [...] }\nPartner retries the identical body on timeout."
+    },
+    {
+     "label": "Building blocks available",
+     "code": "Idempotent Message Validation filter · Object Store v2 · Anypoint MQ"
+    }
+   ],
+   "steps": [
+    "Choose the dedup key — the partner's stable orderId, not a generated messageId",
+    "Front the flow with an Idempotent Message Validation filter backed by Object Store v2",
+    "On a duplicate key, short-circuit with 200/duplicate-ack instead of re-processing",
+    "Set the Object Store TTL to at least the partner's maximum retry window"
+   ],
+   "solution": [
+    {
+     "label": "Receive path",
+     "code": "<os:object-store name=\"seenOrders\" persistent=\"true\"\n                 entryTtl=\"24\" entryTtlUnit=\"HOURS\"/>\n\n<flow name=\"receive-order\">\n  <http:listener path=\"/orders\"/>\n  <idempotent-message-validator\n       idExpression=\"#[payload.orderId]\"\n       objectStore=\"seenOrders\"\n       onDuplicate=\"...ack 200, stop...\"/>\n  <flow-ref name=\"postToSap\"/>   <!-- only reached for first-seen ids -->\n</flow>"
+    }
+   ],
+   "solutionNotes": "<p>Idempotency belongs at the <strong>receiver</strong>, keyed on a value the sender controls and repeats (orderId). Object Store v2 gives a shared, persistent seen-set that survives restarts and works across CloudHub replicas; the TTL must cover the retry window or a late retry slips through. Keying on a per-request messageId would defeat the whole thing — every retry would look new.</p>"
+  },
+  {
+   "id": "ia-ex-04",
+   "section": "a4",
+   "title": "Persistence choice: Object Store vs database vs external cache",
+   "level": "medium",
+   "where": "Design — whiteboard",
+   "task": "<p>Pick the persistence mechanism for each need, on a CloudHub deployment with 3 replicas. Justify why the others are wrong.</p><ol><li>Dedup keys for idempotency, ~1 KB each, must be shared across all 3 replicas, expire after 24h.</li><li>An OAuth token cache refreshed every hour, read on nearly every request.</li><li>The authoritative order history queried with complex joins and reporting.</li></ol>",
+   "given": [
+    {
+     "label": "Candidates",
+     "code": "Object Store v2 (managed KV, shared, TTL)\nExternal DB (relational, durable, queryable)\nIn-memory / on-heap cache (per replica, fast, volatile)"
+    }
+   ],
+   "steps": [
+    "Ask: shared across replicas? volatile-ok? queryable? how big / how long?",
+    "Small shared KV with TTL, no joins ⇒ Object Store v2",
+    "Hot read-through cache where a miss is cheap to rebuild ⇒ in-memory (accept per-replica copies)",
+    "Authoritative, relational, reportable ⇒ external database"
+   ],
+   "solution": [
+    {
+     "label": "Mapping",
+     "code": "1) Object Store v2 — shared across replicas + native TTL, tiny values.\n2) In-memory cache — per-replica is fine; a miss just re-fetches the token.\n3) External database — durable system of record, supports joins/reporting."
+    }
+   ],
+   "solutionNotes": "<p>On-heap state is <strong>not</strong> shared across CloudHub replicas, so using it for dedup (1) would let a duplicate through on another worker. Object Store v2 is the right shared-KV-with-TTL, but it is not a query engine — don't push order history (3) into it. And don't reach for a database for a volatile hourly token (2) when a cheap-to-rebuild in-memory cache is faster and simpler.</p>"
+  },
+  {
+   "id": "ia-ex-05",
+   "section": "a5",
+   "title": "Choose a runtime plane: CloudHub vs RTF vs hybrid",
+   "level": "hard",
+   "where": "Design — Anypoint Platform",
+   "task": "<p>A bank must deploy 40 Mule apps. Hard constraints: data must stay inside their own network; some apps call an on-prem mainframe over a private link; they want MuleSoft to manage the control plane but run workloads on <strong>their own</strong> Kubernetes. Recommend a runtime-plane topology and say what handles inbound TLS and private connectivity.</p>",
+   "given": [
+    {
+     "label": "Options",
+     "code": "CloudHub 2.0 (MuleSoft-hosted workers, shared/private space)\nRuntime Fabric on customer's EKS/AKS/GKE (self-managed compute)\nHybrid: Mule runtimes on customer VMs + Anypoint control plane"
+    }
+   ],
+   "steps": [
+    "Separate control plane (design/manage/monitor) from runtime plane (where apps execute)",
+    "Map the 'must run in our own network / our own k8s' constraint to the runtime plane",
+    "Decide inbound: an ingress/DLB terminates or passes through TLS to the apps",
+    "Decide private egress: private link/VPN from that plane to the mainframe"
+   ],
+   "solution": [
+    {
+     "label": "Recommendation",
+     "code": "Runtime Fabric on the bank's own Kubernetes:\n  • Control plane stays MuleSoft-managed (mgmt, deploy, monitoring).\n  • Workloads run inside the bank's network → data residency met.\n  • RTF inbound gateway / load balancer terminates TLS to the apps.\n  • Private link / VPN from the RTF cluster to the on-prem mainframe.\nCloudHub 2.0 rejected: compute is MuleSoft-hosted, not the bank's k8s."
+    }
+   ],
+   "solutionNotes": "<p>The deciding constraint is <strong>who owns the compute</strong>. \"Run on our own Kubernetes, keep data in our network\" points squarely at Runtime Fabric, which keeps the runtime plane in the customer's infrastructure while MuleSoft still runs the control plane. CloudHub 2.0 would host the workers on MuleSoft's side, violating residency. Hybrid works too but adds VM management the bank didn't ask for; RTF is the cleaner fit for a container platform they already run.</p>"
+  },
+  {
+   "id": "ia-ex-06",
+   "section": "a5",
+   "title": "Horizontal scale vs a cluster — which HA model?",
+   "level": "medium",
+   "where": "Design — whiteboard",
+   "task": "<p>Two apps need high availability. Choose <strong>load-balanced independent replicas</strong> or a <strong>Mule cluster</strong> for each, and explain the difference.</p><ol><li>A stateless REST API fronting a database — just needs to survive a node loss and scale with load.</li><li>A polling File/DB inbound job plus in-memory Object Store that must have a single, consistent view and fail over without double-processing.</li></ol>",
+   "given": [
+    {
+     "label": "The two models",
+     "code": "Replicas + LB: N independent runtimes, no shared state, scale out.\nCluster: runtimes act as one — shared VM queues, HA polling primary,\n         in-memory Object Store replicated across nodes."
+    }
+   ],
+   "steps": [
+    "Ask: does the app need shared runtime state or single-poller semantics?",
+    "Stateless + horizontally scalable ⇒ replicas behind a load balancer",
+    "Shared in-memory state / primary-poll election ⇒ cluster",
+    "Prefer replicas when you can push state to Object Store v2 / a DB instead"
+   ],
+   "solution": [
+    {
+     "label": "Decisions",
+     "code": "1) Replicas behind a load balancer — stateless, scales linearly,\n   any replica serves any request; a lost node just drops from the pool.\n2) Cluster — the polling source runs on one primary (no double-poll),\n   in-memory Object Store is shared, and it fails over to another node."
+    }
+   ],
+   "solutionNotes": "<p>Clustering exists for <strong>shared runtime state and single-active semantics</strong> (HA primary polling, replicated in-memory Object Store, shared VM queues). A stateless API gains nothing from it and is simpler and cheaper as load-balanced replicas. Modern designs often dodge clustering entirely by externalising state (Object Store v2, a DB), which lets you scale as plain replicas even on CloudHub.</p>"
+  },
+  {
+   "id": "ia-ex-07",
+   "section": "a7",
+   "title": "Never lose an order while the ERP is down all weekend",
+   "level": "hard",
+   "where": "Design — Anypoint Platform",
+   "task": "<p>Orders arrive 24/7 over HTTP. The ERP is periodically down for long windows (hours). Requirement: <strong>zero order loss</strong>, and the app itself may restart during the outage. Design the reliability approach and explain why an in-flow retry scope is <em>not</em> enough.</p>",
+   "given": [
+    {
+     "label": "Two candidate approaches",
+     "code": "A) Until Successful scope wrapping the ERP call (retry in memory)\nB) Store-and-forward: accept → durable queue → separate consumer\n   drains to ERP with reconnection/redelivery"
+    }
+   ],
+   "steps": [
+    "Note the failure that matters: the app can restart mid-outage",
+    "In-memory retry state is lost on restart ⇒ Until Successful alone can drop the event",
+    "Persist the accepted order first (durable queue / Anypoint MQ), ack the caller",
+    "Drain with a consumer that reconnects and redelivers until ERP is back"
+   ],
+   "solution": [
+    {
+     "label": "Design",
+     "code": "HTTP accept  ─►  publish to durable queue (Anypoint MQ)  ─►  202\n                                   │\n            consumer: dequeue ─► ERP call ─► ack on success\n                       └─ on failure: redeliver / DLQ after N tries\nSurvives app restart (queue is persistent) and long ERP outages."
+    }
+   ],
+   "solutionNotes": "<p>Until Successful retries in <strong>memory</strong> — a runtime restart during the weekend outage loses every in-flight event. For \"must not lose it even if the app restarts\", the accepted work has to be <strong>persisted before you ack the caller</strong>, then drained asynchronously with reconnection and a dead-letter path. Until Successful is the right tool for short, transient blips, not multi-hour outages.</p>"
+  },
+  {
+   "id": "ia-ex-08",
+   "section": "a7",
+   "title": "Transaction boundary across JMS and a database",
+   "level": "hard",
+   "where": "Anypoint Studio (design)",
+   "task": "<p>A flow consumes a JMS message, writes two rows to a database, then acknowledges JMS. A crash must never leave the DB written but the message un-acked (reprocess → duplicate rows) <strong>or</strong> the message acked but the DB not written (lost work). Choose the transaction strategy and state its cost.</p>",
+   "given": [
+    {
+     "label": "Resources",
+     "code": "1 JMS queue (consume + ack)\n1 relational DB (two inserts)\nBoth support XA; the DB insert is the only DB work."
+    }
+   ],
+   "steps": [
+    "Count the transactional resources that must commit atomically → JMS + DB = 2",
+    "Single-resource local tx can't span both ⇒ consider XA",
+    "Enable an XA transaction so JMS ack and DB commit are all-or-nothing",
+    "Weigh the cost: XA adds coordination overhead and needs XA-capable resources"
+   ],
+   "solution": [
+    {
+     "label": "Strategy",
+     "code": "XA transaction spanning the JMS session and the JDBC connection:\n  begin XA ─► consume JMS ─► insert row 1 ─► insert row 2\n           ─► commit (JMS ack + DB commit together)\nCrash before commit ⇒ message redelivered, no partial DB write."
+    }
+   ],
+   "solutionNotes": "<p>Two independent transactional resources that must succeed or fail together is the textbook case for an <strong>XA</strong> transaction — a single local transaction can only cover one resource. The trade-off is real: XA needs XA-capable JMS/DB and adds two-phase-commit latency, so only reach for it when atomicity genuinely spans resources. If only the DB work were transactional, a local transaction would do.</p>"
+  },
+  {
+   "id": "ia-ex-09",
+   "section": "a8",
+   "title": "Tune throughput: caching, parallelism, and payload size",
+   "level": "medium",
+   "where": "Anypoint Studio (design)",
+   "task": "<p>An Experience API aggregates a product from three back ends per request and is missing its latency SLA under load. Profiling shows: (a) a reference-data call that changes hourly is made on every request; (b) the three back-end calls run sequentially; (c) a 30 MB catalog file is loaded fully into memory. Propose one fix for each without changing the back ends.</p>",
+   "given": [
+    {
+     "label": "Hotspots",
+     "code": "a) GET /reference on every request (hourly-stable data)\nb) call A → then B → then C (independent of each other)\nc) payload = whole 30 MB file read into memory"
+    }
+   ],
+   "steps": [
+    "Cache the hourly-stable reference data (Cache scope / OS-backed) with a TTL",
+    "Run the three independent calls concurrently (Scatter-Gather / parallel)",
+    "Stream the large file instead of materialising it (repeatable streaming)",
+    "Re-measure; confirm thread pool and memory pressure drop"
+   ],
+   "solution": [
+    {
+     "label": "Fixes",
+     "code": "a) Cache scope with ~1h TTL over the reference call (Object Store backing).\nb) Scatter-Gather the three independent back-end calls → wall time ≈ slowest\n   one, not the sum.\nc) Enable streaming (repeatable file/stream) so the 30 MB flows in chunks."
+    }
+   ],
+   "solutionNotes": "<p>Three orthogonal levers: <strong>cache</strong> to remove repeated work on stable data, <strong>parallelise</strong> independent I/O so latency is the max not the sum, and <strong>stream</strong> large payloads to cap memory. The trap on (b) is parallelising calls that actually depend on each other; on (c), a non-repeatable stream breaks if something needs to read the payload twice — use repeatable streaming when downstream re-reads.</p>"
+  },
+  {
+   "id": "ia-ex-10",
+   "section": "a9",
+   "title": "Layer the security controls for a partner-facing API",
+   "level": "hard",
+   "where": "Design — API Manager / Anypoint Platform",
+   "task": "<p>A partner-facing API on CloudHub must: authenticate partners, cap each partner's call rate, guarantee the caller is a known partner at the transport level, and never expose back-end credentials in the app. Assign each requirement to the right control and layer, and note what stays out of the Mule code.</p>",
+   "given": [
+    {
+     "label": "Controls available",
+     "code": "Client ID Enforcement policy · Rate-Limiting/SLA policy ·\nMutual TLS (two-way) · Secure Properties (encrypted config) ·\nautodiscovery (pairs app ↔ API instance for policy enforcement)"
+    }
+   ],
+   "steps": [
+    "Authenticate the app/partner identity ⇒ Client ID Enforcement policy",
+    "Throttle per partner ⇒ Rate-Limiting-SLA tied to their SLA tier",
+    "Prove the transport-level caller ⇒ mutual TLS at the edge",
+    "Keep back-end secrets out of code ⇒ Secure Properties, resolved at deploy",
+    "Wire policies to the running app ⇒ autodiscovery (api.id + platform creds)"
+   ],
+   "solution": [
+    {
+     "label": "Mapping",
+     "code": "Authn partner          → Client ID Enforcement policy (API Manager)\nPer-partner throttle   → Rate-Limiting-SLA policy + SLA tiers\nKnown caller (transport)→ Mutual TLS (two-way) at the edge / DLB\nNo creds in code       → Secure Properties (encrypted), key at deploy\nEnforcement binding    → autodiscovery pairs app to its API instance"
+    }
+   ],
+   "solutionNotes": "<p>Security is layered, not one control: <strong>policies</strong> (client-id, rate-limit) live on the API instance in API Manager and are bound to the running app via <strong>autodiscovery</strong>; <strong>mutual TLS</strong> proves the caller at the transport layer; <strong>secure properties</strong> keep back-end secrets out of the artifact. The common trap is trying to enforce rate-limiting or client-id inside the Mule flow by hand instead of applying a managed policy — losing central governance and analytics.</p>"
+  },
+  {
+   "id": "ia-ex-11",
+   "section": "a10",
+   "title": "Build once, promote many with externalized config",
+   "level": "medium",
+   "where": "CI/CD — Maven / Anypoint Platform",
+   "task": "<p>Design a pipeline that builds a Mule app <strong>once</strong> and promotes the <em>same artifact</em> to DEV → TEST → PROD, where only configuration and secrets differ per environment, and the app auto-registers with the correct API instance in each. What must NOT be rebuilt per environment, and how are secrets handled?</p>",
+   "given": [
+    {
+     "label": "Pipeline sketch",
+     "code": "mvn clean package        # once → one .jar\nmvn deploy -DmuleDeploy  # per env, same jar, env-specific props\n# per-env: {env}.properties + secure.key + Connected App creds"
+    }
+   ],
+   "steps": [
+    "Build/test once → a single immutable artifact published to Exchange",
+    "Externalise per-env values into {env}.properties, secrets via Secure Properties",
+    "Deploy the same jar to each env, selecting the property set at deploy time",
+    "Give each env its own api.id + platform credentials so autodiscovery pairs correctly",
+    "Never rebuild per environment — a rebuild breaks 'tested == deployed'"
+   ],
+   "solution": [
+    {
+     "label": "Pipeline",
+     "code": "Stage 1 (once):  package + MUnit + publish artifact to Exchange\nStage 2 (per env): deploy SAME artifact with\n    -Dmule.env=dev|test|prod   (selects {env}.properties)\n    -Dsecure.key=****          (decrypts secure:: values)\n    api.id + Connected App creds for that env's API instance\nResult: one build, config-only differences, autodiscovery pairs each env."
+    }
+   ],
+   "solutionNotes": "<p>The core DevOps principle is <strong>build-once / promote-many</strong>: the artifact that passed tests is the exact artifact that reaches PROD, so nothing but configuration changes across stages. Secrets stay encrypted via Secure Properties with the key supplied at deploy, and each environment carries its own api.id + platform credentials so autodiscovery binds the app to the right API instance. Rebuilding per environment silently invalidates your testing and is the anti-pattern this design exists to prevent.</p>"
+  },
+  {
+   "id": "ia-ex-12",
+   "section": "a6",
+   "title": "MUnit strategy for a layered app: what to mock, what to assert",
+   "level": "medium",
+   "where": "Anypoint Studio (MUnit)",
+   "task": "<p>A Process API orchestrates two System API calls and maps the result. Design its MUnit test suite so it runs in CI with <strong>no live back ends</strong>, proves the mapping and error handling, and gates the build on coverage. Decide what to mock, what to assert/verify, and how coverage enforces quality.</p>",
+   "given": [
+    {
+     "label": "Flow under test",
+     "code": "process-order:\n  call SystemA (HTTP Request) ─► call SystemB (HTTP Request)\n  ─► DataWeave transform ─► return\n  error handler maps SYS:CONNECTIVITY → 503"
+    }
+   ],
+   "steps": [
+    "Mock both HTTP Requests (Mock When) so tests are hermetic and deterministic",
+    "Assert the transformed payload for the happy path (Assert That)",
+    "Force a connectivity error on a mock and assert the 503 mapping",
+    "Verify each System API call happened as expected (Verify Call)",
+    "Add the munit-maven-plugin coverage gate so CI fails under the threshold"
+   ],
+   "solution": [
+    {
+     "label": "Suite outline",
+     "code": "test happy-path:\n  mock-when SystemA → fixture A;  mock-when SystemB → fixture B\n  run process-order\n  assert-that payload == expected mapping\n  verify-call SystemA times(1); verify-call SystemB times(1)\n\ntest error-path:\n  mock-when SystemA → throw SYS:CONNECTIVITY\n  run; assert http.status == 503\n\npom: munit-maven-plugin coverage (e.g. failBuild=true, min 80%)"
+    }
+   ],
+   "solutionNotes": "<p>Unit tests must be <strong>hermetic</strong>: mock every outbound connector so the suite runs in CI with no live systems and is deterministic. Assert on the <em>outputs</em> (the mapped payload, the mapped error status), and Verify the interactions you care about. Coverage as a <strong>build gate</strong> (munit-maven-plugin, failBuild on threshold) is what keeps quality from eroding over time — a suite nobody enforces rots.</p>"
   }
  ]
 }
