@@ -26,7 +26,8 @@
     "Correct — 'sync orders to SAP' is the functional requirement: the behaviour delivered.",
     "Throughput is a non-functional (performance) requirement.",
     "Availability is a non-functional (reliability) requirement."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-002",
@@ -45,7 +46,8 @@
     "A MuleSoft-hosted control plane means metadata leaves the customer data centres — not allowed.",
     "Correct — PCE runs the whole control plane on customer infrastructure with customer-hosted runtimes: nothing leaves.",
     "CloudHub 2.0 private spaces are still MuleSoft-hosted, so metadata leaves the data centres."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-003",
@@ -64,7 +66,8 @@
     "OAS 3.0 describes request/response HTTP APIs, not async messaging.",
     "Correct — AsyncAPI is the spec for event-driven APIs: channels, messages, and schemas.",
     "WSDL describes SOAP web services, not event-driven messaging."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-004",
@@ -83,7 +86,8 @@
     "Correct — control plane = design/deploy/monitor; business data stays in the runtime plane.",
     "The runtime plane can run anywhere with outbound connectivity to the control plane.",
     "Runtime Fabric is a runtime-plane option, not a control-plane one."
-   ]
+   ],
+   "level": "easy"
   },
   {
    "id": "ia-005",
@@ -102,7 +106,8 @@
     "Correct — Runtime Fabric runs Mule as containers on the customer's own Kubernetes, managed from the hosted control plane.",
     "Standalone runtimes aren't containerised on the customer's Kubernetes with control-plane management.",
     "PCE is a self-hosted control plane, not the container runtime option described."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-006",
@@ -121,7 +126,8 @@
     "Consumer type doesn't dictate sync vs async.",
     "Correct — surviving long outages without losing orders needs durable, buffered async messaging.",
     "REST availability doesn't push you toward queues."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-007",
@@ -140,7 +146,8 @@
     "Correct — extra layers add hops and latency; that is the real cost to weigh against reuse/decoupling.",
     "Per-layer policies are a benefit of layering, not a cost.",
     "Layering decouples consumers from backends, so backends CAN be replaced."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-008",
@@ -159,7 +166,8 @@
     "Correct — queue = one consumer per message (competing consumers); topic/exchange = fan-out to all subscribers.",
     "Persistence is a config choice, not what distinguishes queues from topics.",
     "Ordering isn't the distinguishing property here."
-   ]
+   ],
+   "level": "easy"
   },
   {
    "id": "ia-009",
@@ -178,7 +186,8 @@
     "Correct — Anypoint MQ is the cross-application, buffered, reliable broker for separate apps.",
     "Object Store isn't a message broker and adds polling latency.",
     "Flow Reference works only within one application."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-010",
@@ -197,7 +206,8 @@
     "Claim check offloads large payloads, unrelated to long-running replies.",
     "Correct — async request-reply with a correlation ID lets the caller get the result later without holding a connection.",
     "Pub-sub broadcasts events; it isn't a one-caller reply pattern."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-011",
@@ -216,7 +226,8 @@
     "Correct — at-least-once means duplicates are possible, so consumers must be idempotent.",
     "At-least-once doesn't guarantee global ordering.",
     "Retention is a config, not implied by delivery semantics."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-012",
@@ -235,7 +246,8 @@
     "Correct — publish once, fan out via subscriptions; each system consumes independently at its own pace.",
     "Polling an Object Store is inefficient and not event-driven.",
     "Scatter-Gather is synchronous and couples the caller to all three."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-013",
@@ -244,7 +256,7 @@
    "options": [
     "Message batching to fit the size limit",
     "Claim check — store the payload externally and send a reference",
-    "Competing consumers across the subscribers",
+    "Competing consumers distributed across all of the topic's subscribers",
     "Idempotent receiver to drop duplicates"
    ],
    "answer": 1,
@@ -254,7 +266,8 @@
     "Correct — claim check stores the large payload externally and passes only a reference through the queue.",
     "Competing consumers is about throughput, not payload size.",
     "Idempotent receiver handles duplicates, not size limits."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "ia-014",
@@ -273,7 +286,8 @@
     "Frequent outages favour durable async messaging, not sync.",
     "Buffering spikes is a messaging strength, not sync.",
     "Fan-out to many reactors is pub-sub, not sync request-response."
-   ]
+   ],
+   "level": "easy"
   },
   {
    "id": "ia-015",
@@ -282,7 +296,7 @@
    "options": [
     "Edit the YAML file inside the deployed JAR by hand",
     "Set a deployment property in Runtime Manager, which overrides packaged file values",
-    "Recompile the app with a production Maven profile",
+    "Recompile the app with a production Maven profile that bakes the production database password straight into the packaged artifact",
     "Hardcode both values and pick with a Choice router"
    ],
    "answer": 1,
@@ -292,7 +306,8 @@
     "Correct — a Runtime Manager deployment property overrides the packaged value without a rebuild.",
     "Recompiling breaks build-once/deploy-many.",
     "Hardcoding env values into the artifact is exactly the anti-pattern."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-016",
@@ -311,7 +326,8 @@
     "Correct — Bulk API v2 batches large data loads efficiently within API limits.",
     "Subscribe Channel receives events; it doesn't bulk-load.",
     "Looping SOQL is for reads, not efficient writes."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-017",
@@ -330,7 +346,8 @@
     "Upsert writes records; it doesn't receive changes.",
     "Correct — Subscribe Channel/CDC pushes record changes to Mule in near real time without polling.",
     "A bulk query job is batch polling, not real-time push."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-018",
@@ -349,7 +366,8 @@
     "Update fails when the record doesn't yet exist.",
     "Correct — Upsert on an external ID inserts or updates by matching the ERP number, ideal for sync.",
     "Merge is for de-duplicating existing records, not sync."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-019",
@@ -368,7 +386,8 @@
     "Correct — DataSense supplies design-time input/output types (from connectors, specs, schemas, samples) to assist mapping.",
     "It doesn't encrypt anything.",
     "It doesn't generate tests."
-   ]
+   ],
+   "level": "easy"
   },
   {
    "id": "ia-020",
@@ -387,7 +406,8 @@
     "Mappings are still needed, just fewer and to one model.",
     "Systems keep their internal schemas; only the integration maps to canonical.",
     "The canonical model reduces mappings from quadratic toward linear."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-021",
@@ -406,7 +426,8 @@
     "Correct — a single enterprise model is a committee bottleneck and produces bloated compromise types; bounded contexts evolve independently.",
     "DataWeave handles large objects.",
     "Canonical models are format-agnostic."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-022",
@@ -425,7 +446,8 @@
     "Correct — APIkit validates requests against the RAML/OAS automatically, rejecting bad input at the edge.",
     "Per-field validators are tedious and drift from the contract.",
     "Backend validation is too late and duplicates the contract."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-023",
@@ -444,7 +466,8 @@
     "Correct — VM queues connect flows inside one application (or its cluster), not across apps.",
     "Persistence is opt-in, not automatic.",
     "VM queues are built in — no external broker."
-   ]
+   ],
+   "level": "easy"
   },
   {
    "id": "ia-024",
@@ -453,7 +476,7 @@
    "options": [
     "Setting the VM queue's queueType to TRANSIENT",
     "Enabling persistent queues for the application in Runtime Manager",
-    "Switching to an Object Store instead of a queue",
+    "Switching to an Object Store instead of a VM queue for distributing the work across workers",
     "Nothing — it already works in-memory by default"
    ],
    "answer": 1,
@@ -463,7 +486,8 @@
     "Correct — persistent queues make VM messages durable and consumable across all workers.",
     "Object Store isn't a work queue.",
     "In-memory VM queues are per-worker and lost on restart."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "ia-025",
@@ -482,7 +506,8 @@
     "OSv2 is shared across an app's workers, not single-worker.",
     "OSv2 stores serializable values, not only strings.",
     "OSv2 persists across restarts and redeploys."
-   ]
+   ],
+   "level": "easy"
   },
   {
    "id": "ia-026",
@@ -501,7 +526,8 @@
     "Correct — a cluster shares the Object Store across nodes, so dedup works globally.",
     "Per-node file stores are still isolated per node.",
     "The validator is only as global as its Object Store's scope."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "ia-027",
@@ -509,7 +535,7 @@
    "q": "Which is an appropriate use of an Object Store?",
    "options": [
     "Primary storage for customer order records",
-    "Queueing messages between two applications",
+    "Queueing messages reliably between two separate applications that require guaranteed delivery",
     "Storing the last-synced timestamp (watermark) for an incremental sync",
     "Long-term archival of processed files"
    ],
@@ -520,7 +546,8 @@
     "It isn't a message broker between apps.",
     "Correct — small operational state like a sync watermark is a textbook Object Store use.",
     "It isn't durable archival storage (30-day TTL)."
-   ]
+   ],
+   "level": "easy"
   },
   {
    "id": "ia-028",
@@ -539,7 +566,8 @@
     "Correct — an OSv2-backed caching strategy is shared, so every worker sees the same cached results.",
     "A VM queue isn't a cache store.",
     "Consistent caching is entirely possible with a shared OSv2 store."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "ia-029",
@@ -558,7 +586,8 @@
     "Correct — on CloudHub 2.0, durable messaging moves to Anypoint MQ; VM queues aren't persistent.",
     "OSv2 is available on CloudHub 2.0.",
     "Replicas do share OSv2 state."
-   ]
+   ],
+   "level": "easy"
   },
   {
    "id": "ia-030",
@@ -577,7 +606,8 @@
     "Correct — a cluster shares state through a distributed grid with a primary node; a server group is just independent servers.",
     "That reverses it — the cluster shares state and can fail over.",
     "Both are customer-hosted concepts, not CloudHub-only."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-031",
@@ -596,7 +626,8 @@
     "Correct — schedulers/primary-node-only sources fire only on the primary node; a new primary is elected on failure.",
     "The load balancer handles ingress, not scheduler firing.",
     "Clusters do support schedulers — on the primary node."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "ia-032",
@@ -615,7 +646,8 @@
     "Correct — VPC + internal worker DNS (8091/8092) with the public route blocked keeps it corporate-network-only.",
     "Static IPs limit egress identity, not inbound public reachability.",
     "TLS encrypts traffic but doesn't make it private."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-033",
@@ -634,7 +666,8 @@
     "Correct — a DLB (which needs a VPC) serves the vanity domain cert and validates client certificates (mTLS).",
     "A CNAME alone gives no custom cert or mTLS.",
     "Static IPs don't provide custom-domain TLS or mTLS."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-034",
@@ -653,7 +686,8 @@
     "Correct — domains suit customer-hosted runtimes where co-located apps share a listener/TLS/DB config.",
     "Having multiple apps isn't itself a reason for a domain.",
     "Domains aren't a Runtime Fabric container-reduction tool."
-   ]
+   ],
+   "level": "easy"
   },
   {
    "id": "ia-035",
@@ -672,7 +706,8 @@
     "Correct — declare the JDBC driver as a sharedLibrary so the connector's classloader can see it.",
     "You can't drop jars into CloudHub's runtime lib folder.",
     "Domains aren't required for the Database connector."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-036",
@@ -691,7 +726,8 @@
     "Correct — operations declare CPU_LITE/CPU_INTENSIVE/BLOCKING_IO and run on shared self-tuning pools with back-pressure.",
     "Events hop threads by processing type; they aren't single-threaded end to end.",
     "Blocking a shared pool absolutely affects other flows."
-   ]
+   ],
+   "level": "easy"
   },
   {
    "id": "ia-037",
@@ -710,7 +746,8 @@
     "Correct — bind ${http.port} (8081); the shared load balancer forwards 80/443 to it.",
     "8091/8092 are internal VPC ports, not public.",
     "The port isn't arbitrary; use the provided ${http.port}."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-038",
@@ -719,7 +756,7 @@
    "options": [
     "A performance test against the real backend",
     "An MUnit test using Mock When with Then-throw to raise HTTP:CONNECTIVITY and assert the mapped response",
-    "A manual test performed in production",
+    "A manual test performed by hand against the production system",
     "An integration test that physically unplugs the backend server partway through each test run to force the error"
    ],
    "answer": 1,
@@ -729,7 +766,8 @@
     "Correct — mock the processor to throw HTTP:CONNECTIVITY, then assert the 503 payload/status deterministically.",
     "Manual production testing isn't repeatable.",
     "Physically unplugging a backend is neither deterministic nor unit-level."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-039",
@@ -748,7 +786,8 @@
     "Correct — real mTLS/OAuth against the partner endpoint can only be proven by an integration test.",
     "Router branching is unit-testable.",
     "Error-handler behaviour is unit-testable with MUnit."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-040",
@@ -767,7 +806,8 @@
     "Correct — MUnit runs in the Maven test phase every build, with coverage thresholds that fail the build.",
     "Running post-deploy in prod defeats the purpose.",
     "MUnit complements, not replaces, other test levels."
-   ]
+   ],
+   "level": "easy"
   },
   {
    "id": "ia-041",
@@ -786,7 +826,8 @@
     "Correct — validate NFRs by load-testing a prod-equivalent environment and finding the breaking point.",
     "Laptop-times-workers is not a valid extrapolation.",
     "Watching prod logs isn't a controlled performance test."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-042",
@@ -795,7 +836,7 @@
    "options": [
     "Unit-testing individual DataWeave transformation scripts in complete isolation from the surrounding flow",
     "Scheduled black-box tests that call deployed APIs from chosen locations and assert on real responses",
-    "Measuring code coverage of Mule flows",
+    "Measuring code coverage of Mule flows during the unit-test phase",
     "Load-testing APIs at very high concurrency"
    ],
    "answer": 1,
@@ -805,7 +846,8 @@
     "Correct — BAT continuously calls deployed APIs from public/private locations and asserts on real responses.",
     "Coverage is an MUnit/build concern.",
     "Load testing is a separate performance activity."
-   ]
+   ],
+   "level": "easy"
   },
   {
    "id": "ia-043",
@@ -824,7 +866,8 @@
     "Correct — XA (two-phase commit) makes the DB and JMS operations atomic across resources.",
     "Until Successful retries; it doesn't give cross-resource atomicity.",
     "Independent Try scopes commit separately, not atomically."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-044",
@@ -843,7 +886,8 @@
     "Correct — durable queue + transactional consume + idempotent retried call guarantees eventual, exactly-once-effect recording.",
     "HTTP isn't transactional, so a local transaction doesn't apply.",
     "A Cache scope doesn't provide delivery durability."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-045",
@@ -862,7 +906,8 @@
     "Correct — a saga runs compensating actions (cancel flight/hotel) when a later step fails.",
     "Local transactions don't span independent remote systems.",
     "Scatter-Gather parallelises calls but doesn't undo completed steps."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "ia-046",
@@ -881,7 +926,8 @@
     "Correct — reconnection retries connections, Until Successful retries operations, redelivery counts per-message source attempts (then DLQ).",
     "They target different failure levels, not interchangeable.",
     "Until Successful retries operations, not connections."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-047",
@@ -890,7 +936,7 @@
    "options": [
     "It can only ever retry at most three times before it permanently gives up on the failing event and drops it",
     "The retried event is held in memory — a crash during retries loses it; durability needs a persistent queue",
-    "It only works with the HTTP connector",
+    "It only works with the HTTP connector and no other transport",
     "It commits transactions automatically on success"
    ],
    "answer": 1,
@@ -900,7 +946,8 @@
     "Correct — Until Successful holds the event in memory, so a crash mid-retry loses it; use a persistent queue for zero loss.",
     "It works with any processors, not just HTTP.",
     "It doesn't manage transactions."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-048",
@@ -919,7 +966,8 @@
     "Correct — HA handles component failure within a site; DR handles losing an entire site/region, measured by RTO/RPO.",
     "Two workers give HA in one region, not cross-region DR.",
     "HA applies to CloudHub and customer-hosted alike."
-   ]
+   ],
+   "level": "easy"
   },
   {
    "id": "ia-049",
@@ -938,7 +986,8 @@
     "Correct — regional state (OSv2/MQ) means DR needs its own instances plus deployment and DNS switchover inside the RTO.",
     "The apps and their state need DR planning, not just the control plane.",
     "Static IPs are region-scoped and don't migrate automatically."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "ia-050",
@@ -948,7 +997,7 @@
     "Until Successful configured with effectively infinite automatic retries on the failing poison message",
     "A redelivery policy (or broker max-delivery count) routing exhausted messages to a dead-letter queue",
     "On Error Continue that swallows the error",
-    "Deleting messages that fail to process"
+    "Deleting messages that fail to process so the queue keeps flowing"
    ],
    "answer": 1,
    "explanation": "Poison-message handling = bounded delivery attempts + DLQ. Anypoint MQ does this broker-side (maxDeliveries → DLQ); Mule-side, REDELIVERY_EXHAUSTED can be handled to publish to a DLQ. Infinite retries block; swallowing loses data.",
@@ -957,7 +1006,8 @@
     "Correct — cap redeliveries and route exhausted messages to a DLQ for analysis without blocking.",
     "Swallowing the error loses the message and its cause.",
     "Deleting failures destroys the evidence."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-051",
@@ -976,7 +1026,8 @@
     "Correct — parallelising with Scatter-Gather makes total latency approach the slowest single call (~400 ms).",
     "More workers add throughput, not lower single-request latency.",
     "A bigger timeout doesn't reduce latency."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-052",
@@ -995,7 +1046,8 @@
     "Correct — a stateless API scales out horizontally behind the load balancer; validate with a load test.",
     "Batch jobs are for bulk processing, not request throughput.",
     "One worker at maxConcurrency=900 still bottlenecks on that instance."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-053",
@@ -1014,7 +1066,8 @@
     "Correct — file-stored + DataWeave streaming processes the file in bounded chunks.",
     "Loading all rows in memory defeats streaming.",
     "Base64 enlarges the payload and doesn't help memory."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-054",
@@ -1033,7 +1086,8 @@
     "Correct — cap concurrency toward the ERP so excess requests wait instead of overwhelming it.",
     "A shorter timeout just fails requests, not protects the ERP.",
     "Stream type doesn't limit ERP concurrency."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "ia-055",
@@ -1052,7 +1106,8 @@
     "Correct — logging the whole payload (or random-access processing) materialises the stream in memory.",
     "File-stored streams are exactly how you avoid this.",
     "deferred=true streams output, aiding not defeating streaming."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-056",
@@ -1061,7 +1116,7 @@
    "options": [
     "A Parallel For Each over the records",
     "A Batch Job (persistent record queues, record-level error handling, resume after restart)",
-    "A Scatter-Gather across the records",
+    "A Scatter-Gather fanning out across all of the records at once",
     "Until Successful wrapped around a For Each scope iterating over all of the millions of records"
    ],
    "answer": 1,
@@ -1071,7 +1126,8 @@
     "Correct — Batch Job persists records, isolates per-record failures, and resumes after restart.",
     "Scatter-Gather is for a fixed set of parallel routes, not millions of records.",
     "Until Successful retries operations, not resilient bulk processing."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "ia-057",
@@ -1080,7 +1136,7 @@
    "options": [
     "\"The API should feel fast to users\"",
     "\"p95 latency <= 300 ms at 500 req/s sustained, payloads up to 100 KB\"",
-    "\"Average latency should be OK under normal load\"",
+    "Average response latency should generally stay acceptable under normal production load",
     "\"As fast as possible under all conditions\""
    ],
    "answer": 1,
@@ -1090,7 +1146,8 @@
     "Correct — a good NFR is specific and testable: percentile, throughput, and payload bounds.",
     "'OK' and 'normal load' are undefined.",
     "'As fast as possible' sets no target to verify."
-   ]
+   ],
+   "level": "easy"
   },
   {
    "id": "ia-058",
@@ -1109,7 +1166,8 @@
     "Correct — federated identity management (SAML/OIDC) authenticates platform users via the corporate IdP with MFA.",
     "Secure properties protect secrets, not user sign-in.",
     "MQ ACLs govern queue access, not platform login."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-059",
@@ -1119,7 +1177,7 @@
     "Nothing extra — CloudHub automatically validates any OAuth token that is presented to the deployed workers by callers",
     "Okta as an external client provider (client management) plus an OAuth/JWT validation policy on the API instances",
     "A SAML assertion validation policy on the APIs",
-    "Basic authentication using Okta passwords"
+    "Basic authentication using each consumer's Okta account password"
    ],
    "answer": 1,
    "explanation": "Client management delegates client registration/tokens to the external OAuth provider; the API-level policy (OAuth enforcement or JWT validation against Okta's keys) makes gateways verify the tokens. SAML federates platform users, not API clients.",
@@ -1128,7 +1186,8 @@
     "Correct — register Okta as the external client provider and apply a token/JWT validation policy on the APIs.",
     "SAML is for user SSO, not API consumer tokens.",
     "Basic auth isn't OAuth token validation."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-060",
@@ -1147,14 +1206,15 @@
     "Correct — a scoped Connected App (client_credentials) is the pipeline's non-human identity.",
     "The org admin account is far too broad.",
     "SSH keys don't authenticate to the Anypoint control plane APIs."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-061",
    "section": "a9",
    "q": "Which capabilities belong to Anypoint Security (edge security for Runtime Fabric)?",
    "options": [
-    "DataWeave obfuscation and code signing",
+    "DataWeave source obfuscation and application code signing",
     "DoS protection, IP allowlists, HTTP limit policies, WAF, Secrets Manager, and perimeter tokenization",
     "Automatic penetration testing of all of the deployed applications running at the network perimeter edge",
     "Encrypting Object Store v2 content at rest"
@@ -1166,7 +1226,8 @@
     "Correct — Anypoint Security provides edge protections: DoS/IP/WAF/HTTP-limits, Secrets Manager, and tokenization.",
     "It doesn't run pen tests.",
     "OSv2 encryption isn't what Anypoint Security provides."
-   ]
+   ],
+   "level": "easy"
   },
   {
    "id": "ia-062",
@@ -1185,14 +1246,15 @@
     "Correct — parameterized queries stop SQL injection; secure properties (key out-of-band) protect the secrets.",
     "Base64 is encoding, not security.",
     "An allowlist doesn't fix injection or plaintext secrets."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-063",
    "section": "a9",
    "q": "Compliance asks: \"Show who changed the rate-limiting policy on the production API instance last month.\" Where is this answered?",
    "options": [
-    "The application log files",
+    "The application log files written by each running Mule worker",
     "The Anypoint audit log, which records control-plane actions with user, action, object, and timestamp",
     "Reviewing the Anypoint Monitoring metric dashboards for the production API instance over the time window",
     "The API's HTTP access logs"
@@ -1204,7 +1266,8 @@
     "Correct — the platform audit log records who changed the policy, when, and on what object.",
     "Monitoring shows metrics, not administrative changes.",
     "Access logs record requests, not config changes."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-064",
@@ -1223,7 +1286,8 @@
     "Correct — zero trust means every API authenticates its callers and encrypts traffic, even internally.",
     "Inner layers need policies too, not just Experience APIs.",
     "Network location isn't a basis for trust."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-065",
@@ -1232,7 +1296,7 @@
    "options": [
     "Applying semantic versioning to the deployable artifact across all of the target environments consistently",
     "Build once, promote the same artifact — env differences belong in externalized properties, not rebuilds",
-    "Test-driven development practice",
+    "Test-driven development practice for building the application",
     "Trunk-based development practice"
    ],
    "answer": 1,
@@ -1242,7 +1306,8 @@
     "Correct — rebuilding per environment violates build-once/deploy-many; externalize env differences instead.",
     "TDD is about writing tests first, unrelated here.",
     "Trunk-based development is a branching model, not this principle."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-066",
@@ -1261,7 +1326,8 @@
     "Correct — mvn deploy -DmuleDeploy with the cloudhub2Deployment config deploys the built app.",
     "package -Pprod just builds; it doesn't deploy.",
     "exchange:publish publishes an asset, not a deployment."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-067",
@@ -1280,7 +1346,8 @@
     "Correct — the platform REST APIs and Anypoint CLI script instance/policy/deploy tasks.",
     "There's no supported direct control-plane DB access.",
     "Studio export/import isn't automation of platform operations."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-068",
@@ -1299,7 +1366,8 @@
     "Correct — ship logs to Splunk via a log4j2 appender (or Monitoring log forwarding) for central, long-retention storage.",
     "Logging to the payload is nonsensical.",
     "Screenshots aren't a retention strategy."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-069",
@@ -1318,7 +1386,8 @@
     "Correct — async boosts throughput but risks losing buffered logs on crash; keep audit-critical logs synchronous.",
     "It doesn't permanently double memory.",
     "Log4j 2 supports async loggers."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-070",
@@ -1337,7 +1406,8 @@
     "Correct — error rate=Monitoring, deploy failure=Runtime Manager, correctness-now=Functional Monitoring (BAT).",
     "Audit/Visualizer/Exchange answer none of these operational questions.",
     "This scrambles the three tools' roles."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-071",
@@ -1356,7 +1426,8 @@
     "Correct — version in the POM with semver; a backwards-incompatible change bumps MAJOR.",
     "Runtime Manager properties aren't the artifact version source.",
     "Even internal apps need versioning for safe promotion."
-   ]
+   ],
+   "level": "easy"
   },
   {
    "id": "ia-072",
@@ -1375,7 +1446,8 @@
     "Correct — Mule propagates the correlation ID over X-Correlation-ID and logs it, tying the transaction together.",
     "No shared database is needed.",
     "Correlation works on any Mule deployment."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-073",
@@ -1392,7 +1464,14 @@
     2,
     3
    ],
-   "explanation": "Latency, availability/fault tolerance, and encryption standards describe HOW WELL the solution must operate — NFRs. Enriching records with credit scores is WHAT it does: functional."
+   "explanation": "Latency, availability/fault tolerance, and encryption standards describe HOW WELL the solution must operate — NFRs. Enriching records with credit scores is WHAT it does: functional.",
+   "level": "medium",
+   "optionNotes": [
+    "NFR — a latency/performance target: how well the system must operate, not what it does.",
+    "Functional — enriching records with credit scores is a capability the system performs.",
+    "NFR — availability / fault tolerance (survive an AZ loss).",
+    "NFR — a security standard governing how well data must be protected."
+   ]
   },
   {
    "id": "ia-074",
@@ -1401,7 +1480,7 @@
    "options": [
     "A US control plane paired with CloudHub runtimes",
     "EU control plane + customer-hosted runtimes registered via Runtime Manager",
-    "Private Cloud Edition paired with CloudHub runtimes",
+    "Anypoint Private Cloud Edition paired with CloudHub runtimes hosted in the EU region",
     "A GovCloud control plane with Runtime Fabric"
    ],
    "answer": 1,
@@ -1411,7 +1490,8 @@
     "Correct — EU control plane keeps metadata in-region; customer-hosted runtimes keep the apps in the bank's data centres.",
     "PCE + CloudHub is contradictory and doesn't meet the EU-metadata + own-DC split.",
     "GovCloud is a US-region offering, not EU."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "ia-075",
@@ -1430,7 +1510,8 @@
     "Correct — pub-sub lets new subscribers join later with no change to the PIM/order integration.",
     "Nightly CSV is neither timely nor extensible per new consumer.",
     "Scatter-Gather hard-codes the current systems and is synchronous."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-076",
@@ -1440,7 +1521,7 @@
     "When the caller cannot proceed without the response and the operation completes quickly",
     "When the downstream system suffers frequent outages",
     "When sudden load spikes must be absorbed and smoothed",
-    "When ordering must be preserved across weeks of traffic"
+    "When strict message ordering must be preserved across weeks of continuous high-volume traffic flowing between the systems"
    ],
    "answer": 0,
    "explanation": "If the caller needs the answer NOW (validation, lookup, UI interaction) and the callee is fast and available, HTTP request-reply is simpler and lower-latency. The other scenarios all favor broker-based decoupling.",
@@ -1449,7 +1530,8 @@
     "Frequent outages call for durable async messaging.",
     "Absorbing spikes is a queue's job, not sync.",
     "Long-lived ordering is a messaging concern, not sync request-reply."
-   ]
+   ],
+   "level": "easy"
   },
   {
    "id": "ia-077",
@@ -1465,7 +1547,14 @@
     0,
     1
    ],
-   "explanation": "Streaming subscriptions (platform events, CDC) push changes to Mule with replay support. Frequent polling burns API limits and adds latency; Bulk jobs are for mass data operations, not change notification."
+   "explanation": "Streaming subscriptions (platform events, CDC) push changes to Mule with replay support. Frequent polling burns API limits and adds latency; Bulk jobs are for mass data operations, not change notification.",
+   "level": "hard",
+   "optionNotes": [
+    "Correct — platform events are pushed to a Subscribe channel in near real time.",
+    "Correct — Change Data Capture streams record-change events as they happen, no polling.",
+    "Scheduled SOQL every 5s is periodic pull, not event-driven push.",
+    "Bulk API v2 query is for large batch extracts, not real-time change capture."
+   ]
   },
   {
    "id": "ia-078",
@@ -1484,7 +1573,8 @@
     "Correct — a single enterprise model is slow to agree and bloated; per-domain bounded models evolve independently.",
     "Exchange has no such limit.",
     "Canonical models are format-agnostic."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-079",
@@ -1501,7 +1591,14 @@
     1,
     2
    ],
-   "explanation": "Metadata is design-time only: connectors, API specs, and user-defined types/examples feed the mapping UI. Production payloads are never inspected for metadata — and metadata enforces nothing at runtime."
+   "explanation": "Metadata is design-time only: connectors, API specs, and user-defined types/examples feed the mapping UI. Production payloads are never inspected for metadata — and metadata enforces nothing at runtime.",
+   "level": "medium",
+   "optionNotes": [
+    "Correct — connectors declare their input/output types, which DataSense reads at design time.",
+    "Correct — an API specification imported via APIkit supplies message types.",
+    "Correct — custom metadata types defined from a schema or example feed DataSense.",
+    "DataSense is design-time; it does not inspect live production payloads."
+   ]
   },
   {
    "id": "ia-080",
@@ -1520,7 +1617,8 @@
     "Correct — a cluster shares the object store, so this should dedup; look for id-expression collisions or TTL expiry instead.",
     "Clusters fully support shared object stores.",
     "The validator works on customer-hosted clusters too."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "ia-081",
@@ -1537,7 +1635,14 @@
     1,
     2
    ],
-   "explanation": "OSv2 caps TTL at 30 days, throttles heavy usage, and is shared across the app's workers — but it is REGIONAL: DR to another region needs its own strategy, there is no automatic cross-region replication."
+   "explanation": "OSv2 caps TTL at 30 days, throttles heavy usage, and is shared across the app's workers — but it is REGIONAL: DR to another region needs its own strategy, there is no automatic cross-region replication.",
+   "level": "medium",
+   "optionNotes": [
+    "Correct — OSv2 caps entry TTL at 30 days, so design around expiry.",
+    "Correct — the OSv2 API is rate-limited, so plan access patterns/TPS.",
+    "Correct — values are shared across the app's workers within the region.",
+    "OSv2 does not automatically replicate across regions — that gap is a DR concern to design for."
+   ]
   },
   {
    "id": "ia-082",
@@ -1556,7 +1661,8 @@
     "Correct — cluster polling sources run only on the primary node, so each file is processed once.",
     "File sources work fine in clusters (on the primary).",
     "maxConcurrency limits parallelism, not duplicate polling across nodes."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "ia-083",
@@ -1573,7 +1679,14 @@
     1,
     2
    ],
-   "explanation": "VPC gives the private network + corporate connectivity; the DLB terminates TLS for custom domains; VPC firewall rules close the public path. Static IPs are for allowlisting scenarios — they don't make an API private or rebrand it."
+   "explanation": "VPC gives the private network + corporate connectivity; the DLB terminates TLS for custom domains; VPC firewall rules close the public path. Static IPs are for allowlisting scenarios — they don't make an API private or rebrand it.",
+   "level": "hard",
+   "optionNotes": [
+    "Correct — an Anypoint VPC peered/VPN'd to the corporate network keeps traffic internal.",
+    "Correct — a Dedicated Load Balancer serves the custom domain with the company's certificate.",
+    "Correct — firewall/network design ensures only internal paths reach the workers.",
+    "Static IPs enable outbound allowlisting; they don't restrict inbound to the corporate network."
+   ]
   },
   {
    "id": "ia-084",
@@ -1582,7 +1695,7 @@
    "options": [
     "It consumes too much heap memory per event",
     "CPU_LITE work shares a small thread pool with all flows — blocking it starves the pool and stalls unrelated flows",
-    "It breaks the app's classloader isolation",
+    "It breaks the app's classloader isolation between the deployed modules",
     "It silently disables back-pressure for the whole flow, letting the source overrun the entire application under load"
    ],
    "answer": 1,
@@ -1592,7 +1705,8 @@
     "Correct — blocking a CPU_LITE thread starves the small shared pool, stalling other flows.",
     "It doesn't affect classloader isolation.",
     "It doesn't disable back-pressure; it clogs threads."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-085",
@@ -1611,7 +1725,8 @@
     "Correct — DataWeave=unit, OAuth handshake=integration, sustained TPS=performance/soak.",
     "Integration and performance can't be MUnit units.",
     "Production manual testing isn't the right level for any of these."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-086",
@@ -1621,7 +1736,7 @@
     "Nothing at all; real event sources never execute during any MUnit test run under any circumstances at all",
     "The flow's real source (e.g. HTTP Listener) starts, so the test can invoke the flow via a real call",
     "It doubles the reported coverage automatically",
-    "It mocks all sources in the suite"
+    "It mocks all of the flow's sources across the whole test suite"
    ],
    "answer": 1,
    "explanation": "By default MUnit invokes flows via flow-ref with a constructed event. Enabling flow sources starts the real listener, letting tests exercise the full path including source configuration — closer to integration-style testing inside MUnit.",
@@ -1630,7 +1745,8 @@
     "Correct — 'enable flow sources' starts the real source so you can drive the flow through it instead of a flow-ref.",
     "It doesn't affect coverage numbers.",
     "It's the opposite of mocking sources."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-087",
@@ -1649,7 +1765,8 @@
     "Correct — payment first (idempotent + retried), confirm only after success; retry from a durable source before publish.",
     "Confirming first risks a confirmation with no payment.",
     "Parallel calls can't guarantee the payment-before-confirmation ordering."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "ia-088",
@@ -1666,7 +1783,14 @@
     2,
     3
    ],
-   "explanation": "Multi-worker = HA within the region; the whole region failing takes both workers. DR is the cross-region capability — redeployment, state strategy, DNS switchover — measured by RTO (time) and RPO (data loss)."
+   "explanation": "Multi-worker = HA within the region; the whole region failing takes both workers. DR is the cross-region capability — redeployment, state strategy, DNS switchover — measured by RTO (time) and RPO (data loss).",
+   "level": "medium",
+   "optionNotes": [
+    "Correct — two workers across AZs give HA against worker/AZ failure.",
+    "False — two workers in one region do NOT protect against losing the whole region; that's DR.",
+    "Correct — DR needs a second region, a regional-state strategy (OSv2, MQ), and endpoint switchover.",
+    "Correct — RTO and RPO are the DR objectives agreed with the business."
+   ]
   },
   {
    "id": "ia-089",
@@ -1682,7 +1806,14 @@
     0,
     1
    ],
-   "explanation": "Both broker-side (MQ delivery count → DLQ) and Mule-side (redelivery policy + explicit DLQ publish in the handler) implement poison-message parking. Infinite retries block; discarding loses the message."
+   "explanation": "Both broker-side (MQ delivery count → DLQ) and Mule-side (redelivery policy + explicit DLQ publish in the handler) implement poison-message parking. Infinite retries block; discarding loses the message.",
+   "level": "medium",
+   "optionNotes": [
+    "Correct — Anypoint MQ maxDeliveries routes poison messages to a DLQ.",
+    "Correct — a redelivery policy raising REDELIVERY_EXHAUSTED, handled by publishing to a dead-letter destination, preserves the payload and reason.",
+    "Infinite retries block the queue on a poison message — the opposite of the requirement.",
+    "On Error Continue that discards the message loses the payload and failure reason."
+   ]
   },
   {
    "id": "ia-090",
@@ -1699,7 +1830,14 @@
     1,
     2
    ],
-   "explanation": "Latency comes from sequential hops: caching removes calls, collapsing removes hops, parallelizing overlaps them. More workers increase THROUGHPUT but do nothing for a single request's sequential latency."
+   "explanation": "Latency comes from sequential hops: caching removes calls, collapsing removes hops, parallelizing overlaps them. More workers increase THROUGHPUT but do nothing for a single request's sequential latency.",
+   "level": "hard",
+   "optionNotes": [
+    "Correct — caching stable System responses at the Process layer removes per-request latency.",
+    "Correct — collapsing a Process layer that adds no orchestration removes a hop.",
+    "Correct — Scatter-Gather runs independent backend calls concurrently, cutting wall-clock latency.",
+    "More workers add throughput/capacity, not lower per-request latency when time is spent waiting downstream."
+   ]
   },
   {
    "id": "ia-091",
@@ -1718,7 +1856,8 @@
     "Correct — stream the select into a Batch Job, aggregating into Bulk API v2 batches for efficient upserts.",
     "Parallel For Each over 8M in memory exhausts heap.",
     "Per-row calls blow through API limits."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "ia-092",
@@ -1727,7 +1866,7 @@
    "options": [
     "Add more Mule workers to the deployment so that it can absorb all of the ERP's incoming load",
     "Constrain concurrency toward the ERP (maxConcurrency, queue buffering at its safe rate)",
-    "Lower the ERP's request timeouts",
+    "Lower the ERP's request timeouts so failing calls return faster",
     "Retry ERP failures more aggressively"
    ],
    "answer": 1,
@@ -1737,7 +1876,8 @@
     "Correct — throttle toward the ERP so Mule absorbs load the ERP can't take.",
     "Shorter timeouts just fail faster.",
     "Aggressive retries add more load to an overwhelmed system."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "ia-093",
@@ -1756,7 +1896,8 @@
     "Correct — SSO federation for people, scoped Connected Apps for pipelines: no personal credentials in CI.",
     "Client ID enforcement is an API-consumer policy, not platform login.",
     "SSH keys don't authenticate to the control plane."
-   ]
+   ],
+   "level": "hard"
   },
   {
    "id": "ia-094",
@@ -1773,7 +1914,14 @@
     1,
     3
    ],
-   "explanation": "Edge security policies, tokenization, and Secrets Manager are Anypoint Security features (RTF-focused, separately licensed). Client ID enforcement is a standard API Manager policy available everywhere."
+   "explanation": "Edge security policies, tokenization, and Secrets Manager are Anypoint Security features (RTF-focused, separately licensed). Client ID enforcement is a standard API Manager policy available everywhere.",
+   "level": "medium",
+   "optionNotes": [
+    "Correct — edge policies (DoS protection, HTTP limits, WAF) are Anypoint Security, enforced at the RTF edge.",
+    "Correct — perimeter tokenization of sensitive fields is an Anypoint Security capability.",
+    "Client ID enforcement is a standard API Manager policy — not Anypoint Security.",
+    "Correct — Secrets Manager for TLS keystores/secrets is part of Anypoint Security."
+   ]
   },
   {
    "id": "ia-095",
@@ -1782,7 +1930,7 @@
    "options": [
     "The application log files",
     "The Anypoint audit log (UI or query API), exportable to the SIEM",
-    "Anypoint Visualizer's dependency graph",
+    "Anypoint Visualizer's real-time application dependency graph and topology view",
     "The Git commit history of the project"
    ],
    "answer": 1,
@@ -1792,7 +1940,8 @@
     "Correct — the platform audit log captures who deployed and changed policies, exportable to a SIEM.",
     "Visualizer shows topology, not admin actions.",
     "Git shows code changes, not platform deployments/policy edits."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-096",
@@ -1811,7 +1960,8 @@
     "Correct — build+test (B), publish artifact (C), deploy to test (A), then promote the same artifact to prod (D).",
     "Publishing before building the tested artifact is wrong.",
     "Deploying to test before publishing the versioned artifact breaks promotion."
-   ]
+   ],
+   "level": "medium"
   },
   {
    "id": "ia-097",
@@ -1820,7 +1970,7 @@
    "options": [
     "They are sent to CloudHub's log viewer",
     "To container stdout, forwarded by the cluster's log-forwarding to the org's logging system (ELK/Splunk)",
-    "They are discarded by default",
+    "They are discarded by default unless a file appender is configured",
     "Only to Anypoint Monitoring, with no other log-forwarding destination available to the application at all"
    ],
    "answer": 1,
@@ -1830,7 +1980,8 @@
     "Correct — RTF apps log to stdout; the cluster forwards to the central logging system.",
     "Logs aren't discarded; they go to stdout/forwarding.",
     "Monitoring is one option, not the only path."
-   ]
+   ],
+   "level": "easy"
   },
   {
    "id": "ia-098",
@@ -2123,7 +2274,7 @@
     "Scale horizontally to multiple workers behind the load balancer",
     "Scale vertically to one 4-vCore worker",
     "Move all processing into one Async scope",
-    "Raise the JVM heap via a deployment property"
+    "Raise the JVM heap size on the single existing worker via a Runtime Manager deployment property"
    ],
    "answer": 0,
    "optionNotes": [
@@ -2242,7 +2393,7 @@
    "q": "A process API calls a system API for country/currency reference data that changes at most monthly. The system API accounts for 60% of the process API's response time. What is the most effective first optimization?",
    "options": [
     "Cache the reference data responses (e.g. Cache scope or HTTP Caching policy) with an appropriate TTL",
-    "Double the process API's workers",
+    "Double the process API's worker count to push more load downstream",
     "Convert the reference-data call into a Parallel For Each scope over the individual records instead of caching",
     "Move the system API to a bigger worker"
    ],
@@ -2324,7 +2475,7 @@
     "Functional monitoring: scheduled synthetic transactions that call the API and assert on the correctness of responses",
     "Raising the CPU alert threshold to be more sensitive",
     "Enabling verbose debug-level logging permanently in production so as to capture every response body for later manual review",
-    "Reviewing dashboards manually every morning"
+    "Reviewing the monitoring dashboards manually every single morning"
    ],
    "answer": 0,
    "optionNotes": [
@@ -2397,6 +2548,251 @@
     "A flow variable lives in memory and is lost with the worker."
    ],
    "explanation": "In-memory VM queues are lost on worker restart; enabling Persistent Queues in Runtime Manager makes accepted messages durable and shareable across the app's workers."
+  },
+  {
+   "id": "ia-126",
+   "section": "a1",
+   "level": "hard",
+   "q": "A firm must deploy 60 Mule apps. Constraints: (1) MuleSoft should manage the control plane; (2) some apps must run inside the firm's existing GKE clusters for data residency; (3) other apps are public SaaS integrations with spiky load and the firm wants zero infrastructure to operate for those. What runtime-plane split best satisfies all three?",
+   "options": [
+    "Runtime Fabric on the firm's GKE for the residency-bound apps, and CloudHub 2.0 for the zero-ops SaaS integrations — one control plane over both",
+    "CloudHub 2.0 for every app, since the control plane is MuleSoft-managed and that already keeps all data inside MuleSoft's compliant regions for residency",
+    "Runtime Fabric for every app on the firm's GKE, because a single runtime plane is simpler and CloudHub cannot be governed by the same control plane",
+    "A customer-hosted hybrid deployment on VMs for all 60 apps, so the firm controls the compute everywhere and avoids managing any Kubernetes"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — RTF keeps the residency-bound apps on the firm's own GKE, while CloudHub 2.0 gives zero-ops hosting for the SaaS integrations; both are managed by the one Anypoint control plane.",
+    "CloudHub 2.0 hosts compute on MuleSoft's side — it doesn't put workloads inside the firm's GKE, so residency (2) fails.",
+    "Forcing everything onto RTF adds ops for the SaaS apps the firm wanted zero-ops for, and CloudHub IS governed by the same control plane.",
+    "Hybrid on VMs maximizes ops burden — the opposite of the zero-ops goal for the SaaS integrations."
+   ],
+   "explanation": "The control plane is always MuleSoft-managed; the runtime plane is the choice. A mixed estate is normal: Runtime Fabric where compute must live in the customer's network (residency), CloudHub 2.0 where zero-ops hosting is wanted — all under one control plane."
+  },
+  {
+   "id": "ia-127",
+   "section": "a2",
+   "level": "hard",
+   "q": "Order events must (a) be delivered to inventory, shipping, and analytics — each an independent consumer — AND (b) be processed by each consumer in strict per-customer order. An architect proposes a single topic with three subscribers. What is the flaw, and the fix?",
+   "options": [
+    "Fan-out is fine, but strict ordering needs a partition/queue key per customer so one customer's events serialize; a plain topic doesn't guarantee per-consumer processing order under concurrency",
+    "Topics can't fan out to multiple independent subscribers at all, so the design fails immediately and must be rebuilt as three separate point-to-point queues, one dedicated to each of inventory, shipping, and analytics",
+    "There is no flaw — a topic with multiple subscribers inherently preserves total ordering for every subscriber, so both requirements are already met",
+    "Ordering is impossible in any asynchronous system, so requirement (b) must be dropped and the design switched entirely to synchronous request/reply"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — pub/sub gives the fan-out, but per-customer ordering requires keying events (partition/message-group) so a customer's events are handled sequentially; concurrent consumers otherwise reorder them.",
+    "Topics are exactly how you fan out to independent subscribers — that part of the design is right.",
+    "A topic does not guarantee per-subscriber total order once consumers process concurrently.",
+    "Ordering is achievable with keyed partitions/message groups; you don't have to abandon async."
+   ],
+   "explanation": "Fan-out and ordering are separate concerns. A topic handles the fan-out; strict per-entity order needs a partition or message-group key so events for the same customer are serialized, while different customers still process in parallel."
+  },
+  {
+   "id": "ia-128",
+   "section": "a3",
+   "level": "hard",
+   "q": "Refer to the exhibit. Review this proposed API-led design for a new mobile checkout. What is the primary architectural problem?",
+   "exhibit": "Mobile Experience API\n   ├─► System API: Salesforce (customer)\n   ├─► System API: SAP (order)     ◄── called directly\n   └─► System API: Inventory DB\n(no Process API; the Experience API orchestrates all three System APIs itself)",
+   "options": [
+    "Orchestration and aggregation live in the Experience API, so the checkout logic can't be reused by web or partner channels — that business capability belongs in a Process API",
+    "An Experience API is not allowed to call more than one System API, so the design is invalid and must be collapsed into a single monolithic app",
+    "System APIs must never be called by anything except other System APIs, so the Experience API should call a fourth System API that wraps the other three",
+    "The design is correct as drawn — skipping the Process layer is the recommended optimization whenever an Experience API needs data from several systems, because a Process API there would only add an unnecessary network hop and latency"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — the reusable 'place order' orchestration is trapped in a channel-specific Experience API; web/partner channels would have to reimplement it. It belongs in a Process API.",
+    "An Experience API may call multiple sources; the issue is where the orchestration lives, not the count.",
+    "System APIs are called by Process (and sometimes Experience) APIs; 'only System calls System' is wrong and couples back ends.",
+    "Skipping the Process layer for reusable orchestration is the anti-pattern, not an optimization."
+   ],
+   "explanation": "API-led reuse comes from the System and Process layers. Putting cross-system orchestration inside an Experience API makes it channel-specific and non-reusable — the checkout capability should be a Process API that every channel's Experience API calls."
+  },
+  {
+   "id": "ia-129",
+   "section": "a4",
+   "level": "hard",
+   "q": "A dedup design fronts a flow with an Idempotent Message Validator backed by Object Store v2. Under a Black-Friday burst the app starts processing duplicates that it correctly rejected at lower volume. Nothing else changed. What is the most likely cause?",
+   "options": [
+    "The burst exceeds Object Store v2's API rate limit, so some existence checks fail/throttle and fall through as 'not seen', letting duplicates pass",
+    "Object Store v2 entries silently exceeded their 30-day TTL exactly during the burst, so every key expired at once and dedup stopped working",
+    "Idempotent Message Validators stop functioning above a fixed message size, and burst messages are always larger than steady-state ones",
+    "Object Store v2 automatically replicates across regions during high load, and the replica returns stale 'not seen' answers for every key"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — OSv2 is a rate-limited managed service; a burst can hit its TPS ceiling, and if checks throttle/error and aren't handled, messages slip through as first-seen.",
+    "TTL expiry is time-based, not triggered by load; it wouldn't align with the burst.",
+    "There is no message-size cutoff that disables the validator; size isn't the variable here.",
+    "OSv2 doesn't auto-replicate across regions; that's a DR gap, not a burst behavior."
+   ],
+   "explanation": "Object Store v2 has API rate limits. Correctness that holds at low volume but breaks under a spike points at throttled store operations — design for the TPS ceiling (batching, backpressure, or a store sized for peak), and fail safe when a check errors rather than treating it as 'not seen'."
+  },
+  {
+   "id": "ia-130",
+   "section": "a5",
+   "level": "hard",
+   "q": "A CloudHub app must (1) call a partner API that allowlists a fixed set of source IPs, and (2) accept inbound traffic only from the customer's corporate network. An architect plans to use CloudHub static IPs for BOTH requirements. Where is the mistake?",
+   "options": [
+    "Static IPs solve (1) outbound allowlisting, but restricting inbound to the corporate network needs an Anypoint VPC (VPN/peering) plus load-balancer/firewall rules — static IPs don't gate inbound",
+    "Static IPs solve (2) inbound restriction, but the partner allowlist in (1) actually requires a Dedicated Load Balancer with a custom certificate instead, since only the DLB can present the stable source address the partner's firewall will accept",
+    "Static IPs cannot be used for either requirement on CloudHub; both need Runtime Fabric with an ingress controller",
+    "There is no mistake — a single pool of CloudHub static IPs governs both inbound source filtering and outbound source identity simultaneously"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — static IPs give the app a stable OUTBOUND source address for partner allowlisting; INBOUND network restriction requires a VPC (VPN/peering) with firewall/LB rules.",
+    "Reversed — static IPs are about outbound identity, not inbound gating; a DLB+cert is for custom domain/TLS, not the partner allowlist.",
+    "Static IPs are a valid CloudHub feature for outbound; RTF isn't required for (1).",
+    "One mechanism can't do both; inbound and outbound controls are different features."
+   ],
+   "explanation": "A classic inbound/outbound trap. Static IPs stabilize the app's OUTBOUND address (for a partner's allowlist). Limiting INBOUND traffic to the corporate network is a VPC + VPN/peering + firewall/LB concern. They're separate controls."
+  },
+  {
+   "id": "ia-131",
+   "section": "a6",
+   "level": "hard",
+   "q": "Refer to the exhibit. A team adds this MUnit test to enforce the '500 req/s, p95 < 300 ms' NFR in the CI build. Why is this the wrong approach, and what should verify the NFR?",
+   "exhibit": "<munit:test name=\"latency-slo\">\n  <munit:execution>\n    <flow-ref name=\"getProduct\"/>\n  </munit:execution>\n  <munit:validation>\n    <munit-tools:assert-that\n       expression=\"#[vars.elapsedMs]\" is=\"#[MunitTools::lessThan(300)]\"/>\n  </munit:validation>\n</munit:test>",
+   "options": [
+    "MUnit is functional unit testing on a single mocked event; throughput and p95 latency only emerge under concurrent load, so a performance test must verify the NFR",
+    "The assertion is correct but must use greaterThan(300) instead of lessThan(300) to properly fail slow responses, after which MUnit does verify the throughput NFR",
+    "MUnit can verify the NFR, but only if the mocks are removed so the test calls the real backends during the CI build, so the measured timings reflect genuine downstream latency rather than mocked responses",
+    "Performance NFRs can't be tested at all before production, so the requirement should be monitored live and dropped from pre-release verification"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — MUnit exercises one event with mocked I/O; a single-request timing assertion says nothing about 500 req/s or p95. Load/performance testing against a representative env is the right level.",
+    "The operator isn't the problem — a single mocked-path timing check can't represent throughput or p95 regardless of comparison.",
+    "Calling real backends in unit tests makes them non-hermetic and flaky, and still doesn't generate concurrent load.",
+    "Performance NFRs are verifiable pre-prod via load testing; they shouldn't be dropped."
+   ],
+   "explanation": "Right test, wrong level. MUnit proves functional correctness on individual events with mocks; throughput and percentile latency are emergent under concurrency and belong in a performance/load test against a representative environment — not a CI unit assertion."
+  },
+  {
+   "id": "ia-132",
+   "section": "a7",
+   "level": "hard",
+   "q": "A booking spans flight, hotel, and car — three separate REST APIs, none transactional — and may take minutes. If the car reservation fails, the already-confirmed flight and hotel must be undone. Which approach correctly guarantees consistency?",
+   "options": [
+    "A saga: perform each step and, on a later failure, run compensating actions (cancel flight, cancel hotel) — since XA can't span external REST calls and long-running work can't hold a transaction",
+    "An XA transaction enlisting the three REST APIs so all three commit or roll back atomically once the car step's outcome is known, with the transaction manager holding every booking open until all providers have confirmed",
+    "Wrap all three calls in a single Until Successful scope so a car failure automatically retries until every system agrees",
+    "A local transaction on the flight database that also covers the hotel and car API calls, rolling all three back together on failure"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — with non-transactional, long-running REST steps you can't hold a distributed transaction; the saga pattern uses explicit compensating actions to undo completed steps.",
+    "XA needs XA-capable resources; external REST APIs can't be enlisted, and a minutes-long transaction is untenable.",
+    "Until Successful retries a transient failure; it doesn't undo the already-confirmed flight and hotel.",
+    "A local transaction covers one resource (the DB) — it can't roll back external hotel/car API calls."
+   ],
+   "explanation": "Across non-transactional services and long durations, distributed ACID (XA) is impossible. The saga pattern achieves eventual consistency through compensating transactions that semantically undo completed steps when a later step fails."
+  },
+  {
+   "id": "ia-133",
+   "section": "a7",
+   "level": "hard",
+   "q": "Refer to the exhibit. A payment consumer reads from an at-least-once queue and charges a card. Occasionally a customer is charged twice. What design change fixes it?",
+   "exhibit": "<jms:listener config-ref=\"JMS\" destination=\"payments\"/>   <!-- at-least-once -->\n  <flow-ref name=\"chargeCard\"/>   <!-- calls payment gateway -->\n  <!-- no dedup; a redelivered message charges again -->",
+   "options": [
+    "Make the consumer idempotent: dedup on the payment's stable id (Idempotent Message Validator over a persistent store) before charging, so a redelivered message is recognized and skipped",
+    "Switch the queue to at-most-once delivery so messages are never redelivered, which removes duplicates without any consumer changes because the broker simply drops any message it cannot immediately confirm as delivered",
+    "Wrap the chargeCard call in an Until Successful scope, which prevents the broker from redelivering the message a second time",
+    "Increase the JMS acknowledgment timeout so the broker waits longer before considering the message unacknowledged and redelivering it"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — at-least-once implies possible redelivery, so the consumer must dedup on a stable payment id before the side-effecting charge to make processing exactly-once in effect.",
+    "At-most-once risks LOSING payments (no redelivery on genuine failures) — unacceptable for charges, and most brokers guarantee at-least-once.",
+    "Until Successful is about retrying a failing call; it doesn't stop broker redelivery of the whole message.",
+    "A longer ack timeout reduces some redeliveries but can't eliminate them; correctness still requires idempotency."
+   ],
+   "explanation": "At-least-once delivery means duplicates are inevitable. The only robust fix for a side-effecting operation like a charge is an idempotent receiver keyed on a stable id, checked against a persistent store before the operation runs."
+  },
+  {
+   "id": "ia-134",
+   "section": "a8",
+   "level": "hard",
+   "q": "During load testing a Mule app scales cleanly, but a downstream ERP that tolerates only 50 concurrent requests begins returning errors as load rises. Requests must not be dropped. Which design most directly protects the ERP?",
+   "options": [
+    "Bound concurrency toward the ERP (a limited-concurrency pool / throttle) and buffer the overflow in a queue, draining at the ERP's safe rate so nothing is lost",
+    "Add more Mule workers so the app can push the incoming load through to the ERP faster, since horizontally scaling the Mule tier is the standard way to raise end-to-end throughput when a downstream system is slow",
+    "Remove any concurrency limits in the Mule app so requests reach the ERP as quickly as possible and spend less time queued",
+    "Switch every ERP call to fire-and-forget so the Mule app never waits on the ERP and load-test errors disappear"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — the ERP is the constraint, so cap concurrency to its safe limit and absorb the surplus in a durable buffer, applying backpressure and draining at a sustainable rate.",
+    "More Mule workers push MORE concurrent load at the ERP — it makes the overload worse.",
+    "Removing limits floods the ERP past 50 concurrent — exactly the failure being observed.",
+    "Fire-and-forget hides errors but still overloads the ERP and loses the ability to confirm/retry — data can be lost."
+   ],
+   "explanation": "When a downstream system is the bottleneck, scale the caller to its limit, not past it: throttle/limit concurrency to the ERP's safe ceiling and buffer overflow (queue) so surplus is levelled out rather than dropped. Adding workers or removing limits amplifies the overload."
+  },
+  {
+   "id": "ia-135",
+   "section": "a9",
+   "level": "hard",
+   "q": "A partner integration requires proof of the CALLER'S identity at the transport layer (not just an application credential). A team plans to satisfy it with the Client ID Enforcement policy alone. What's the gap, and the correct control?",
+   "options": [
+    "Client ID Enforcement authenticates an application credential in the message, not the transport peer; proving the caller at the transport layer requires mutual TLS (the client presents a certificate)",
+    "Client ID Enforcement already authenticates the TLS peer, so nothing more is needed once the policy is applied to the API instance",
+    "Transport-layer caller identity is provided by a Rate-Limiting-SLA policy, which ties each caller's certificate to an SLA tier",
+    "One-way (server) TLS is sufficient for caller identity, because the server certificate presented during the handshake also identifies the client that chose to trust and connect to it, so no client certificate is needed"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — client-id/secret is an application-level credential; transport-level caller identity means the client presents its own certificate, i.e. mutual (two-way) TLS.",
+    "Client ID Enforcement checks a credential in the request, not the TLS peer's certificate.",
+    "Rate limiting throttles calls; it doesn't establish transport identity.",
+    "One-way TLS authenticates the SERVER to the client, not the client to the server."
+   ],
+   "explanation": "Application identity (client id/secret via a policy) and transport identity (who terminated the TLS handshake) are different layers. 'Prove the caller at the transport layer' means mutual TLS, where the client presents a certificate the server validates."
+  },
+  {
+   "id": "ia-136",
+   "section": "a10",
+   "level": "hard",
+   "q": "Refer to the exhibit. Support can trace a transaction inside each app, but cannot stitch one business transaction across the Experience → Process → System chain. What must change?",
+   "exhibit": "Experience API  →  Process API  →  System API\nEach app: log4j2 pattern = \"%d %-5p %c - %m%n\"\nEach HTTP Request: default headers (no correlation id forwarded)",
+   "options": [
+    "Propagate a single correlation id across the HTTP calls (send X-Correlation-ID downstream) and include %X{correlationId} in every app's log pattern, so all three apps' logs share one traceable id",
+    "Give each app its own independent correlation id and rely on Anypoint Monitoring to mathematically reconstruct the end-to-end chain from log timestamps and payload similarity across the three applications",
+    "Switch all three apps to asynchronous loggers, since only async logging can carry a correlation id across an HTTP boundary",
+    "Move all three apps into a single deployable so there is only one log file and no correlation id is needed at all"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — end-to-end tracing needs the SAME correlation id carried on the wire (X-Correlation-ID) and emitted in each app's log pattern (%X{correlationId}) so logs across apps join on one id.",
+    "Independent ids can't be stitched; timestamps don't reliably correlate concurrent transactions.",
+    "Async vs sync logging is unrelated to propagating a correlation id across HTTP.",
+    "Collapsing three APIs into one destroys the API-led layering to solve a logging-config problem."
+   ],
+   "explanation": "Cross-app tracing requires a correlation id that (1) travels on the downstream HTTP calls and (2) appears in each app's log layout via %X{correlationId}. Mule propagates/accepts X-Correlation-ID when wired to; without it each app logs its own id and the chain can't be joined."
+  },
+  {
+   "id": "ia-137",
+   "section": "a10",
+   "level": "hard",
+   "q": "Refer to the exhibit. A CI/CD pipeline for CloudHub embeds credentials and rebuilds the artifact per environment. Identify the two problems and the correct design.",
+   "exhibit": "# Jenkinsfile (per env)\nsh 'mvn clean package -Denv=prod'          # rebuild per environment\nsh 'mvn deploy -DmuleDeploy \\\n     -Danypoint.username=deployerBob \\\n     -Danypoint.password=Sup3rSecret!'      # personal creds in the script",
+   "options": [
+    "Build once and promote the same artifact with per-env config injected at deploy; and replace personal credentials with a Connected App secret pulled from the CI secret store",
+    "Rebuilding per environment is fine for CloudHub, but the credentials should be a second personal account so deployments aren't tied to Bob",
+    "The credentials are fine since they're passed as Maven properties; only the per-environment rebuild needs to be removed",
+    "Both problems are solved by committing an encrypted properties file that includes the password directly into the repository and having each environment build its own artifact from it at deploy time"
+   ],
+   "answer": 0,
+   "optionNotes": [
+    "Correct — build-once/promote-many preserves 'tested == deployed', and a Connected App (machine identity) with its secret from the CI vault removes personal credentials from the script.",
+    "A rebuild per env breaks the tested-artifact guarantee, and swapping one personal account for another still isn't a machine identity.",
+    "Passing a personal password as a property still exposes it in the script/logs; and the per-env rebuild is also wrong.",
+    "Committing any password (even 'encrypted') to the repo is a leak, and per-env rebuild remains an anti-pattern."
+   ],
+   "explanation": "Two anti-patterns: rebuilding per environment (breaks build-once/promote-many, so the deployed artifact isn't the tested one) and embedding personal credentials (should be a Connected App machine identity with its secret injected from the CI secret store at deploy time)."
   }
  ],
  "sections": [
