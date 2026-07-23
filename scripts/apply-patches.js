@@ -94,6 +94,23 @@ for (const [sid, patch] of Object.entries(patches.sections || {})) {
   changed++;
 }
 
+// ---- section reordering -----------------------------------------------
+// sectionOrder: ["<id>", ...] reorders data.sections into exam-outline order.
+// Must list every existing section id exactly once (no missing/extra/dupes).
+if (patches.sectionOrder) {
+  const order = patches.sectionOrder;
+  const have = data.sections.map(s => s.id);
+  const wantSet = new Set(order);
+  if (order.length !== have.length || wantSet.size !== order.length ||
+      !have.every(id => wantSet.has(id))) {
+    console.error("!! sectionOrder must list every section id exactly once. " +
+      `have=[${have.join(",")}] got=[${order.join(",")}]`);
+    process.exit(1);
+  }
+  data.sections.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
+  changed++;
+}
+
 // ---- light local sanity (full check is validate-data.js) --------------
 for (const q of data.questions) {
   if (q.optionNotes && q.optionNotes.length !== q.options.length) {
